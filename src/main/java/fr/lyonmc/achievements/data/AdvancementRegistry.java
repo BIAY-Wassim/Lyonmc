@@ -6,6 +6,8 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.advancement.Advancement;
+import org.bukkit.advancement.AdvancementRequirement;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -26,7 +28,8 @@ public final class AdvancementRegistry {
     }
 
     public record Entry(Advancement advancement, String key, String category, AdvancementDisplay.Frame frame,
-                        Component title, Component description, boolean hidden) {
+                        Component title, Component description, boolean hidden, ItemStack icon,
+                        String parentKey, List<List<String>> requirements) {
     }
 
     private final JavaPlugin plugin;
@@ -78,15 +81,42 @@ public final class AdvancementRegistry {
                 if (categories.containsKey(prefix)) cat = prefix;
             }
 
+            Advancement parent = adv.getParent();
+            List<List<String>> reqs = new ArrayList<>();
+            for (AdvancementRequirement r : adv.getRequirements().getRequirements()) {
+                reqs.add(List.copyOf(r.getRequiredCriteria()));
+            }
             list.add(new Entry(adv, adv.getKey().toString(), cat, display.frame(),
-                    display.title(), display.description(), display.isHidden()));
+                    display.title(), display.description(), display.isHidden(), display.icon().clone(),
+                    parent == null ? null : parent.getKey().toString(), List.copyOf(reqs)));
         }
 
         // Tri : ordre des catégories du config, puis clé
         List<String> order = new ArrayList<>(categories.keySet());
         list.sort(Comparator.<Entry>comparingInt(e -> order.indexOf(e.category())).thenComparing(Entry::key));
 
+        // Ordre de l'arbre des progrès : racine, puis ses enfants, etc.
+        Set<String> keys = new HashSet<>();
+        for (Entry e : list) keys.add(e.key());
+        Map<String, List<Entry>> children = new HashMap<>();
+        List<Entry> roots = new ArrayList<>();
         for (Entry e : list) {
+            if (e.parentKey() == null || !keys.contains(e.parentKey())) roots.add(e);
+            else children.computeIfAbsent(e.parentKey(), k -> new ArrayList<>()).add(e);
+        }
+        List<Entry> ordered = new ArrayList<>(list.size());
+        Deque<Entry> stack = new ArrayDeque<>();
+        for (Entry root : roots) {
+            stack.push(root);
+            while (!stack.isEmpty()) {
+                Entry cur = stack.pop();
+                ordered.add(cur);
+                List<Entry> kids = children.getOrDefault(cur.key(), List.of());
+                for (int i = kids.size() - 1; i >= 0; i--) stack.push(kids.get(i));
+            }
+        }
+
+        for (Entry e : ordered) {
             entries.put(e.key(), e);
             totalPerCategory.merge(e.category(), 1, Integer::sum);
             totalPerFrame.merge(e.frame(), 1, Integer::sum);
@@ -134,11 +164,23 @@ public final class AdvancementRegistry {
         return categories.getOrDefault(id, categories.get(OTHER));
     }
 
+    /** Icône du succès racine d'une catégorie (ex : minecraft:nether/root) */
+    public ItemStack rootIcon(String category) {
+        Entry root = entries.get("minecraft:" + category + "/root");
+        if (root != null) return root.icon().clone();
+        for (Advancement adv : (Iterable<Advancement>) Bukkit::advancementIterator) {
+            if (adv.getKey().toString().equals("minecraft:" + category + "/root") && adv.getDisplay() != null) {
+                return adv.getDisplay().icon().clone();
+            }
+        }
+        return new ItemStack(org.bukkit.Material.BOOK);
+    }
+
     public static TextColor frameColor(AdvancementDisplay.Frame frame) {
         return switch (frame) {
-            case CHALLENGE -> TextColor.color(0xD58CFF);
-            case GOAL -> TextColor.color(0x55FFFF);
-            default -> TextColor.color(0x55FF55);
+            case CHALLENGE -> TextColor.color(0xD9C08C);
+            case GOAL -> TextColor.color(0xE6E6E6);
+            default -> TextColor.color(0xE6E6E6);
         };
     }
 

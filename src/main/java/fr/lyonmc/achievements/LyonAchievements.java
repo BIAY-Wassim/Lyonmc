@@ -5,6 +5,9 @@ import fr.lyonmc.achievements.command.SuccesCommand;
 import fr.lyonmc.achievements.data.AdvancementRegistry;
 import fr.lyonmc.achievements.data.StatsService;
 import fr.lyonmc.achievements.listener.AdvancementListener;
+import fr.lyonmc.achievements.listener.ChatListener;
+import fr.lyonmc.achievements.menu.MenuListener;
+import fr.lyonmc.achievements.menu.MissionsMenu;
 import fr.lyonmc.achievements.util.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -12,18 +15,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.io.File;
+
 public final class LyonAchievements extends JavaPlugin {
 
     private AdvancementRegistry registry;
     private StatsService stats;
     private BoardManager boards;
     private Text text;
+    private ChatListener chat;
 
     private BukkitTask refreshTask;
     private BukkitTask autosaveTask;
 
     @Override
     public void onEnable() {
+        migrateConfig();
         saveDefaultConfig();
 
         this.text = new Text(this);
@@ -35,13 +42,20 @@ public final class LyonAchievements extends JavaPlugin {
 
         this.boards = new BoardManager(this, registry, stats, text);
 
-        getServer().getPluginManager().registerEvents(new AdvancementListener(this, registry, stats, boards, text), this);
+        this.chat = new ChatListener(this, registry, stats, text);
+        MissionsMenu menu = new MissionsMenu(registry, stats, text);
 
-        SuccesCommand command = new SuccesCommand(this, registry, stats, boards, text);
-        PluginCommand pc = getCommand("succes");
-        if (pc != null) {
-            pc.setExecutor(command);
-            pc.setTabCompleter(command);
+        getServer().getPluginManager().registerEvents(new AdvancementListener(this, registry, stats, boards, text), this);
+        getServer().getPluginManager().registerEvents(chat, this);
+        getServer().getPluginManager().registerEvents(new MenuListener(this), this);
+
+        SuccesCommand command = new SuccesCommand(this, registry, stats, boards, menu, text);
+        for (String name : new String[]{"succes", "missions"}) {
+            PluginCommand pc = getCommand(name);
+            if (pc != null) {
+                pc.setExecutor(command);
+                pc.setTabCompleter(command);
+            }
         }
 
         // Joueurs déjà connectés (cas d'un /reload)
@@ -73,10 +87,27 @@ public final class LyonAchievements extends JavaPlugin {
         if (autosaveTask != null) autosaveTask.cancel();
 
         long interval = Math.max(5L, getConfig().getLong("settings.update-interval-ticks", 20L));
-        refreshTask = Bukkit.getScheduler().runTaskTimer(this, boards::tick, interval, interval);
+        refreshTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
+            boards.tick();
+            chat.refreshAll();
+        }, 1L, interval);
 
         long saveTicks = Math.max(1L, getConfig().getLong("settings.autosave-minutes", 5L)) * 60L * 20L;
         autosaveTask = Bukkit.getScheduler().runTaskTimer(this, stats::saveAsync, saveTicks, saveTicks);
+    }
+
+    /** Sauvegarde l'ancienne config (v1) et installe la nouvelle. */
+    private void migrateConfig() {
+        File file = new File(getDataFolder(), "config.yml");
+        if (!file.exists()) return;
+        if (org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(file).getInt("config-version", 1) >= 2) return;
+        File backup = new File(getDataFolder(), "config-ancienne.yml");
+        if (backup.exists()) backup.delete();
+        if (file.renameTo(backup)) {
+            getLogger().info("Nouvelle configuration installée (l'ancienne est dans config-ancienne.yml).");
+        }
+        saveDefaultConfig();
+        reloadConfig();
     }
 
     /** /succes reload */

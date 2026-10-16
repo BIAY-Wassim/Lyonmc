@@ -101,7 +101,7 @@ public final class AdvancementListener implements Listener {
                     text.parse(plugin.getConfig().getString("announcements.challenge-subtitle", "<advancement>"), all),
                     Title.Times.times(Duration.ofMillis(300), Duration.ofSeconds(3), Duration.ofMillis(700))));
         } else {
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.6f);
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 0.8f);
         }
 
         // Paliers
@@ -112,7 +112,7 @@ public final class AdvancementListener implements Listener {
                 Bukkit.broadcast(text.parse(plugin.getConfig().getString("announcements.milestone-message", ""),
                         all, Placeholder.unparsed("milestone", String.valueOf(m))));
                 for (Player online : Bukkit.getOnlinePlayers()) {
-                    online.playSound(online.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.4f, 1.2f);
+                    online.playSound(online.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.4f, 1.2f);
                 }
             }
         }

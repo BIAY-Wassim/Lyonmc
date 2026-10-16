@@ -17,13 +17,21 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
 import java.util.Locale;
 
 public final class Text {
 
     public static final MiniMessage MM = MiniMessage.miniMessage();
 
+    /** Palette sobre */
+    public static final TextColor WHITE = TextColor.color(0xE6E6E6);
+    public static final TextColor GRAY = TextColor.color(0x9A9A9A);
+    public static final TextColor DARK = TextColor.color(0x5A5A5A);
+
     private final JavaPlugin plugin;
+    private TextColor accent;
+    private TagResolver theme;
     private int barLength;
     private String barChar;
     private TextColor barFilled;
@@ -35,18 +43,36 @@ public final class Text {
     }
 
     public void reload() {
-        barLength = Math.max(1, plugin.getConfig().getInt("progress-bar.length", 10));
-        barChar = plugin.getConfig().getString("progress-bar.char", "■");
-        TextColor f = TextColor.fromHexString(plugin.getConfig().getString("progress-bar.filled-color", "#4ade80"));
-        TextColor e = TextColor.fromHexString(plugin.getConfig().getString("progress-bar.empty-color", "#3f3f46"));
-        barFilled = f == null ? NamedTextColor.GREEN : f;
+        TextColor a = TextColor.fromHexString(plugin.getConfig().getString("theme.accent", "#d9c08c"));
+        accent = a == null ? TextColor.color(0xD9C08C) : a;
+        theme = Placeholder.styling("accent", accent);
+
+        barLength = Math.max(1, plugin.getConfig().getInt("progress-bar.length", 20));
+        barChar = plugin.getConfig().getString("progress-bar.char", "|");
+        TextColor f = TextColor.fromHexString(plugin.getConfig().getString("progress-bar.filled-color", "#d9c08c"));
+        TextColor e = TextColor.fromHexString(plugin.getConfig().getString("progress-bar.empty-color", "#3a3a3a"));
+        barFilled = f == null ? accent : f;
         barEmpty = e == null ? NamedTextColor.DARK_GRAY : e;
+    }
+
+    public TextColor accent() {
+        return accent;
     }
 
     // ───────────────────────────── Messages ─────────────────────────────
 
     public Component parse(String mini, TagResolver... resolvers) {
-        return MM.deserialize(mini == null ? "" : mini, resolvers);
+        return MM.deserialize(mini == null ? "" : mini, TagResolver.resolver(TagResolver.resolver(resolvers), theme));
+    }
+
+    /** Plusieurs lignes séparées par des retours à la ligne. */
+    public Component lines(List<String> lines, TagResolver... resolvers) {
+        Component out = Component.empty();
+        for (int i = 0; i < lines.size(); i++) {
+            if (i > 0) out = out.append(Component.newline());
+            out = out.append(parse(lines.get(i), resolvers));
+        }
+        return out;
     }
 
     public Component msg(String path, TagResolver... resolvers) {
@@ -66,51 +92,43 @@ public final class Text {
     }
 
     public Component bar(int done, int total, int length) {
-        int filled = total <= 0 ? 0 : (int) Math.round(length * (double) done / total);
+        int filled = total <= 0 ? 0 : (int) Math.floor(length * (double) done / total);
+        if (done > 0 && filled == 0) filled = 1;
         filled = Math.max(0, Math.min(length, filled));
         return Component.text()
                 .append(Component.text(barChar.repeat(filled), barFilled))
                 .append(Component.text(barChar.repeat(length - filled), barEmpty))
-                .build();
+                .build()
+                .decoration(TextDecoration.ITALIC, false);
     }
 
     public static String percent(int done, int total) {
         if (total <= 0) return "0";
         double p = done * 100.0 / total;
         if (p >= 100) return "100";
-        return String.format(Locale.US, "%.1f", p);
+        return String.format(Locale.FRANCE, "%.1f", p);
     }
 
-    /** Titre du succès coloré par type, survolable (description, type, catégorie, rareté). */
+    /** Titre du succès, survolable (description, type, catégorie, rareté). */
     public Component advancement(AdvancementRegistry registry, StatsService stats, AdvancementRegistry.Entry e) {
-        if (e == null) return Component.text("Aucun", NamedTextColor.GRAY);
-        TextColor color = AdvancementRegistry.frameColor(e.frame());
+        if (e == null) return Component.text("aucun", GRAY);
+        Component titleColor = e.title().colorIfAbsent(e.frame() == AdvancementDisplay.Frame.CHALLENGE ? accent : WHITE);
         AdvancementRegistry.Category cat = registry.category(e.category());
         Component hover = Component.text()
-                .append(e.title().colorIfAbsent(color).decoration(TextDecoration.BOLD, true))
+                .append(titleColor)
                 .append(Component.newline())
-                .append(e.description().colorIfAbsent(NamedTextColor.GRAY))
+                .append(e.description().colorIfAbsent(GRAY))
                 .append(Component.newline()).append(Component.newline())
-                .append(Component.text("Type ", NamedTextColor.DARK_GRAY))
-                .append(Component.text(AdvancementRegistry.frameName(e.frame()), color))
+                .append(Component.text(AdvancementRegistry.frameName(e.frame()) + " · " + cat.name(), DARK))
                 .append(Component.newline())
-                .append(Component.text("Catégorie ", NamedTextColor.DARK_GRAY))
-                .append(cat.displayName())
-                .append(Component.newline())
-                .append(Component.text("Obtenu par ", NamedTextColor.DARK_GRAY))
-                .append(Component.text(String.format(Locale.US, "%.1f%%", stats.rarity(e.key())), NamedTextColor.YELLOW))
-                .append(Component.text(" des joueurs", NamedTextColor.DARK_GRAY))
+                .append(Component.text("Obtenu par " + String.format(Locale.FRANCE, "%.1f", stats.rarity(e.key()))
+                        + " % des joueurs", DARK))
                 .build();
-        return Component.text()
-                .append(Component.text("[", color))
-                .append(e.title().colorIfAbsent(color))
-                .append(Component.text("]", color))
-                .hoverEvent(HoverEvent.showText(hover))
-                .build();
+        return titleColor.hoverEvent(HoverEvent.showText(hover));
     }
 
     public static String timeAgo(long time) {
-        if (time <= 0) return "?";
+        if (time <= 0) return "";
         long s = Math.max(0, (System.currentTimeMillis() - time) / 1000);
         if (s < 60) return "à l'instant";
         if (s < 3600) return "il y a " + (s / 60) + " min";
@@ -122,14 +140,13 @@ public final class Text {
 
     public static String duration(long seconds) {
         long d = seconds / 86400, h = (seconds % 86400) / 3600, m = (seconds % 3600) / 60;
-        if (d > 0) return d + "j " + h + "h";
-        if (h > 0) return h + "h " + m + "min";
-        return m + "min";
+        if (d > 0) return d + " j " + h + " h";
+        if (h > 0) return h + " h " + m + " min";
+        return m + " min";
     }
 
     // ───────────────────────────── Placeholders ─────────────────────────────
 
-    /** Tous les placeholders du config pour un joueur donné. */
     public TagResolver resolver(AdvancementRegistry registry, StatsService stats, PlayerStats s, Player viewer) {
         TagResolver.Builder b = TagResolver.builder();
         int done = s == null ? 0 : s.count();
@@ -159,13 +176,12 @@ public final class Text {
         }
 
         AdvancementRegistry.Entry last = s == null || s.lastKey() == null ? null : registry.get(s.lastKey());
-        b.resolver(Placeholder.component("last", last == null ? Component.text("Aucun", NamedTextColor.GRAY)
-                : last.title().colorIfAbsent(AdvancementRegistry.frameColor(last.frame()))));
-        b.resolver(Placeholder.unparsed("last_ago", s == null ? "-" : timeAgo(s.lastTime())));
+        b.resolver(Placeholder.component("last", last == null ? Component.text("aucun", GRAY) : last.title()));
+        b.resolver(Placeholder.unparsed("last_ago", s == null ? "" : timeAgo(s.lastTime())));
 
         for (int i = 1; i <= 5; i++) {
             PlayerStats t = stats.top(i);
-            b.resolver(Placeholder.unparsed("top" + i + "_name", t == null ? "---" : t.name()));
+            b.resolver(Placeholder.unparsed("top" + i + "_name", t == null ? "-" : t.name()));
             b.resolver(Placeholder.unparsed("top" + i + "_done", t == null ? "0" : String.valueOf(t.count())));
         }
 
@@ -173,7 +189,18 @@ public final class Text {
         b.resolver(Placeholder.unparsed("max_online", String.valueOf(Bukkit.getMaxPlayers())));
         b.resolver(Placeholder.unparsed("ping", viewer == null ? "0" : String.valueOf(viewer.getPing())));
         double tps = Bukkit.getTPS()[0];
-        b.resolver(Placeholder.unparsed("tps", String.format(Locale.US, "%.1f", Math.min(20.0, tps))));
+        b.resolver(Placeholder.unparsed("tps", String.format(Locale.FRANCE, "%.1f", Math.min(20.0, tps))));
         return b.build();
+    }
+
+    /** Clé de format selon le rang : top1, top2, top3, other, unranked */
+    public static String rankKey(int rank) {
+        return switch (rank) {
+            case 0 -> "unranked";
+            case 1 -> "top1";
+            case 2 -> "top2";
+            case 3 -> "top3";
+            default -> "other";
+        };
     }
 }

@@ -9,8 +9,13 @@ website: https://lyonmc.fr
 commands:
   succes:
     description: Affiche tes succès, le classement et les succès manquants
-    usage: /succes [joueur|top|manquants|sidebar|reload|import]
+    usage: /succes [joueur|top|menu|sidebar|reload|import]
     aliases: [succès, achievements, advancements, ach, adv]
+    permission: lyonmc.succes.use
+  missions:
+    description: Menu des succès et des missions restantes
+    usage: /missions [catégorie]
+    aliases: [quetes, quêtes, objectifs]
     permission: lyonmc.succes.use
 
 permissions:

@@ -12,6 +12,8 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.*;
@@ -19,16 +21,15 @@ import org.bukkit.scoreboard.*;
 import java.util.*;
 
 /**
- * Gère, pour chaque joueur, un scoreboard personnel :
- *  - sidebar (lignes du config, sans les nombres rouges)
- *  - nombre de succès dans la tablist + tri par rang
- *  - nombre de succès sous le pseudo
- * ainsi que le header/footer et le nom de la tablist.
+ * Scoreboard personnel de chaque joueur :
+ *  - sidebar (sans les nombres à droite)
+ *  - tablist : header/footer, nom, score, tri par rang
+ *  - nametag : rang devant le pseudo + ligne d'infos sous le pseudo (vie, succès)
  */
 public final class BoardManager {
 
     private static final int MAX_LINES = 15;
-    private static final String SORT_TEAM_PREFIX = "lmc_s";
+    private static final String TEAM_PREFIX = "lmc_s";
 
     private final JavaPlugin plugin;
     private final AdvancementRegistry registry;
@@ -54,26 +55,29 @@ public final class BoardManager {
         final Component[] lines = new Component[MAX_LINES];
         final String[] entries = new String[MAX_LINES];
         int sortedVersion = -1;
-        Component lastHeader, lastFooter, lastListName;
+        final Map<UUID, Component> lastPrefix = new HashMap<>();
+        final Map<UUID, Component> lastBelow = new HashMap<>();
+        Component lastHeader, lastFooter;
+    }
+
+    /** Ce que les autres voient d'un joueur (calculé une fois par tick). */
+    private record Tag(Component prefix, Component below, int score) {
     }
 
     // ───────────────────────────── Cycle de vie ─────────────────────────────
 
     public void create(Player player) {
         remove(player);
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
         PlayerBoard b = new PlayerBoard();
-        b.scoreboard = manager.getNewScoreboard();
+        b.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
         if (plugin.getConfig().getBoolean("sidebar.enabled", true)) {
             b.sidebar = b.scoreboard.registerNewObjective("lmc_side", Criteria.DUMMY,
-                    text.parse(plugin.getConfig().getString("sidebar.title", "LYONMC.FR")));
+                    text.parse(plugin.getConfig().getString("sidebar.title", "LYONMC")));
             b.sidebar.numberFormat(NumberFormat.blank());
             for (int i = 0; i < MAX_LINES; i++) {
-                // entrée invisible unique : §0§r, §1§r ...
                 b.entries[i] = "§" + Integer.toHexString(i) + "§r";
-                Team t = b.scoreboard.registerNewTeam("lmc_line" + i);
-                t.addEntry(b.entries[i]);
+                b.scoreboard.registerNewTeam("lmc_line" + i).addEntry(b.entries[i]);
             }
             PlayerStats s = stats.get(player.getUniqueId());
             if (s == null || s.sidebar()) b.sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
@@ -81,21 +85,22 @@ public final class BoardManager {
 
         if (plugin.getConfig().getBoolean("tablist.enabled", true) && plugin.getConfig().getBoolean("tablist.show-score", true)) {
             b.tab = b.scoreboard.registerNewObjective("lmc_tab", Criteria.DUMMY, Component.text("Succès"));
-            TextColor c = TextColor.fromHexString(plugin.getConfig().getString("tablist.score-color", "#ffd700"));
-            b.tab.numberFormat(NumberFormat.styled(Style.style(c == null ? NamedTextColor.GOLD : c)));
+            TextColor c = TextColor.fromHexString(plugin.getConfig().getString("tablist.score-color", "#8a8a8a"));
+            b.tab.numberFormat(NumberFormat.styled(Style.style(c == null ? NamedTextColor.GRAY : c)));
             b.tab.setDisplaySlot(DisplaySlot.PLAYER_LIST);
         }
 
-        if (plugin.getConfig().getBoolean("below-name.enabled", true)) {
-            b.below = b.scoreboard.registerNewObjective("lmc_below", Criteria.DUMMY,
-                    text.parse(plugin.getConfig().getString("below-name.title", "<gold>✦ succès")));
+        if (plugin.getConfig().getBoolean("nametag.enabled", true)) {
+            b.below = b.scoreboard.registerNewObjective("lmc_below", Criteria.DUMMY, Component.empty());
+            b.below.setDisplaySlot(DisplaySlot.BELOW_NAME);
+        } else if (plugin.getConfig().getBoolean("below-name.enabled", false)) {
+            b.below = b.scoreboard.registerNewObjective("lmc_below", Criteria.DUMMY, text.parse("<gray>succès"));
             b.below.setDisplaySlot(DisplaySlot.BELOW_NAME);
         }
 
         boards.put(player.getUniqueId(), b);
         player.setScoreboard(b.scoreboard);
         orderVersion++;
-        update(player, b);
     }
 
     public void remove(Player player) {
@@ -103,11 +108,12 @@ public final class BoardManager {
         if (b != null && player.isOnline()) {
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         }
-        // retire le joueur des scoreboards des autres
         for (PlayerBoard other : boards.values()) {
             other.scoreboard.resetScores(player.getName());
             Team t = other.scoreboard.getEntryTeam(player.getName());
-            if (t != null && t.getName().startsWith(SORT_TEAM_PREFIX)) t.removeEntry(player.getName());
+            if (t != null && t.getName().startsWith(TEAM_PREFIX)) t.removeEntry(player.getName());
+            other.lastPrefix.remove(player.getUniqueId());
+            other.lastBelow.remove(player.getUniqueId());
         }
         orderVersion++;
     }
@@ -134,7 +140,6 @@ public final class BoardManager {
         b.sidebar.setDisplaySlot(visible ? DisplaySlot.SIDEBAR : null);
     }
 
-    /** À appeler quand le classement a pu changer. */
     public void markOrderDirty() {
         orderVersion++;
     }
@@ -142,7 +147,6 @@ public final class BoardManager {
     // ───────────────────────────── Rafraîchissement ─────────────────────────────
 
     public void tick() {
-        // Ordre des joueurs en ligne selon le classement
         List<Player> online = new ArrayList<>(Bukkit.getOnlinePlayers());
         online.sort(Comparator.comparingInt((Player p) -> {
             int r = stats.rank(p.getUniqueId());
@@ -156,19 +160,40 @@ public final class BoardManager {
             orderVersion++;
         }
 
+        // Nametags calculés une seule fois par joueur
+        Map<UUID, Tag> tags = new HashMap<>();
+        for (Player p : online) tags.put(p.getUniqueId(), buildTag(p));
+
         for (Player p : online) {
             PlayerBoard b = boards.get(p.getUniqueId());
             if (b == null) continue;
-            update(p, b);
-            updateShared(b, online);
+            updatePersonal(p, b);
+            updateShared(b, online, tags);
         }
     }
 
-    private void update(Player player, PlayerBoard b) {
+    private Tag buildTag(Player p) {
+        PlayerStats s = stats.get(p.getUniqueId());
+        int rank = stats.rank(p.getUniqueId());
+        int count = s == null ? 0 : s.count();
+        if (!plugin.getConfig().getBoolean("nametag.enabled", true)) {
+            return new Tag(Component.empty(), null, count);
+        }
+        AttributeInstance maxAttr = p.getAttribute(Attribute.MAX_HEALTH);
+        double max = maxAttr == null ? 20.0 : maxAttr.getValue();
+        TagResolver r = TagResolver.resolver(
+                text.resolver(registry, stats, s, p),
+                Placeholder.unparsed("health", String.valueOf((int) Math.ceil(p.getHealth()))),
+                Placeholder.unparsed("max_health", String.valueOf((int) Math.round(max))));
+        Component prefix = text.parse(plugin.getConfig().getString("nametag.prefix." + Text.rankKey(rank), ""), r);
+        Component below = text.parse(plugin.getConfig().getString("nametag.below", ""), r);
+        return new Tag(prefix, below, count);
+    }
+
+    private void updatePersonal(Player player, PlayerBoard b) {
         PlayerStats s = stats.get(player.getUniqueId());
         TagResolver resolver = text.resolver(registry, stats, s, player);
 
-        // Sidebar
         if (b.sidebar != null) {
             List<String> raw = plugin.getConfig().getStringList("sidebar.lines");
             int n = Math.min(MAX_LINES, raw.size());
@@ -180,9 +205,7 @@ public final class BoardManager {
                         if (t != null) t.prefix(line);
                         b.lines[i] = line;
                     }
-                    Score score = b.sidebar.getScore(b.entries[i]);
-                    int value = n - i;
-                    if (!score.isScoreSet() || score.getScore() != value) score.setScore(value);
+                    setIfChanged(b.sidebar.getScore(b.entries[i]), n - i);
                 } else if (b.lines[i] != null) {
                     b.scoreboard.resetScores(b.entries[i]);
                     b.lines[i] = null;
@@ -190,68 +213,68 @@ public final class BoardManager {
             }
         }
 
-        // Tablist header / footer + nom
         if (plugin.getConfig().getBoolean("tablist.enabled", true)) {
-            Component header = joinLines(plugin.getConfig().getStringList("tablist.header"), resolver);
-            Component footer = joinLines(plugin.getConfig().getStringList("tablist.footer"), resolver);
+            Component header = text.lines(plugin.getConfig().getStringList("tablist.header"), resolver);
+            Component footer = text.lines(plugin.getConfig().getStringList("tablist.footer"), resolver);
             if (!header.equals(b.lastHeader) || !footer.equals(b.lastFooter)) {
                 player.sendPlayerListHeaderAndFooter(header, footer);
                 b.lastHeader = header;
                 b.lastFooter = footer;
             }
-
-            int rank = s == null ? 0 : stats.rank(player.getUniqueId());
-            String key = switch (rank) {
-                case 0 -> "unranked";
-                case 1 -> "top1";
-                case 2 -> "top2";
-                case 3 -> "top3";
-                default -> "other";
-            };
-            String fmt = plugin.getConfig().getString("tablist.name-format." + key, "<player>");
-            Component listName = text.parse(fmt,
+            int rank = stats.rank(player.getUniqueId());
+            Component listName = text.parse(
+                    plugin.getConfig().getString("tablist.name-format." + Text.rankKey(rank), "<player>"),
                     Placeholder.unparsed("player", player.getName()),
                     Placeholder.unparsed("rank", String.valueOf(rank)),
                     Placeholder.unparsed("done", String.valueOf(s == null ? 0 : s.count())));
-            if (!listName.equals(b.lastListName)) {
-                player.playerListName(listName);
-                b.lastListName = listName;
-            }
+            if (!listName.equals(player.playerListName())) player.playerListName(listName);
         }
     }
 
-    /** Scores tablist / sous le pseudo + tri de la tablist, dans le scoreboard d'un spectateur. */
-    private void updateShared(PlayerBoard b, List<Player> online) {
-        for (Player target : online) {
-            PlayerStats ts = stats.get(target.getUniqueId());
-            int value = ts == null ? 0 : ts.count();
-            if (b.tab != null) setIfChanged(b.tab.getScore(target.getName()), value);
-            if (b.below != null) setIfChanged(b.below.getScore(target.getName()), value);
-        }
-
-        if (b.sortedVersion != orderVersion && plugin.getConfig().getBoolean("tablist.sort-by-rank", true)) {
+    /** Ce que ce spectateur voit des autres : score tablist, nametag, ordre. */
+    private void updateShared(PlayerBoard b, List<Player> online, Map<UUID, Tag> tags) {
+        // Équipes : une par joueur, dans l'ordre du classement (tri de la tablist + préfixe du nametag)
+        if (b.sortedVersion != orderVersion) {
             for (Team t : new ArrayList<>(b.scoreboard.getTeams())) {
-                if (t.getName().startsWith(SORT_TEAM_PREFIX)) t.unregister();
+                if (t.getName().startsWith(TEAM_PREFIX)) t.unregister();
             }
+            boolean sort = plugin.getConfig().getBoolean("tablist.sort-by-rank", true);
             int i = 0;
             for (Player target : online) {
-                Team t = b.scoreboard.registerNewTeam(SORT_TEAM_PREFIX + String.format("%04d", i++));
+                String name = TEAM_PREFIX + (sort ? String.format("%04d", i++) : target.getUniqueId().toString().substring(0, 8));
+                Team t = b.scoreboard.registerNewTeam(name);
+                t.color(NamedTextColor.WHITE);
                 t.addEntry(target.getName());
             }
+            b.lastPrefix.clear();
             b.sortedVersion = orderVersion;
+        }
+
+        for (Player target : online) {
+            Tag tag = tags.get(target.getUniqueId());
+            if (tag == null) continue;
+            UUID id = target.getUniqueId();
+
+            if (b.tab != null) setIfChanged(b.tab.getScore(target.getName()), tag.score());
+
+            if (!tag.prefix().equals(b.lastPrefix.get(id))) {
+                Team t = b.scoreboard.getEntryTeam(target.getName());
+                if (t != null) t.prefix(tag.prefix());
+                b.lastPrefix.put(id, tag.prefix());
+            }
+
+            if (b.below != null) {
+                Score score = b.below.getScore(target.getName());
+                setIfChanged(score, tag.score());
+                if (tag.below() != null && !tag.below().equals(b.lastBelow.get(id))) {
+                    score.numberFormat(NumberFormat.fixed(tag.below()));
+                    b.lastBelow.put(id, tag.below());
+                }
+            }
         }
     }
 
     private static void setIfChanged(Score score, int value) {
         if (!score.isScoreSet() || score.getScore() != value) score.setScore(value);
-    }
-
-    private Component joinLines(List<String> lines, TagResolver resolver) {
-        Component out = Component.empty();
-        for (int i = 0; i < lines.size(); i++) {
-            if (i > 0) out = out.append(Component.newline());
-            out = out.append(text.parse(lines.get(i), resolver));
-        }
-        return out;
     }
 }

@@ -5,13 +5,13 @@ import fr.lyonmc.achievements.board.BoardManager;
 import fr.lyonmc.achievements.data.AdvancementRegistry;
 import fr.lyonmc.achievements.data.PlayerStats;
 import fr.lyonmc.achievements.data.StatsService;
+import fr.lyonmc.achievements.menu.MissionsMenu;
 import fr.lyonmc.achievements.util.Text;
 import io.papermc.paper.advancement.AdvancementDisplay;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -28,26 +28,33 @@ import java.util.*;
 public final class SuccesCommand implements TabExecutor {
 
     private static final int PAGE_SIZE = 10;
-    private static final TextColor ACCENT = TextColor.color(0xF9D423);
-    private static final TextColor ACCENT2 = TextColor.color(0xFF4E50);
+    private static final String RULE = "─────────────────────────────";
 
     private final LyonAchievements plugin;
     private final AdvancementRegistry registry;
     private final StatsService stats;
     private final BoardManager boards;
+    private final MissionsMenu menu;
     private final Text text;
 
     public SuccesCommand(LyonAchievements plugin, AdvancementRegistry registry, StatsService stats,
-                         BoardManager boards, Text text) {
+                         BoardManager boards, MissionsMenu menu, Text text) {
         this.plugin = plugin;
         this.registry = registry;
         this.stats = stats;
         this.boards = boards;
+        this.menu = menu;
         this.text = text;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        // /missions [catégorie]
+        if (command.getName().equalsIgnoreCase("missions")) {
+            openMenu(sender, args.length > 0 ? args[0] : null);
+            return true;
+        }
+
         if (args.length == 0) {
             if (!(sender instanceof Player p)) {
                 text.send(sender, "players-only");
@@ -60,7 +67,7 @@ public final class SuccesCommand implements TabExecutor {
         String sub = args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
             case "top", "classement" -> showTop(sender, args.length > 1 ? parseInt(args[1], 1) : 1);
-            case "manquants", "missing" -> showMissing(sender, args);
+            case "menu", "missions", "manquants", "missing" -> openMenu(sender, args.length > 1 ? args[1] : null);
             case "sidebar", "scoreboard", "toggle" -> toggleSidebar(sender);
             case "aide", "help" -> showHelp(sender);
             case "reload" -> {
@@ -87,9 +94,8 @@ public final class SuccesCommand implements TabExecutor {
                     text.send(sender, "no-permission");
                     return true;
                 }
-                PlayerStats target = stats.findByName(args[0]);
                 Player online = Bukkit.getPlayerExact(args[0]);
-                if (online != null) target = stats.refreshOnline(online);
+                PlayerStats target = online != null ? stats.refreshOnline(online) : stats.findByName(args[0]);
                 if (target == null) {
                     text.send(sender, "player-not-found");
                     return true;
@@ -100,71 +106,80 @@ public final class SuccesCommand implements TabExecutor {
         return true;
     }
 
+    private void openMenu(CommandSender sender, String category) {
+        if (!(sender instanceof Player p)) {
+            text.send(sender, "players-only");
+            return;
+        }
+        if (category != null) {
+            String id = category.toLowerCase(Locale.ROOT);
+            for (AdvancementRegistry.Category c : registry.usedCategories()) {
+                if (c.id().equals(id) || c.name().equalsIgnoreCase(category)) {
+                    stats.refreshOnline(p);
+                    menu.open(p, MissionsMenu.View.CATEGORY, c.id(), MissionsMenu.Filter.MISSING, 1);
+                    return;
+                }
+            }
+        }
+        menu.open(p);
+    }
+
     // ───────────────────────────── Profil ─────────────────────────────
 
     private void showProfile(CommandSender sender, PlayerStats s) {
         int total = registry.total();
         int rank = stats.rank(s.uuid());
 
-        sender.sendMessage(header("Succès de " + s.name()));
+        sender.sendMessage(Component.empty());
         sender.sendMessage(Component.text()
-                .append(Component.text(" Progression ", NamedTextColor.GRAY))
-                .append(Component.text(s.count(), NamedTextColor.WHITE, TextDecoration.BOLD))
-                .append(Component.text("/" + total + " ", NamedTextColor.DARK_GRAY))
-                .append(text.bar(s.count(), total, 20))
-                .append(Component.text(" " + Text.percent(s.count(), total) + "%", NamedTextColor.YELLOW))
+                .append(Component.text(s.name(), Text.WHITE, TextDecoration.BOLD))
+                .append(Component.text("   " + (rank == 0 ? "non classé" : "#" + rank + " sur " + stats.ranking().size()), Text.DARK))
                 .build());
+        sender.sendMessage(Component.text(RULE, Text.DARK));
         sender.sendMessage(Component.text()
-                .append(Component.text(" Classement ", NamedTextColor.GRAY))
-                .append(Component.text(rank == 0 ? "non classé" : "#" + rank, NamedTextColor.GOLD, TextDecoration.BOLD))
-                .append(Component.text(" sur " + stats.ranking().size() + " joueurs", NamedTextColor.DARK_GRAY))
-                .clickEvent(ClickEvent.runCommand("/succes top " + Math.max(1, (rank - 1) / PAGE_SIZE + 1)))
-                .hoverEvent(HoverEvent.showText(Component.text("Voir le classement", NamedTextColor.YELLOW)))
+                .append(label("Succès"))
+                .append(Component.text(s.count(), Text.WHITE))
+                .append(Component.text(" / " + total + "   ", Text.DARK))
+                .append(text.bar(s.count(), total, 30))
+                .append(Component.text("  " + Text.percent(s.count(), total) + " %", Text.GRAY))
                 .build());
 
-        // Types
-        TextComponent.Builder types = Component.text().append(Component.text(" ", NamedTextColor.GRAY));
-        for (AdvancementDisplay.Frame f : new AdvancementDisplay.Frame[]{
-                AdvancementDisplay.Frame.TASK, AdvancementDisplay.Frame.GOAL, AdvancementDisplay.Frame.CHALLENGE}) {
-            TextColor c = AdvancementRegistry.frameColor(f);
-            types.append(Component.text(AdvancementRegistry.frameName(f) + "s ", c))
-                    .append(Component.text(s.count(f), NamedTextColor.WHITE))
-                    .append(Component.text("/" + registry.total(f) + "   ", NamedTextColor.DARK_GRAY));
+        TextComponent.Builder types = Component.text().append(label("Types"));
+        boolean first = true;
+        for (AdvancementDisplay.Frame f : List.of(AdvancementDisplay.Frame.TASK, AdvancementDisplay.Frame.GOAL, AdvancementDisplay.Frame.CHALLENGE)) {
+            if (!first) types.append(Component.text("   ", Text.DARK));
+            first = false;
+            types.append(Component.text(AdvancementRegistry.frameName(f).toLowerCase(Locale.ROOT) + "s ", Text.GRAY))
+                    .append(Component.text(s.count(f), Text.WHITE))
+                    .append(Component.text("/" + registry.total(f), Text.DARK));
         }
         sender.sendMessage(types.build());
         sender.sendMessage(Component.empty());
 
-        // Catégories
         for (AdvancementRegistry.Category c : registry.usedCategories()) {
             int done = s.count(c.id());
             int tot = registry.total(c.id());
-            String name = c.name();
-            String padded = name + " ".repeat(Math.max(1, 13 - name.length()));
             Component line = Component.text()
-                    .append(Component.text(" " + padded, c.color()))
-                    .append(text.bar(done, tot, 12))
-                    .append(Component.text(" " + done, NamedTextColor.WHITE))
-                    .append(Component.text("/" + tot, NamedTextColor.DARK_GRAY))
-                    .append(done >= tot ? Component.text(" ✔", NamedTextColor.GREEN) : Component.empty())
+                    .append(label(c.name()))
+                    .append(text.bar(done, tot, 20))
+                    .append(Component.text("  " + done, Text.WHITE))
+                    .append(Component.text(" / " + tot, Text.DARK))
                     .build();
             if (sender instanceof Player p && p.getUniqueId().equals(s.uuid())) {
-                line = line.clickEvent(ClickEvent.runCommand("/succes manquants " + c.id()))
-                        .hoverEvent(HoverEvent.showText(Component.text("Voir les succès manquants", NamedTextColor.YELLOW)));
+                line = line.clickEvent(ClickEvent.runCommand("/missions " + c.id()))
+                        .hoverEvent(HoverEvent.showText(Component.text("Voir le détail", Text.GRAY)));
             }
             sender.sendMessage(line);
         }
         sender.sendMessage(Component.empty());
 
-        // Dernier succès
         AdvancementRegistry.Entry last = s.lastKey() == null ? null : registry.get(s.lastKey());
         sender.sendMessage(Component.text()
-                .append(Component.text(" Dernier succès ", NamedTextColor.GRAY))
+                .append(label("Dernier"))
                 .append(text.advancement(registry, stats, last))
-                .append(last == null ? Component.empty()
-                        : Component.text(" " + Text.timeAgo(s.lastTime()), NamedTextColor.DARK_GRAY))
+                .append(last == null ? Component.empty() : Component.text("  " + Text.timeAgo(s.lastTime()), Text.DARK))
                 .build());
 
-        // Succès le plus rare
         AdvancementRegistry.Entry rarest = null;
         double rarestValue = Double.MAX_VALUE;
         for (String key : s.done().keySet()) {
@@ -178,29 +193,37 @@ public final class SuccesCommand implements TabExecutor {
         }
         if (rarest != null) {
             sender.sendMessage(Component.text()
-                    .append(Component.text(" Plus rare ", NamedTextColor.GRAY))
+                    .append(label("Plus rare"))
                     .append(text.advancement(registry, stats, rarest))
-                    .append(Component.text(String.format(Locale.US, " %.1f%% des joueurs", rarestValue), NamedTextColor.DARK_GRAY))
+                    .append(Component.text(String.format(Locale.FRANCE, "  %.1f %% des joueurs", rarestValue), Text.DARK))
                     .build());
         }
 
-        // Temps de jeu
         try {
             OfflinePlayer op = Bukkit.getOfflinePlayer(s.uuid());
             long ticks = op.getStatistic(Statistic.PLAY_ONE_MINUTE);
             if (ticks > 0) {
                 sender.sendMessage(Component.text()
-                        .append(Component.text(" Temps de jeu ", NamedTextColor.GRAY))
-                        .append(Component.text(Text.duration(ticks / 20), NamedTextColor.WHITE))
-                        .append(s.count() > 0 ? Component.text("  (1 succès / "
-                                + Text.duration(ticks / 20 / s.count()) + ")", NamedTextColor.DARK_GRAY) : Component.empty())
+                        .append(label("Temps de jeu"))
+                        .append(Component.text(Text.duration(ticks / 20), Text.WHITE))
+                        .append(s.count() > 0 ? Component.text("   un succès toutes les "
+                                + Text.duration(ticks / 20 / s.count()), Text.DARK) : Component.empty())
                         .build());
             }
         } catch (Exception ignored) {
-            // statistique indisponible pour ce joueur
         }
 
-        sender.sendMessage(footer());
+        sender.sendMessage(Component.text(RULE, Text.DARK));
+        if (sender instanceof Player p && p.getUniqueId().equals(s.uuid())) {
+            sender.sendMessage(Component.text("Ouvrir le menu des missions", text.accent())
+                    .clickEvent(ClickEvent.runCommand("/missions"))
+                    .hoverEvent(HoverEvent.showText(Component.text("/missions", Text.GRAY))));
+        }
+    }
+
+    private Component label(String s) {
+        String padded = s + " ".repeat(Math.max(1, 14 - s.length()));
+        return Component.text(padded, Text.GRAY);
     }
 
     // ───────────────────────────── Classement ─────────────────────────────
@@ -210,142 +233,51 @@ public final class SuccesCommand implements TabExecutor {
         int total = registry.total();
         int pages = Math.max(1, (ranking.size() + PAGE_SIZE - 1) / PAGE_SIZE);
         page = Math.max(1, Math.min(pages, page));
-
-        sender.sendMessage(header("Classement des succès"));
-        if (ranking.isEmpty()) {
-            sender.sendMessage(Component.text(" Personne n'est encore classé.", NamedTextColor.GRAY));
-        }
         UUID self = sender instanceof Player p ? p.getUniqueId() : null;
+
+        sender.sendMessage(Component.empty());
+        sender.sendMessage(Component.text()
+                .append(Component.text("Classement des succès", Text.WHITE, TextDecoration.BOLD))
+                .append(Component.text("   " + ranking.size() + " joueurs", Text.DARK))
+                .build());
+        sender.sendMessage(Component.text(RULE, Text.DARK));
+        if (ranking.isEmpty()) {
+            sender.sendMessage(Component.text("Personne n'est encore classé.", Text.GRAY));
+        }
 
         for (int i = (page - 1) * PAGE_SIZE; i < Math.min(ranking.size(), page * PAGE_SIZE); i++) {
             PlayerStats s = ranking.get(i);
             int pos = i + 1;
-            TextColor posColor = switch (pos) {
-                case 1 -> TextColor.color(0xFFD700);
-                case 2 -> TextColor.color(0xC0C0C0);
-                case 3 -> TextColor.color(0xCD7F32);
-                default -> NamedTextColor.GRAY;
-            };
             boolean isSelf = s.uuid().equals(self);
-            boolean isOnline = Bukkit.getPlayer(s.uuid()) != null;
+            boolean online = Bukkit.getPlayer(s.uuid()) != null;
+            TextColor posColor = pos == 1 ? text.accent() : pos <= 3 ? Text.WHITE : Text.DARK;
             sender.sendMessage(Component.text()
-                    .append(Component.text(pos <= 3 ? " ♛ " : "   ", posColor))
-                    .append(Component.text(String.format("#%-3d ", pos), posColor, TextDecoration.BOLD))
-                    .append(Component.text(isOnline ? "● " : "○ ", isOnline ? NamedTextColor.GREEN : NamedTextColor.DARK_GRAY))
-                    .append(Component.text(s.name(), isSelf ? ACCENT : NamedTextColor.WHITE)
-                            .decoration(TextDecoration.UNDERLINED, isSelf))
-                    .append(Component.text(" » ", NamedTextColor.DARK_GRAY))
-                    .append(Component.text(s.count(), NamedTextColor.YELLOW))
-                    .append(Component.text("/" + total + " ", NamedTextColor.DARK_GRAY))
-                    .append(text.bar(s.count(), total, 8))
-                    .append(Component.text(" ✦" + s.challenges(), TextColor.color(0xD58CFF)))
-                    .hoverEvent(HoverEvent.showText(Component.text("Voir le profil de " + s.name(), NamedTextColor.YELLOW)))
+                    .append(Component.text(String.format("%3d   ", pos), posColor))
+                    .append(Component.text(s.name(), isSelf ? text.accent() : online ? Text.WHITE : Text.GRAY))
+                    .append(Component.text("   " + s.count(), Text.WHITE))
+                    .append(Component.text(" / " + total + "   ", Text.DARK))
+                    .append(text.bar(s.count(), total, 15))
+                    .append(Component.text("   " + s.challenges() + " défis", Text.DARK))
+                    .hoverEvent(HoverEvent.showText(Component.text("Voir le profil de " + s.name(), Text.GRAY)))
                     .clickEvent(ClickEvent.runCommand("/succes " + s.name()))
                     .build());
         }
 
-        // Navigation
-        TextComponent.Builder nav = Component.text().append(Component.text(" "));
-        if (page > 1) {
-            nav.append(Component.text("« Précédent", ACCENT)
-                    .clickEvent(ClickEvent.runCommand("/succes top " + (page - 1))));
-        } else {
-            nav.append(Component.text("« Précédent", NamedTextColor.DARK_GRAY));
-        }
-        nav.append(Component.text("   Page " + page + "/" + pages + "   ", NamedTextColor.GRAY));
-        if (page < pages) {
-            nav.append(Component.text("Suivant »", ACCENT)
-                    .clickEvent(ClickEvent.runCommand("/succes top " + (page + 1))));
-        } else {
-            nav.append(Component.text("Suivant »", NamedTextColor.DARK_GRAY));
-        }
-        sender.sendMessage(nav.build());
-
+        sender.sendMessage(Component.text(RULE, Text.DARK));
+        TextComponent.Builder nav = Component.text();
+        nav.append(page > 1
+                ? Component.text("‹ précédent", text.accent()).clickEvent(ClickEvent.runCommand("/succes top " + (page - 1)))
+                : Component.text("‹ précédent", Text.DARK));
+        nav.append(Component.text("    page " + page + " / " + pages + "    ", Text.GRAY));
+        nav.append(page < pages
+                ? Component.text("suivant ›", text.accent()).clickEvent(ClickEvent.runCommand("/succes top " + (page + 1)))
+                : Component.text("suivant ›", Text.DARK));
         if (self != null) {
             int r = stats.rank(self);
-            sender.sendMessage(Component.text()
-                    .append(Component.text(" Ta position ", NamedTextColor.GRAY))
-                    .append(Component.text(r == 0 ? "non classé" : "#" + r, NamedTextColor.GOLD, TextDecoration.BOLD))
-                    .build());
+            nav.append(Component.text("    ta position  ", Text.DARK))
+                    .append(Component.text(r == 0 ? "-" : "#" + r, Text.WHITE));
         }
-        sender.sendMessage(footer());
-    }
-
-    // ───────────────────────────── Manquants ─────────────────────────────
-
-    private void showMissing(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
-            text.send(sender, "players-only");
-            return;
-        }
-        PlayerStats s = stats.refreshOnline(player);
-
-        String category = null;
-        int page = 1;
-        for (int i = 1; i < args.length; i++) {
-            if (isInt(args[i])) page = parseInt(args[i], 1);
-            else category = args[i].toLowerCase(Locale.ROOT);
-        }
-
-        List<AdvancementRegistry.Entry> missing = new ArrayList<>();
-        for (AdvancementRegistry.Entry e : registry.entries()) {
-            if (s.hasDone(e.key())) continue;
-            if (category != null && !e.category().equals(category)) continue;
-            missing.add(e);
-        }
-
-        int pages = Math.max(1, (missing.size() + PAGE_SIZE - 1) / PAGE_SIZE);
-        page = Math.max(1, Math.min(pages, page));
-        String title = category == null ? "Succès manquants" : "Manquants · " + registry.category(category).name();
-        sender.sendMessage(header(title + " (" + missing.size() + ")"));
-
-        // Filtres cliquables
-        TextComponent.Builder filters = Component.text().append(Component.text(" Filtre ", NamedTextColor.DARK_GRAY));
-        filters.append(Component.text("[Tout] ", category == null ? ACCENT : NamedTextColor.GRAY)
-                .clickEvent(ClickEvent.runCommand("/succes manquants")));
-        for (AdvancementRegistry.Category c : registry.usedCategories()) {
-            boolean sel = c.id().equals(category);
-            filters.append(Component.text("[" + c.name() + "] ", sel ? ACCENT : c.color())
-                    .clickEvent(ClickEvent.runCommand("/succes manquants " + c.id())));
-        }
-        sender.sendMessage(filters.build());
-
-        if (missing.isEmpty()) {
-            sender.sendMessage(Component.text(" Bravo, tout est débloqué ici ! ✔", NamedTextColor.GREEN));
-        }
-
-        for (int i = (page - 1) * PAGE_SIZE; i < Math.min(missing.size(), page * PAGE_SIZE); i++) {
-            AdvancementRegistry.Entry e = missing.get(i);
-            TextColor color = AdvancementRegistry.frameColor(e.frame());
-            Component line;
-            if (e.hidden()) {
-                line = Component.text()
-                        .append(Component.text(" ◆ ", color))
-                        .append(Component.text("??????", NamedTextColor.GRAY).decorate(TextDecoration.OBFUSCATED))
-                        .append(Component.text(" (secret)", NamedTextColor.DARK_GRAY))
-                        .hoverEvent(HoverEvent.showText(Component.text("Succès caché : à toi de le découvrir !", NamedTextColor.GRAY)))
-                        .build();
-            } else {
-                line = Component.text()
-                        .append(Component.text(" ◆ ", color))
-                        .append(text.advancement(registry, stats, e))
-                        .append(Component.text(" " + AdvancementRegistry.frameName(e.frame()), NamedTextColor.DARK_GRAY))
-                        .build();
-            }
-            sender.sendMessage(line);
-        }
-
-        String base = "/succes manquants " + (category == null ? "" : category + " ");
-        TextComponent.Builder nav = Component.text().append(Component.text(" "));
-        nav.append(page > 1
-                ? Component.text("« Précédent", ACCENT).clickEvent(ClickEvent.runCommand(base + (page - 1)))
-                : Component.text("« Précédent", NamedTextColor.DARK_GRAY));
-        nav.append(Component.text("   Page " + page + "/" + pages + "   ", NamedTextColor.GRAY));
-        nav.append(page < pages
-                ? Component.text("Suivant »", ACCENT).clickEvent(ClickEvent.runCommand(base + (page + 1)))
-                : Component.text("Suivant »", NamedTextColor.DARK_GRAY));
         sender.sendMessage(nav.build());
-        sender.sendMessage(footer());
     }
 
     // ───────────────────────────── Divers ─────────────────────────────
@@ -362,48 +294,26 @@ public final class SuccesCommand implements TabExecutor {
     }
 
     private void showHelp(CommandSender sender) {
-        sender.sendMessage(header("Aide · /succes"));
-        helpLine(sender, "/succes", "ton profil de succès");
-        helpLine(sender, "/succes <joueur>", "profil d'un autre joueur");
-        helpLine(sender, "/succes top [page]", "classement du serveur");
-        helpLine(sender, "/succes manquants [catégorie]", "ce qu'il te reste à faire");
-        helpLine(sender, "/succes sidebar", "afficher / cacher le scoreboard");
+        sender.sendMessage(Component.empty());
+        sender.sendMessage(Component.text("Succès · aide", Text.WHITE, TextDecoration.BOLD));
+        sender.sendMessage(Component.text(RULE, Text.DARK));
+        helpLine(sender, "/missions", "menu des succès et missions restantes");
+        helpLine(sender, "/succes", "ton profil");
+        helpLine(sender, "/succes <joueur>", "profil d'un joueur");
+        helpLine(sender, "/succes top", "classement");
+        helpLine(sender, "/succes sidebar", "afficher ou masquer le scoreboard");
         if (sender.hasPermission("lyonmc.succes.admin")) {
-            helpLine(sender, "/succes reload", "recharger la config");
+            helpLine(sender, "/succes reload", "recharger la configuration");
             helpLine(sender, "/succes import", "réimporter les fichiers du monde");
         }
-        sender.sendMessage(footer());
     }
 
     private void helpLine(CommandSender sender, String cmd, String desc) {
         sender.sendMessage(Component.text()
-                .append(Component.text(" " + cmd, ACCENT))
-                .append(Component.text(" — " + desc, NamedTextColor.GRAY))
+                .append(Component.text(cmd, Text.WHITE))
+                .append(Component.text("  " + desc, Text.DARK))
                 .clickEvent(ClickEvent.suggestCommand(cmd.replaceAll(" [\\[<].*", " ").trim()))
                 .build());
-    }
-
-    private Component header(String title) {
-        return Component.text()
-                .append(Component.text("━━━━━━━ ", ACCENT2).decoration(TextDecoration.STRIKETHROUGH, false))
-                .append(Component.text("✦ ", ACCENT))
-                .append(Component.text(title, NamedTextColor.WHITE, TextDecoration.BOLD))
-                .append(Component.text(" ✦", ACCENT))
-                .append(Component.text(" ━━━━━━━", ACCENT2))
-                .build();
-    }
-
-    private Component footer() {
-        return Component.text("━━━━━━━━━━━━━ lyonmc.fr ━━━━━━━━━━━━━", ACCENT2);
-    }
-
-    private static boolean isInt(String s) {
-        try {
-            Integer.parseInt(s);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 
     private static int parseInt(String s, int def) {
@@ -419,16 +329,18 @@ public final class SuccesCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
-        if (args.length == 1) {
-            out.addAll(List.of("top", "manquants", "sidebar", "aide"));
+        if (command.getName().equalsIgnoreCase("missions")) {
+            if (args.length == 1) for (AdvancementRegistry.Category c : registry.usedCategories()) out.add(c.id());
+        } else if (args.length == 1) {
+            out.addAll(List.of("top", "menu", "sidebar", "aide"));
             if (sender.hasPermission("lyonmc.succes.admin")) out.addAll(List.of("reload", "import"));
             if (sender.hasPermission("lyonmc.succes.others")) {
                 for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
             }
-        } else if (args.length == 2 && (args[0].equalsIgnoreCase("manquants") || args[0].equalsIgnoreCase("missing"))) {
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("menu")) {
             for (AdvancementRegistry.Category c : registry.usedCategories()) out.add(c.id());
         }
-        String last = args[args.length - 1].toLowerCase(Locale.ROOT);
+        String last = args.length == 0 ? "" : args[args.length - 1].toLowerCase(Locale.ROOT);
         out.removeIf(s -> !s.toLowerCase(Locale.ROOT).startsWith(last));
         return out;
     }
