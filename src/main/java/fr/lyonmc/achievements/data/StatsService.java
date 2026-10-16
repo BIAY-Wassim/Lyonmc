@@ -32,6 +32,10 @@ public final class StatsService {
     private final File file;
     private final Map<UUID, PlayerStats> stats = new HashMap<>();
 
+    private final Map<UUID, Long> sessionStart = new HashMap<>();
+    private int serverTotal;
+    private PlayerStats lastGlobal;
+
     private List<PlayerStats> ranking = List.of();
     private final Map<UUID, Integer> rankIndex = new HashMap<>();
 
@@ -116,6 +120,12 @@ public final class StatsService {
             }
         }
         ranking = List.copyOf(list);
+        serverTotal = 0;
+        lastGlobal = null;
+        for (PlayerStats s : list) {
+            serverTotal += s.count();
+            if (s.lastKey() != null && (lastGlobal == null || s.lastTime() > lastGlobal.lastTime())) lastGlobal = s;
+        }
         rankIndex.clear();
         for (int i = 0; i < ranking.size(); i++) rankIndex.put(ranking.get(i).uuid(), i + 1);
         return changed;
@@ -123,6 +133,30 @@ public final class StatsService {
 
     public List<PlayerStats> ranking() {
         return ranking;
+    }
+
+    public void startSession(UUID uuid) {
+        sessionStart.put(uuid, System.currentTimeMillis());
+    }
+
+    public void endSession(UUID uuid) {
+        sessionStart.remove(uuid);
+    }
+
+    /** Durée de la session en secondes. */
+    public long sessionSeconds(UUID uuid) {
+        Long start = sessionStart.get(uuid);
+        return start == null ? 0 : (System.currentTimeMillis() - start) / 1000;
+    }
+
+    /** Total des succès débloqués par tous les joueurs classés. */
+    public int serverTotal() {
+        return serverTotal;
+    }
+
+    /** Joueur ayant obtenu le succès le plus récent du serveur. */
+    public PlayerStats lastGlobal() {
+        return lastGlobal;
     }
 
     /** Rang (1 = premier), 0 si non classé. */

@@ -88,6 +88,15 @@ public final class ChatListener implements Listener {
         Player p = event.getPlayer();
         TagResolver r = Placeholder.unparsed("player", p.getName());
         event.joinMessage(text.parse(plugin.getConfig().getString("chat.join-message", ""), r));
+        if (plugin.getConfig().getBoolean("chat.welcome.enabled", true)) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (!p.isOnline()) return;
+                TagResolver wr = text.resolver(registry, stats, stats.get(p.getUniqueId()), p);
+                for (String line : plugin.getConfig().getStringList("chat.welcome.lines")) {
+                    p.sendMessage(text.parse(line, wr));
+                }
+            }, 10L);
+        }
         if (!p.hasPlayedBefore()) {
             String first = plugin.getConfig().getString("chat.first-join-message", "");
             if (!first.isEmpty()) Bukkit.getScheduler().runTask(plugin, () -> Bukkit.broadcast(text.parse(first, r)));

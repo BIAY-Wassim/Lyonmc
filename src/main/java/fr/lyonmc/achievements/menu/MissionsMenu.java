@@ -190,12 +190,11 @@ public final class MissionsMenu {
         holder.action(42, p -> openList(p, View.ALL, null, Filter.MISSING, 1));
 
         // Barre du bas
-        inv.setItem(48, decorate(new ItemStack(Material.PAPER), title("Classement"),
-                List.of(Component.text("Afficher le classement dans le chat", Text.GRAY)), false));
-        holder.action(48, p -> {
-            p.closeInventory();
-            p.performCommand("succes top");
-        });
+        inv.setItem(48, decorate(new ItemStack(Material.GOLDEN_HELMET), title("♛ Classement"),
+                List.of(Component.text("Le podium et le top 10 du serveur", Text.GRAY),
+                        EMPTY,
+                        Component.text("➤ Cliquer pour ouvrir", text.accent())), false));
+        holder.action(48, this::openTop);
         inv.setItem(49, decorate(new ItemStack(Material.BARRIER), title("Fermer"), List.of(), false));
         holder.action(49, Player::closeInventory);
         inv.setItem(50, decorate(new ItemStack(Material.COMPASS), title("Scoreboard"),
@@ -371,6 +370,112 @@ public final class MissionsMenu {
 
         ItemStack icon = e.icon().getType().isAir() ? new ItemStack(Material.BOOK) : e.icon().clone();
         return decorate(icon, e.title().color(titleColor), lore, pr.done());
+    }
+
+    // ───────────────────────────── Podium ─────────────────────────────
+
+    private static final TextColor GOLD = TextColor.color(0xFFD86B);
+    private static final TextColor SILVER = TextColor.color(0xC8C8C8);
+    private static final TextColor BRONZE = TextColor.color(0xD29A6A);
+
+    public void openTop(Player player) {
+        stats.refreshOnline(player);
+        stats.rebuildRanking();
+        MenuHolder holder = new MenuHolder();
+        Inventory inv = Bukkit.createInventory(holder, 54, Component.text("♛ Classement des succès"));
+        holder.inventory(inv);
+        frame(inv, 0);
+        frame(inv, 5);
+
+        // Podium : 1er au centre en hauteur, 2e à gauche, 3e à droite
+        int[][] podium = {
+                {13, 22, 31},   // 1er : tête + 2 blocs
+                {20, 29},       // 2e
+                {24, 33}        // 3e
+        };
+        Material[] blocks = {Material.GOLD_BLOCK, Material.IRON_BLOCK, Material.COPPER_BLOCK};
+        TextColor[] colors = {GOLD, SILVER, BRONZE};
+        String[] labels = {"♛ 1er", "✧ 2e", "✧ 3e"};
+
+        for (int i = 0; i < 3; i++) {
+            PlayerStats ps = stats.top(i + 1);
+            int[] slots = podium[i];
+            if (ps != null) {
+                inv.setItem(slots[0], playerHead(ps, colors[i], labels[i]));
+                String name = ps.name();
+                holder.action(slots[0], p -> {
+                    p.closeInventory();
+                    p.performCommand("succes " + name);
+                });
+            } else {
+                inv.setItem(slots[0], decorate(new ItemStack(Material.SKELETON_SKULL),
+                        Component.text(labels[i] + "  ·  place libre", Text.GRAY), List.of(), false));
+            }
+            for (int j = 1; j < slots.length; j++) {
+                inv.setItem(slots[j], decorate(new ItemStack(blocks[i]), Component.text(labels[i], colors[i]), List.of(), false));
+            }
+        }
+
+        // 4e à 10e
+        for (int pos = 4; pos <= 10; pos++) {
+            int slot = 37 + (pos - 4);
+            PlayerStats ps = stats.top(pos);
+            if (ps == null) continue;
+            inv.setItem(slot, playerHead(ps, Text.WHITE, "#" + pos));
+            String name = ps.name();
+            holder.action(slot, p -> {
+                p.closeInventory();
+                p.performCommand("succes " + name);
+            });
+        }
+
+        // Barre du bas
+        inv.setItem(45, decorate(new ItemStack(Material.ARROW), title("Retour"), List.of(), false));
+        holder.action(45, this::openMain);
+        inv.setItem(49, decorate(new ItemStack(Material.PAPER), title("Classement complet"),
+                List.of(Component.text("Afficher tout le classement dans le chat", Text.GRAY)), false));
+        holder.action(49, p -> {
+            p.closeInventory();
+            p.performCommand("succes top texte");
+        });
+        PlayerStats self = stats.get(player.getUniqueId());
+        if (self != null) {
+            int rank = stats.rank(player.getUniqueId());
+            inv.setItem(53, playerHead(self, text.accent(), rank == 0 ? "Toi · non classé" : "Toi · #" + rank));
+        }
+
+        player.openInventory(inv);
+    }
+
+    private ItemStack playerHead(PlayerStats ps, TextColor color, String label) {
+        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+        if (head.getItemMeta() instanceof SkullMeta sm) {
+            sm.setOwningPlayer(Bukkit.getOfflinePlayer(ps.uuid()));
+            head.setItemMeta(sm);
+        }
+        int total = registry.total();
+        boolean online = Bukkit.getPlayer(ps.uuid()) != null;
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text(online ? "● En ligne" : "○ Hors ligne", online ? TextColor.color(0x7BD88F) : Text.DARK));
+        lore.add(EMPTY);
+        lore.add(Component.text("★ ", text.accent()).append(kv("Succès", ps.count() + " / " + total)));
+        lore.add(text.bar(ps.count(), total, 30));
+        lore.add(Component.text(Text.percent(ps.count(), total) + " % complété", Text.DARK));
+        lore.add(EMPTY);
+        lore.add(Component.text("✦ ", text.accent()).append(kv("Défis", ps.count(AdvancementDisplay.Frame.CHALLENGE)
+                + " / " + registry.total(AdvancementDisplay.Frame.CHALLENGE))));
+        AdvancementRegistry.Entry last = ps.lastKey() == null ? null : registry.get(ps.lastKey());
+        if (last != null) {
+            lore.add(EMPTY);
+            lore.add(Component.text("Dernier succès", Text.GRAY));
+            lore.add(last.title().colorIfAbsent(Text.WHITE));
+            lore.add(Component.text(Text.timeAgo(ps.lastTime()), Text.DARK));
+        }
+        lore.add(EMPTY);
+        lore.add(Component.text("➤ Cliquer pour voir le profil", text.accent()));
+        Component name = Component.text(label + "  ", color).decorate(TextDecoration.BOLD)
+                .append(Component.text(ps.name(), Text.WHITE).decoration(TextDecoration.BOLD, false));
+        return decorate(head, name, lore, false);
     }
 
     // ───────────────────────────── Outils ─────────────────────────────

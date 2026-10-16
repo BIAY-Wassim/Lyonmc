@@ -46,6 +46,11 @@ public final class Text {
         TextColor a = TextColor.fromHexString(plugin.getConfig().getString("theme.accent", "#d9c08c"));
         accent = a == null ? TextColor.color(0xD9C08C) : a;
         theme = Placeholder.styling("accent", accent);
+        try {
+            zone = java.time.ZoneId.of(plugin.getConfig().getString("settings.timezone", "Europe/Paris"));
+        } catch (Exception e) {
+            zone = java.time.ZoneId.of("Europe/Paris");
+        }
 
         barLength = Math.max(1, plugin.getConfig().getInt("progress-bar.length", 20));
         barChar = plugin.getConfig().getString("progress-bar.char", "|");
@@ -185,12 +190,76 @@ public final class Text {
             b.resolver(Placeholder.unparsed("top" + i + "_done", t == null ? "0" : String.valueOf(t.count())));
         }
 
+        // Joueur connecté : session, stats, ping
+        Player online = s != null ? Bukkit.getPlayer(s.uuid()) : viewer;
+        int ping = online == null ? 0 : online.getPing();
+        b.resolver(Placeholder.unparsed("ping", String.valueOf(ping)));
+        b.resolver(Placeholder.component("ping_bars", pingBars(ping)));
+        b.resolver(Placeholder.unparsed("session", online == null ? "-" : duration(stats.sessionSeconds(online.getUniqueId()))));
+        b.resolver(Placeholder.unparsed("world", online == null ? "-" : worldName(online.getWorld().getEnvironment())));
+        int mobKills = stat(online, org.bukkit.Statistic.MOB_KILLS);
+        int playerKills = stat(online, org.bukkit.Statistic.PLAYER_KILLS);
+        b.resolver(Placeholder.unparsed("mob_kills", String.valueOf(mobKills)));
+        b.resolver(Placeholder.unparsed("player_kills", String.valueOf(playerKills)));
+        b.resolver(Placeholder.unparsed("kills", String.valueOf(mobKills + playerKills)));
+        b.resolver(Placeholder.unparsed("deaths", String.valueOf(stat(online, org.bukkit.Statistic.DEATHS))));
+        b.resolver(Placeholder.unparsed("playtime", online == null ? "-" : duration(stat(online, org.bukkit.Statistic.PLAY_ONE_MINUTE) / 20L)));
+
+        // Serveur
         b.resolver(Placeholder.unparsed("online", String.valueOf(Bukkit.getOnlinePlayers().size())));
         b.resolver(Placeholder.unparsed("max_online", String.valueOf(Bukkit.getMaxPlayers())));
-        b.resolver(Placeholder.unparsed("ping", viewer == null ? "0" : String.valueOf(viewer.getPing())));
         double tps = Bukkit.getTPS()[0];
         b.resolver(Placeholder.unparsed("tps", String.format(Locale.FRANCE, "%.1f", Math.min(20.0, tps))));
+        java.time.ZonedDateTime now = java.time.ZonedDateTime.now(zone);
+        b.resolver(Placeholder.unparsed("time", now.format(TIME)));
+        b.resolver(Placeholder.unparsed("date", capitalize(now.format(DATE))));
+        b.resolver(Placeholder.unparsed("server_total", String.format(Locale.FRANCE, "%,d", stats.serverTotal()).replace('\u202f', ' ').replace('\u00a0', ' ')));
+        PlayerStats lg = stats.lastGlobal();
+        AdvancementRegistry.Entry lgAdv = lg == null || lg.lastKey() == null ? null : registry.get(lg.lastKey());
+        b.resolver(Placeholder.unparsed("last_global_player", lg == null ? "personne" : lg.name()));
+        b.resolver(Placeholder.component("last_global_adv", lgAdv == null ? Component.text("-", GRAY) : lgAdv.title().colorIfAbsent(accent)));
+        b.resolver(Placeholder.unparsed("last_global_ago", lg == null ? "" : timeAgo(lg.lastTime())));
         return b.build();
+    }
+
+    private static final java.time.format.DateTimeFormatter TIME = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+    private static final java.time.format.DateTimeFormatter DATE = java.time.format.DateTimeFormatter.ofPattern("EEE d MMM", Locale.FRANCE);
+    private java.time.ZoneId zone = java.time.ZoneId.of("Europe/Paris");
+
+    /** Indicateur de ping en 4 barres colorées. */
+    public static Component pingBars(int ping) {
+        int bars;
+        TextColor color;
+        if (ping <= 0) { bars = 0; color = DARK; }
+        else if (ping < 60) { bars = 4; color = TextColor.color(0x7BD88F); }
+        else if (ping < 120) { bars = 3; color = TextColor.color(0xC6D86B); }
+        else if (ping < 250) { bars = 2; color = TextColor.color(0xE8B45A); }
+        else { bars = 1; color = TextColor.color(0xE06C6C); }
+        return Component.text()
+                .append(Component.text("▮".repeat(bars), color))
+                .append(Component.text("▮".repeat(4 - bars), TextColor.color(0x3A3A3A)))
+                .build();
+    }
+
+    private static int stat(Player p, org.bukkit.Statistic st) {
+        if (p == null) return 0;
+        try {
+            return p.getStatistic(st);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private static String worldName(org.bukkit.World.Environment env) {
+        return switch (env) {
+            case NETHER -> "Nether";
+            case THE_END -> "The End";
+            default -> "Overworld";
+        };
+    }
+
+    private static String capitalize(String s) {
+        return s.isEmpty() ? s : Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
     /** Clé de format selon le rang : top1, top2, top3, other, unranked */

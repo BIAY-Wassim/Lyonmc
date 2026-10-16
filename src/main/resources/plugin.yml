@@ -17,6 +17,11 @@ commands:
     usage: /missions [catégorie]
     aliases: [quetes, quêtes, objectifs]
     permission: lyonmc.succes.use
+  classement:
+    description: Podium et classement des succès
+    usage: /classement
+    aliases: [podium, top]
+    permission: lyonmc.succes.use
 
 permissions:
   lyonmc.succes.use:

@@ -49,6 +49,13 @@ public final class SuccesCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        // /classement
+        if (command.getName().equalsIgnoreCase("classement")) {
+            if (sender instanceof Player p) menu.openTop(p);
+            else showTop(sender, 1);
+            return true;
+        }
+
         // /missions [catégorie]
         if (command.getName().equalsIgnoreCase("missions")) {
             openMenu(sender, args.length > 0 ? args[0] : null);
@@ -66,7 +73,15 @@ public final class SuccesCommand implements TabExecutor {
 
         String sub = args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
-            case "top", "classement" -> showTop(sender, args.length > 1 ? parseInt(args[1], 1) : 1);
+            case "top", "classement" -> {
+                boolean textual = args.length > 1 && (args[1].equalsIgnoreCase("texte") || args[1].equalsIgnoreCase("chat"));
+                if (sender instanceof Player p && !textual && args.length < 2) {
+                    menu.openTop(p);
+                } else {
+                    int page = args.length > 2 ? parseInt(args[2], 1) : args.length > 1 ? parseInt(args[1], 1) : 1;
+                    showTop(sender, page);
+                }
+            }
             case "menu", "missions", "manquants", "missing" -> openMenu(sender, args.length > 1 ? args[1] : null);
             case "sidebar", "scoreboard", "toggle" -> toggleSidebar(sender);
             case "aide", "help" -> showHelp(sender);
@@ -266,11 +281,11 @@ public final class SuccesCommand implements TabExecutor {
         sender.sendMessage(Component.text(RULE, Text.DARK));
         TextComponent.Builder nav = Component.text();
         nav.append(page > 1
-                ? Component.text("‹ précédent", text.accent()).clickEvent(ClickEvent.runCommand("/succes top " + (page - 1)))
+                ? Component.text("‹ précédent", text.accent()).clickEvent(ClickEvent.runCommand("/succes top texte " + (page - 1)))
                 : Component.text("‹ précédent", Text.DARK));
         nav.append(Component.text("    page " + page + " / " + pages + "    ", Text.GRAY));
         nav.append(page < pages
-                ? Component.text("suivant ›", text.accent()).clickEvent(ClickEvent.runCommand("/succes top " + (page + 1)))
+                ? Component.text("suivant ›", text.accent()).clickEvent(ClickEvent.runCommand("/succes top texte " + (page + 1)))
                 : Component.text("suivant ›", Text.DARK));
         if (self != null) {
             int r = stats.rank(self);
@@ -300,7 +315,7 @@ public final class SuccesCommand implements TabExecutor {
         helpLine(sender, "/missions", "menu des succès et missions restantes");
         helpLine(sender, "/succes", "ton profil");
         helpLine(sender, "/succes <joueur>", "profil d'un joueur");
-        helpLine(sender, "/succes top", "classement");
+        helpLine(sender, "/succes top", "podium et classement");
         helpLine(sender, "/succes sidebar", "afficher ou masquer le scoreboard");
         if (sender.hasPermission("lyonmc.succes.admin")) {
             helpLine(sender, "/succes reload", "recharger la configuration");
@@ -329,7 +344,9 @@ public final class SuccesCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
-        if (command.getName().equalsIgnoreCase("missions")) {
+        if (command.getName().equalsIgnoreCase("classement")) {
+            return out;
+        } else if (command.getName().equalsIgnoreCase("missions")) {
             if (args.length == 1) for (AdvancementRegistry.Category c : registry.usedCategories()) out.add(c.id());
         } else if (args.length == 1) {
             out.addAll(List.of("top", "menu", "sidebar", "aide"));

@@ -45,6 +45,7 @@ public final class AdvancementListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
         Player p = event.getPlayer();
+        stats.startSession(p.getUniqueId());
         stats.refreshOnline(p);
         stats.rebuildRanking();
         boards.create(p);
@@ -55,6 +56,7 @@ public final class AdvancementListener implements Listener {
     public void onQuit(PlayerQuitEvent event) {
         Player p = event.getPlayer();
         stats.refreshOnline(p);
+        stats.endSession(p.getUniqueId());
         boards.remove(p);
         boards.markOrderDirty();
     }

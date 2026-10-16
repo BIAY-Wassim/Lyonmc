@@ -13,6 +13,9 @@ Plugin Paper 1.21.8 qui suit les succès (advancements) des joueurs en survie.
   - « Presque terminés » : les succès à ta portée, du plus avancé au moins avancé.
   - Chaque succès : description, rareté, progression, **liste des critères restants** (biomes, mobs, nourritures, animaux… traduits dans la langue du joueur), succès à débloquer avant.
   - Filtres manquants / tous / obtenus, pagination.
+- **Podium** `/classement` : têtes des 3 premiers sur des blocs or / fer / cuivre, puis le top 10.
+- **MOTD** de la liste des serveurs : 2e ligne qui change (stats du serveur, leader, dernier exploit), et texte au survol du nombre de joueurs (podium, joueurs connectés).
+- **Message de bienvenue** à la connexion avec les stats du joueur.
 - Annonces de succès, paliers, nouveau n°1.
 - Classement complet, y compris les joueurs hors-ligne.
 
@@ -23,13 +26,14 @@ Plugin Paper 1.21.8 qui suit les succès (advancements) des joueurs en survie.
 | `/missions [catégorie]` | menu graphique |
 | `/succes` | ton profil |
 | `/succes <joueur>` | profil d'un joueur |
-| `/succes top` | classement |
+| `/classement` | podium avec les têtes |
+| `/succes top texte` | classement dans le chat |
 | `/succes sidebar` | afficher ou masquer le scoreboard |
 | `/succes reload` / `import` | admin |
 
-## Mise à jour depuis la v1
+## Mise à jour
 
-L'ancien `config.yml` est renommé automatiquement en `config-ancienne.yml` et remplacé par la nouvelle configuration.
+À chaque nouvelle version de config, l'ancien `config.yml` est renommé automatiquement en `config-ancienne.yml` et remplacé par la nouvelle configuration.
 
 ## Compiler
 
