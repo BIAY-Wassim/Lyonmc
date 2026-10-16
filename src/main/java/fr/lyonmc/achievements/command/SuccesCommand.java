@@ -49,6 +49,12 @@ public final class SuccesCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        // /carte
+        if (command.getName().equalsIgnoreCase("carte")) {
+            sender.sendMessage(text.parse(plugin.getConfig().getString("map.message", "lyonmc.fr")));
+            return true;
+        }
+
         // /classement
         if (command.getName().equalsIgnoreCase("classement")) {
             if (sender instanceof Player p) menu.openTop(p);
@@ -317,6 +323,7 @@ public final class SuccesCommand implements TabExecutor {
         helpLine(sender, "/succes <joueur>", "profil d'un joueur");
         helpLine(sender, "/succes top", "podium et classement");
         helpLine(sender, "/succes sidebar", "afficher ou masquer le scoreboard");
+        helpLine(sender, "/carte", "carte du serveur en direct sur lyonmc.fr");
         if (sender.hasPermission("lyonmc.succes.admin")) {
             helpLine(sender, "/succes reload", "recharger la configuration");
             helpLine(sender, "/succes import", "réimporter les fichiers du monde");
@@ -344,7 +351,7 @@ public final class SuccesCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
-        if (command.getName().equalsIgnoreCase("classement")) {
+        if (command.getName().equalsIgnoreCase("classement") || command.getName().equalsIgnoreCase("carte")) {
             return out;
         } else if (command.getName().equalsIgnoreCase("missions")) {
             if (args.length == 1) for (AdvancementRegistry.Category c : registry.usedCategories()) out.add(c.id());

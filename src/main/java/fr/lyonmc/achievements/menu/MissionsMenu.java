@@ -51,7 +51,10 @@ public final class MissionsMenu {
     private final StatsService stats;
     private final Text text;
 
-    public MissionsMenu(AdvancementRegistry registry, StatsService stats, Text text) {
+    private final HeadService heads;
+
+    public MissionsMenu(AdvancementRegistry registry, StatsService stats, Text text, HeadService heads) {
+        this.heads = heads;
         this.registry = registry;
         this.stats = stats;
         this.text = text;
@@ -102,11 +105,7 @@ public final class MissionsMenu {
         frame(inv, 5);
 
         // Profil
-        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-        if (head.getItemMeta() instanceof SkullMeta sm) {
-            sm.setOwningPlayer(player);
-            head.setItemMeta(sm);
-        }
+        ItemStack head = heads.head(player.getUniqueId(), player.getName());
         int rank = stats.rank(player.getUniqueId());
         List<Component> headLore = new ArrayList<>();
         headLore.add(kv("Rang", rank == 0 ? "non classé" : "#" + rank + " sur " + stats.ranking().size()));
@@ -197,6 +196,14 @@ public final class MissionsMenu {
         holder.action(48, this::openTop);
         inv.setItem(49, decorate(new ItemStack(Material.BARRIER), title("Fermer"), List.of(), false));
         holder.action(49, Player::closeInventory);
+        inv.setItem(46, decorate(new ItemStack(Material.FILLED_MAP), title("Carte en direct"), List.of(
+                Component.text("Le monde du serveur sur lyonmc.fr", Text.GRAY),
+                EMPTY,
+                Component.text("➤ Cliquer pour recevoir le lien", text.accent())), false));
+        holder.action(46, p -> {
+            p.closeInventory();
+            p.performCommand("carte");
+        });
         inv.setItem(50, decorate(new ItemStack(Material.COMPASS), title("Scoreboard"),
                 List.of(Component.text("Afficher ou masquer le scoreboard", Text.GRAY)), false));
         holder.action(50, p -> p.performCommand("succes sidebar"));
@@ -322,53 +329,48 @@ public final class MissionsMenu {
         TextColor titleColor = pr.done()
                 ? (e.frame() == AdvancementDisplay.Frame.CHALLENGE ? text.accent() : Text.WHITE)
                 : Text.GRAY;
+        // Info-bulle volontairement compacte (une dizaine de lignes maximum)
         List<Component> lore = new ArrayList<>();
         lore.add(e.description().colorIfAbsent(Text.DARK));
-        lore.add(EMPTY);
-        lore.add(kv("Type", AdvancementRegistry.frameName(e.frame())));
-        lore.add(kv("Catégorie", cat.name()));
-        lore.add(kv("Rareté", String.format(Locale.FRANCE, "%.1f", stats.rarity(e.key())) + " % des joueurs"));
+        lore.add(Component.text(AdvancementRegistry.frameName(e.frame()) + " · " + cat.name() + " · "
+                + String.format(Locale.FRANCE, "%.0f", stats.rarity(e.key())) + " % des joueurs", Text.DARK));
 
         if (pr.groupsTotal() > 1) {
             lore.add(EMPTY);
-            lore.add(kv("Progression", pr.groupsDone() + " / " + pr.groupsTotal()));
-            lore.add(text.bar(pr.groupsDone(), pr.groupsTotal(), 30));
+            lore.add(Component.text().append(text.bar(pr.groupsDone(), pr.groupsTotal(), 20))
+                    .append(Component.text("  " + pr.groupsDone() + "/" + pr.groupsTotal(), Text.WHITE)).build());
             if (!pr.done() && !pr.remaining().isEmpty()) {
-                lore.add(EMPTY);
                 lore.add(Component.text("Il reste :", Text.GRAY));
-                int max = 10;
-                for (int i = 0; i < Math.min(max, pr.remaining().size()); i++) {
-                    List<String> group = pr.remaining().get(i);
-                    Component line = Component.text("  ", Text.DARK);
-                    for (int j = 0; j < group.size() && j < 3; j++) {
-                        if (j > 0) line = line.append(Component.text(" ou ", Text.DARK));
-                        line = line.append(CriteriaNames.of(e.key(), group.get(j)).color(Text.WHITE));
+                int shown = Math.min(6, pr.remaining().size());
+                Component line = Component.empty();
+                for (int i = 0; i < shown; i++) {
+                    if (i % 3 == 0) {
+                        if (i > 0) lore.add(line);
+                        line = Component.text(" ", Text.DARK);
+                    } else {
+                        line = line.append(Component.text(", ", Text.DARK));
                     }
-                    lore.add(line);
+                    line = line.append(CriteriaNames.of(e.key(), pr.remaining().get(i).get(0)).color(Text.WHITE));
                 }
-                if (pr.remaining().size() > max) {
-                    lore.add(Component.text("  et " + (pr.remaining().size() - max) + " autres", Text.DARK));
+                lore.add(line);
+                if (pr.remaining().size() > shown) {
+                    lore.add(Component.text(" et " + (pr.remaining().size() - shown) + " autres", Text.DARK));
                 }
             }
         }
 
         if (!pr.done() && e.parentKey() != null && !parentDone(viewer, e)) {
-            Component parentTitle = registry.get(e.parentKey()) != null ? registry.get(e.parentKey()).title() : null;
-            if (parentTitle != null) {
-                lore.add(EMPTY);
-                lore.add(Component.text("Débloque d'abord", Text.GRAY));
-                lore.add(Component.text("  ").append(parentTitle.color(Text.WHITE)));
+            AdvancementRegistry.Entry parent = registry.get(e.parentKey());
+            if (parent != null) {
+                lore.add(Component.text("Requiert ", Text.DARK).append(parent.title().color(Text.GRAY)));
             }
         }
 
-        lore.add(EMPTY);
-        if (pr.done()) {
-            lore.add(Component.text("Obtenu " + Text.timeAgo(pr.doneTime()), text.accent()));
-        } else {
-            lore.add(Component.text("Pas encore obtenu", Text.DARK));
-        }
+        lore.add(pr.done()
+                ? Component.text("✔ Obtenu " + Text.timeAgo(pr.doneTime()), text.accent())
+                : Component.text("✘ Pas encore obtenu", Text.DARK));
 
-        ItemStack icon = e.icon().getType().isAir() ? new ItemStack(Material.BOOK) : e.icon().clone();
+        ItemStack icon = e.icon().getType().isAir() ? new ItemStack(Material.BOOK) : new ItemStack(e.icon().getType());
         return decorate(icon, e.title().color(titleColor), lore, pr.done());
     }
 
@@ -402,6 +404,7 @@ public final class MissionsMenu {
             int[] slots = podium[i];
             if (ps != null) {
                 inv.setItem(slots[0], playerHead(ps, colors[i], labels[i]));
+                refreshWhenLoaded(player, inv, slots[0], ps, colors[i], labels[i]);
                 String name = ps.name();
                 holder.action(slots[0], p -> {
                     p.closeInventory();
@@ -422,6 +425,7 @@ public final class MissionsMenu {
             PlayerStats ps = stats.top(pos);
             if (ps == null) continue;
             inv.setItem(slot, playerHead(ps, Text.WHITE, "#" + pos));
+            refreshWhenLoaded(player, inv, slot, ps, Text.WHITE, "#" + pos);
             String name = ps.name();
             holder.action(slot, p -> {
                 p.closeInventory();
@@ -447,12 +451,18 @@ public final class MissionsMenu {
         player.openInventory(inv);
     }
 
+    /** Si le skin n'est pas encore connu, le charge puis met la tête à jour dans le menu ouvert. */
+    private void refreshWhenLoaded(Player viewer, Inventory inv, int slot, PlayerStats ps, TextColor color, String label) {
+        if (heads.hasSkin(ps.uuid())) return;
+        heads.load(ps.uuid(), ps.name(), () -> {
+            if (viewer.isOnline() && viewer.getOpenInventory().getTopInventory() == inv) {
+                inv.setItem(slot, playerHead(ps, color, label));
+            }
+        });
+    }
+
     private ItemStack playerHead(PlayerStats ps, TextColor color, String label) {
-        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-        if (head.getItemMeta() instanceof SkullMeta sm) {
-            sm.setOwningPlayer(Bukkit.getOfflinePlayer(ps.uuid()));
-            head.setItemMeta(sm);
-        }
+        ItemStack head = heads.head(ps.uuid(), ps.name());
         int total = registry.total();
         boolean online = Bukkit.getPlayer(ps.uuid()) != null;
         List<Component> lore = new ArrayList<>();

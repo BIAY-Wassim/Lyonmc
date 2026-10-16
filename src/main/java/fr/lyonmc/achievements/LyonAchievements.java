@@ -7,6 +7,7 @@ import fr.lyonmc.achievements.data.StatsService;
 import fr.lyonmc.achievements.listener.AdvancementListener;
 import fr.lyonmc.achievements.listener.ChatListener;
 import fr.lyonmc.achievements.listener.MotdListener;
+import fr.lyonmc.achievements.menu.HeadService;
 import fr.lyonmc.achievements.menu.MenuListener;
 import fr.lyonmc.achievements.menu.MissionsMenu;
 import fr.lyonmc.achievements.util.Text;
@@ -26,6 +27,8 @@ public final class LyonAchievements extends JavaPlugin {
     private Text text;
     private ChatListener chat;
     private MotdListener motd;
+    private HeadService heads;
+    private BukkitTask headsTask;
     private BukkitTask motdTask;
 
     private BukkitTask refreshTask;
@@ -46,16 +49,19 @@ public final class LyonAchievements extends JavaPlugin {
         this.boards = new BoardManager(this, registry, stats, text);
 
         this.chat = new ChatListener(this, registry, stats, text);
-        MissionsMenu menu = new MissionsMenu(registry, stats, text);
+        this.heads = new HeadService(this);
+        for (Player p : Bukkit.getOnlinePlayers()) heads.remember(p);
+        MissionsMenu menu = new MissionsMenu(registry, stats, text, heads);
 
         getServer().getPluginManager().registerEvents(new AdvancementListener(this, registry, stats, boards, text), this);
         getServer().getPluginManager().registerEvents(chat, this);
         getServer().getPluginManager().registerEvents(new MenuListener(this), this);
+        getServer().getPluginManager().registerEvents(heads, this);
         this.motd = new MotdListener(this, registry, stats, text);
         getServer().getPluginManager().registerEvents(motd, this);
 
         SuccesCommand command = new SuccesCommand(this, registry, stats, boards, menu, text);
-        for (String name : new String[]{"succes", "missions", "classement"}) {
+        for (String name : new String[]{"succes", "missions", "classement", "carte"}) {
             PluginCommand pc = getCommand(name);
             if (pc != null) {
                 pc.setExecutor(command);
@@ -85,6 +91,7 @@ public final class LyonAchievements extends JavaPlugin {
         if (refreshTask != null) refreshTask.cancel();
         if (autosaveTask != null) autosaveTask.cancel();
         if (motdTask != null) motdTask.cancel();
+        if (headsTask != null) headsTask.cancel();
         if (boards != null) boards.removeAll();
         if (stats != null) stats.saveSync();
     }
@@ -102,6 +109,11 @@ public final class LyonAchievements extends JavaPlugin {
         if (motdTask != null) motdTask.cancel();
         motdTask = Bukkit.getScheduler().runTaskTimer(this, motd::refresh, 20L, 100L);
 
+        // Skins du top 10 (API Mojang), rafraîchis toutes les 10 minutes
+        if (headsTask != null) headsTask.cancel();
+        headsTask = Bukkit.getScheduler().runTaskTimer(this,
+                () -> heads.preload(stats.ranking().subList(0, Math.min(10, stats.ranking().size()))), 200L, 12000L);
+
         long saveTicks = Math.max(1L, getConfig().getLong("settings.autosave-minutes", 5L)) * 60L * 20L;
         autosaveTask = Bukkit.getScheduler().runTaskTimer(this, stats::saveAsync, saveTicks, saveTicks);
     }
@@ -110,7 +122,7 @@ public final class LyonAchievements extends JavaPlugin {
     private void migrateConfig() {
         File file = new File(getDataFolder(), "config.yml");
         if (!file.exists()) return;
-        if (org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(file).getInt("config-version", 1) >= 3) return;
+        if (org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(file).getInt("config-version", 1) >= 4) return;
         File backup = new File(getDataFolder(), "config-ancienne.yml");
         if (backup.exists()) backup.delete();
         if (file.renameTo(backup)) {

@@ -22,6 +22,11 @@ commands:
     usage: /classement
     aliases: [podium, top]
     permission: lyonmc.succes.use
+  carte:
+    description: Lien vers la carte du serveur en direct (lyonmc.fr)
+    usage: /carte
+    aliases: [map, site]
+    permission: lyonmc.succes.use
 
 permissions:
   lyonmc.succes.use:

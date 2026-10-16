@@ -19,12 +19,12 @@
 #   Nametag uniquement : <health> <max_health>
 # Placeholders serveur :
 #   <top1_name> <top1_done> ... <top5_name> <top5_done>
-#   <online> <max_online> <tps> <time> <date>
+#   <online> <max_online> <tps> <date>
 #   <server_total>  succès débloqués par tous les joueurs
 #   <last_global_player> <last_global_adv> <last_global_ago>  dernier succès du serveur
 
 # Ne pas modifier
-config-version: 3
+config-version: 4
 
 theme:
   accent: "#e8c872"
@@ -36,6 +36,12 @@ settings:
   exclude-root-advancements: false
   include-custom-advancements: true
   import-on-startup: true
+
+# Site / carte en direct (dynmap)
+map:
+  url: "https://lyonmc.fr"
+  # /carte affiche ce message (lien cliquable)
+  message: "<accent>➤</accent> <gray>Carte du serveur en direct : <click:open_url:'https://lyonmc.fr'><hover:show_text:'<gray>Ouvrir lyonmc.fr'><white><u>lyonmc.fr</u></white></hover></click>"
 
 progress-bar:
   length: 20
@@ -65,7 +71,7 @@ sidebar:
   enabled: true
   title: "<accent>✦</accent> <white><bold>LYONMC</bold></white> <accent>✦</accent>"
   lines:
-    - "<dark_gray><date> · <time>"
+    - "<dark_gray><date>"
     - ""
     - "<accent>➤</accent> <white><bold>Profil"
     - " <gray>Rang <accent>♛</accent> <white>#<rank></white><dark_gray>/<ranked>"
@@ -79,29 +85,17 @@ sidebar:
     - ""
     - "<accent>➤</accent> <white><bold>Serveur"
     - " <gray>En ligne <white>☺ <online></white><dark_gray>/<max_online></dark_gray> <ping_bars>"
-    - "<accent>   lyonmc.fr"
+    - "<accent>lyonmc.fr</accent> <dark_gray>· carte live"
 
 # ───────────────────────── Tablist ─────────────────────────
 tablist:
   enabled: true
   header:
-    - ""
     - "<accent>✦</accent> <white><bold>LYONMC</bold></white> <accent>✦</accent>"
-    - "<dark_gray>Survie · 1.21.8"
-    - ""
-    - "<accent>★</accent> <white><done></white><dark_gray>/<total> succès</dark_gray>     <accent>♛</accent> <white>#<rank></white><dark_gray>/<ranked></dark_gray>     <accent>✦</accent> <white><challenges></white><dark_gray>/<challenges_total> défis"
-    - "<bar> <dark_gray><percent>%"
-    - ""
+    - "<accent>★</accent> <white><done></white><dark_gray>/<total></dark_gray>   <accent>♛</accent> <white>#<rank></white>   <accent>✦</accent> <white><challenges></white><dark_gray>/<challenges_total>"
   footer:
-    - ""
-    - "<dark_gray>───────</dark_gray> <white><bold>Podium des succès</bold></white> <dark_gray>───────"
-    - "<#ffd86b>♛ 1</#ffd86b> <white><top1_name></white> <dark_gray>★ <top1_done></dark_gray>      <#c8c8c8>✧ 2</#c8c8c8> <white><top2_name></white> <dark_gray>★ <top2_done></dark_gray>      <#d29a6a>✧ 3</#d29a6a> <white><top3_name></white> <dark_gray>★ <top3_done>"
-    - ""
-    - "<gray>☺ <white><online></white><dark_gray>/<max_online></dark_gray>    ⚡ <ping_bars> <white><ping></white><dark_gray>ms</dark_gray>    ⌚ <white><time></white>    ✔ <white><tps></white> <dark_gray>tps"
-    - "<dark_gray>★ <server_total> succès débloqués par la communauté"
-    - ""
-    - "<accent>lyonmc.fr</accent> <dark_gray>·</dark_gray> <gray>/missions"
-    - ""
+    - "<#ffd86b>♛</#ffd86b> <white><top1_name></white> <dark_gray><top1_done></dark_gray>   <#c8c8c8>✧</#c8c8c8> <white><top2_name></white> <dark_gray><top2_done></dark_gray>   <#d29a6a>✧</#d29a6a> <white><top3_name></white> <dark_gray><top3_done>"
+    - "<gray>☺ <white><online></white>   ⚡ <ping_bars>   <accent>lyonmc.fr</accent> <dark_gray>carte live"
   name-format:
     top1: "<#ffd86b>♛</#ffd86b> <white><player>"
     top2: "<#c8c8c8>✧</#c8c8c8> <white><player>"
@@ -167,6 +161,7 @@ chat:
       - "  <gray>Dernier exploit : <white><last_global_player></white> <dark_gray>·</dark_gray> <last_global_adv>"
       - ""
       - "  <accent>➤</accent> <click:run_command:'/missions'><hover:show_text:'<gray>Ouvrir le menu'><white><u>/missions</u></white></hover></click> <gray>pour voir ce qu'il te reste à faire"
+      - "  <accent>➤</accent> <click:open_url:'https://lyonmc.fr'><hover:show_text:'<gray>Ouvrir la carte'><white><u>lyonmc.fr</u></white></hover></click> <gray>pour la carte du monde en direct"
       - ""
 
 below-name:
@@ -175,32 +170,23 @@ below-name:
 # ───────────────────────── Liste des serveurs ─────────────────────────
 motd:
   enabled: true
-  # Ligne 1 fixe
-  line1: "<accent>✦</accent> <white><bold>LYONMC</bold></white> <dark_gray>·</dark_gray> <gray>Survie</gray> <accent>1.21.8</accent> <accent>✦</accent>"
-  # Ligne 2 : une phrase tirée au hasard à chaque rafraîchissement
+  line1: "<white><bold>LYONMC</bold></white> <dark_gray>·</dark_gray> <gray>Survie 1.21.8"
+  # Ligne 2 : une phrase au hasard
   line2:
-    - "<accent>★</accent> <white><server_total></white> <gray>succès débloqués par la communauté"
-    - "<#ffd86b>♛</#ffd86b> <white><top1_name></white> <gray>mène la course avec <accent><top1_done></accent> <gray>succès"
-    - "<accent>✦</accent> <gray>Dernier exploit : <white><last_global_player></white> <dark_gray>·</dark_gray> <last_global_adv>"
-    - "<accent>☺</accent> <white><ranked></white> <gray>aventuriers classés · <white>rejoins-les !"
-    - "<accent>⚔</accent> <gray>Vise les <white><total></white> <gray>succès · <accent>/missions"
+    - "<dark_gray>Carte du monde en direct sur <gray>lyonmc.fr"
+    - "<dark_gray><gray><server_total></gray> succès débloqués par la communauté"
+    - "<dark_gray>En tête : <gray><top1_name></gray> avec <gray><top1_done></gray> succès"
+    - "<dark_gray>Dernier exploit : <gray><last_global_player>"
   # Au survol du nombre de joueurs (couleurs simples uniquement)
   hover:
-    - "<gold>✦ <white><bold>LYONMC</bold> <gray>· Survie 1.21.8"
+    - "<white><bold>LYONMC</bold> <gray>· Survie 1.21.8"
     - ""
-    - "<gray>En ligne : <white><online><gray>/<max_online>"
-    - "<gray>Heure à Lyon : <white><time>"
-    - ""
-    - "<gold>♛ Podium des succès"
-    - "<yellow> 1. <white><top1_name> <dark_gray>★ <top1_done>"
-    - "<gray> 2. <white><top2_name> <dark_gray>★ <top2_done>"
-    - "<gold> 3. <white><top3_name> <dark_gray>★ <top3_done>"
+    - "<gold>♛ <white><top1_name> <dark_gray><top1_done>"
+    - "<gray>✧ <white><top2_name> <dark_gray><top2_done>"
+    - "<gold>✧ <white><top3_name> <dark_gray><top3_done>"
     - ""
     - "<gray>★ <white><server_total> <gray>succès débloqués"
-    - "<gray>✦ Dernier exploit : <white><last_global_player>"
-    - ""
-    - "<gold>lyonmc.fr"
-  # Ajouter la liste des joueurs connectés à la fin du survol
+    - "<gray>Carte en direct : <white>lyonmc.fr"
   show-online-players: true
 
 # ───────────────────────── Annonces ─────────────────────────
