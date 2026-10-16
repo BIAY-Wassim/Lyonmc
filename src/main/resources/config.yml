@@ -1,0 +1,147 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                LyonAchievements — lyonmc.fr                  ║
+# ║   Succès (advancements) : scoreboard, tablist, classement    ║
+# ╚══════════════════════════════════════════════════════════════╝
+#
+# Tous les textes utilisent MiniMessage : https://docs.advntr.dev/minimessage/format.html
+#   <red>, <#ff8800>, <gradient:#ff0000:#00ff00>, <bold>, <italic>...
+#
+# Placeholders disponibles (sidebar, tablist, messages) :
+#   <player>            nom du joueur
+#   <done> <total>      succès obtenus / total
+#   <percent>           pourcentage (ex: 46.7)
+#   <bar>               barre de progression
+#   <rank> <ranked>     rang du joueur / nombre de joueurs classés
+#   <challenges> <challenges_total>   défis obtenus / total
+#   <goals> <goals_total>             objectifs obtenus / total
+#   <tasks> <tasks_total>             progrès obtenus / total
+#   <cat_ID_done> <cat_ID_total> <cat_ID_name>  par catégorie (ID = story, nether, end, adventure, husbandry)
+#   <last>              titre du dernier succès obtenu
+#   <last_ago>          il y a combien de temps
+#   <top1_name> <top1_done> ... <top5_name> <top5_done>
+#   <online> <max_online> <ping> <tps>
+
+settings:
+  # Fréquence de rafraîchissement du scoreboard / tablist (20 ticks = 1 seconde)
+  update-interval-ticks: 20
+  # Sauvegarde automatique des données (minutes)
+  autosave-minutes: 5
+  # Ne pas compter les succès "racine" (ex: "Minecraft", "Nether", "The End"...)
+  exclude-root-advancements: false
+  # Compter les succès ajoutés par des datapacks (namespace autre que minecraft)
+  include-custom-advancements: true
+  # Au démarrage, lit world/advancements/*.json pour classer aussi les joueurs hors-ligne
+  import-on-startup: true
+
+progress-bar:
+  length: 10
+  char: "■"
+  filled-color: "#4ade80"
+  empty-color: "#3f3f46"
+
+# Catégories (préfixe de la clé du succès : minecraft:story/... -> story)
+categories:
+  story:
+    name: "Minecraft"
+    color: "#55ff55"
+  nether:
+    name: "Nether"
+    color: "#ff5555"
+  end:
+    name: "The End"
+    color: "#d58cff"
+  adventure:
+    name: "Aventure"
+    color: "#ffaa00"
+  husbandry:
+    name: "Agriculture"
+    color: "#55ffff"
+
+# ───────────────────────────── SCOREBOARD ─────────────────────────────
+sidebar:
+  enabled: true
+  title: "<gradient:#ff4e50:#f9d423><bold>✦ LYONMC.FR ✦</bold></gradient>"
+  # 15 lignes maximum. Une ligne vide = "".
+  lines:
+    - "<dark_gray>Survie 1.21.8"
+    - ""
+    - "<gray>Joueur <white><player>"
+    - "<gray>Rang <gold>#<rank> <dark_gray>/ <ranked>"
+    - ""
+    - "<gray>Succès <white><bold><done></bold><dark_gray>/<total>"
+    - "<bar> <yellow><percent>%"
+    - ""
+    - "<cat_story_name> <white><cat_story_done><dark_gray>/<cat_story_total>"
+    - "<cat_nether_name> <white><cat_nether_done><dark_gray>/<cat_nether_total>"
+    - "<cat_end_name> <white><cat_end_done><dark_gray>/<cat_end_total>"
+    - "<cat_adventure_name> <white><cat_adventure_done><dark_gray>/<cat_adventure_total>"
+    - "<cat_husbandry_name> <white><cat_husbandry_done><dark_gray>/<cat_husbandry_total>"
+    - "<light_purple>✦ Défis <white><challenges><dark_gray>/<challenges_total>"
+    - "<gradient:#f9d423:#ff4e50>lyonmc.fr</gradient>"
+
+# ───────────────────────────── TABLIST ─────────────────────────────
+tablist:
+  enabled: true
+  header:
+    - ""
+    - "<gradient:#ff4e50:#f9d423><bold>✦ LYONMC.FR ✦</bold></gradient>"
+    - "<gray>Survie <white>1.21.8"
+    - ""
+    - "<gray>Tes succès <white><bold><done></bold><dark_gray>/<total> <bar> <yellow><percent>%"
+    - "<gray>Ton rang <gold>#<rank> <dark_gray>sur <ranked> <dark_gray>• <light_purple>✦ <challenges>/<challenges_total> défis"
+    - ""
+  footer:
+    - ""
+    - "<gold><bold>♛ TOP SUCCÈS ♛</bold>"
+    - "<#ffd700>#1 <white><top1_name> <dark_gray>» <yellow><top1_done>"
+    - "<#c0c0c0>#2 <white><top2_name> <dark_gray>» <yellow><top2_done>"
+    - "<#cd7f32>#3 <white><top3_name> <dark_gray>» <yellow><top3_done>"
+    - ""
+    - "<gray>En ligne <green><online><dark_gray>/<max_online> <dark_gray>• <gray>Ping <green><ping>ms <dark_gray>• <gray>TPS <green><tps>"
+    - "<gradient:#f9d423:#ff4e50>lyonmc.fr</gradient>"
+    - ""
+  # Nom dans la tablist selon le rang (top 1/2/3, puis les autres)
+  name-format:
+    top1: "<#ffd700>♛ <bold>#1</bold> <white><player>"
+    top2: "<#c0c0c0>♛ <bold>#2</bold> <white><player>"
+    top3: "<#cd7f32>♛ <bold>#3</bold> <white><player>"
+    other: "<dark_gray>#<rank> <gray><player>"
+    unranked: "<dark_gray>- <gray><player>"
+  # Affiche le nombre de succès à droite du nom
+  show-score: true
+  score-color: "#ffd700"
+  # Trie la tablist par nombre de succès (le meilleur en haut)
+  sort-by-rank: true
+
+# Nombre de succès affiché sous le pseudo des joueurs
+below-name:
+  enabled: true
+  title: "<gold>✦ succès"
+
+# ───────────────────────────── ANNONCES ─────────────────────────────
+announcements:
+  # Remplace le message vanilla "X a obtenu le progrès [..]" par un message plus complet
+  replace-vanilla: true
+  # <advancement> est survolable (description, catégorie, rareté)
+  message: "<dark_gray>[<gold>✦</gold>]</dark_gray> <white><player> <gray>a obtenu <advancement> <dark_gray>(<yellow><done></yellow>/<total>)"
+  challenge-message: "<dark_gray>[<light_purple>✦</light_purple>]</dark_gray> <white><player> <light_purple>a relevé le défi</light_purple> <advancement> <dark_gray>(<yellow><done></yellow>/<total>)"
+  # Titre affiché au joueur quand il réussit un défi
+  challenge-title: "<gradient:#d58cff:#ff7ce5><bold>DÉFI RÉUSSI !</bold></gradient>"
+  challenge-subtitle: "<advancement>"
+  # Paliers en pourcentage
+  milestones: [25, 50, 75, 90]
+  milestone-message: "<gold>★ <white><player> <gray>a atteint <yellow><bold><milestone>%</bold></yellow> <gray>des succès ! <dark_gray>(<done>/<total>)"
+  new-leader-message: "<gold>♛ <white><player> <gray>prend la <gold><bold>1ʳᵉ place</bold></gold> <gray>du classement des succès avec <yellow><done></yellow> succès !"
+  rank-up-message: "<green>▲ <gray>Tu passes <gold>#<rank></gold> <gray>au classement des succès !"
+  all-completed-message: "<gradient:#ff4e50:#f9d423:#4ade80><bold>✦ <player> a obtenu TOUS les succès du serveur ! ✦</bold></gradient>"
+
+messages:
+  prefix: "<dark_gray>[<gradient:#ff4e50:#f9d423>Succès</gradient>]</dark_gray> "
+  no-permission: "<red>Tu n'as pas la permission."
+  player-not-found: "<red>Joueur introuvable ou jamais classé."
+  players-only: "<red>Commande réservée aux joueurs."
+  sidebar-on: "<green>Scoreboard des succès activé."
+  sidebar-off: "<gray>Scoreboard des succès désactivé."
+  reloaded: "<green>Configuration rechargée."
+  import-started: "<yellow>Import des succès depuis les fichiers du monde..."
+  import-done: "<green>Import terminé : <white><count></white> joueurs analysés."

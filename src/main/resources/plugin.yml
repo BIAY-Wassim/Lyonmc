@@ -1,0 +1,25 @@
+name: LyonAchievements
+version: '${project.version}'
+main: fr.lyonmc.achievements.LyonAchievements
+api-version: '1.21'
+author: lyonmc.fr
+description: Succès (advancements) des joueurs - scoreboard, tablist et classement pour lyonmc.fr
+website: https://lyonmc.fr
+
+commands:
+  succes:
+    description: Affiche tes succès, le classement et les succès manquants
+    usage: /succes [joueur|top|manquants|sidebar|reload|import]
+    aliases: [succès, achievements, advancements, ach, adv]
+    permission: lyonmc.succes.use
+
+permissions:
+  lyonmc.succes.use:
+    description: Utiliser /succes
+    default: true
+  lyonmc.succes.others:
+    description: Voir le profil des autres joueurs
+    default: true
+  lyonmc.succes.admin:
+    description: /succes reload et /succes import
+    default: op
