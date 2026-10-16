@@ -196,8 +196,8 @@ public final class MissionsMenu {
         holder.action(48, this::openTop);
         inv.setItem(49, decorate(new ItemStack(Material.BARRIER), title("Fermer"), List.of(), false));
         holder.action(49, Player::closeInventory);
-        inv.setItem(46, decorate(new ItemStack(Material.FILLED_MAP), title("Carte en direct"), List.of(
-                Component.text("Le monde du serveur sur lyonmc.fr", Text.GRAY),
+        inv.setItem(46, decorate(new ItemStack(Material.FILLED_MAP), title("Dynmap"), List.of(
+                Component.text("La carte du serveur en direct sur lyonmc.fr", Text.GRAY),
                 EMPTY,
                 Component.text("➤ Cliquer pour recevoir le lien", text.accent())), false));
         holder.action(46, p -> {

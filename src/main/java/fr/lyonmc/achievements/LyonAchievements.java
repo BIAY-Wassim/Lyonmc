@@ -122,7 +122,7 @@ public final class LyonAchievements extends JavaPlugin {
     private void migrateConfig() {
         File file = new File(getDataFolder(), "config.yml");
         if (!file.exists()) return;
-        if (org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(file).getInt("config-version", 1) >= 4) return;
+        if (org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(file).getInt("config-version", 1) >= 5) return;
         File backup = new File(getDataFolder(), "config-ancienne.yml");
         if (backup.exists()) backup.delete();
         if (file.renameTo(backup)) {

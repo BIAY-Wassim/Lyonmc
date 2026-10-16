@@ -2,7 +2,7 @@ name: LyonAchievements
 version: '${project.version}'
 main: fr.lyonmc.achievements.LyonAchievements
 api-version: '1.21'
-author: lyonmc.fr
+author: wassdead
 description: Succès (advancements) des joueurs - scoreboard, tablist et classement pour lyonmc.fr
 website: https://lyonmc.fr
 

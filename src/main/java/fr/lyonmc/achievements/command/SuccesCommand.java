@@ -323,7 +323,7 @@ public final class SuccesCommand implements TabExecutor {
         helpLine(sender, "/succes <joueur>", "profil d'un joueur");
         helpLine(sender, "/succes top", "podium et classement");
         helpLine(sender, "/succes sidebar", "afficher ou masquer le scoreboard");
-        helpLine(sender, "/carte", "carte du serveur en direct sur lyonmc.fr");
+        helpLine(sender, "/carte", "Dynmap du serveur sur lyonmc.fr");
         if (sender.hasPermission("lyonmc.succes.admin")) {
             helpLine(sender, "/succes reload", "recharger la configuration");
             helpLine(sender, "/succes import", "réimporter les fichiers du monde");

@@ -49,10 +49,16 @@ public final class MotdListener implements Listener {
     /** Thread principal : prépare les textes. */
     public void refresh() {
         TagResolver r = text.resolver(registry, stats, null, null);
-        line1 = text.parse(plugin.getConfig().getString("motd.line1", ""), r);
+        boolean center = plugin.getConfig().getBoolean("motd.center", true);
+        int width = plugin.getConfig().getInt("motd.width", 264);
+        Component l1 = text.parse(plugin.getConfig().getString("motd.line1", ""), r);
+        line1 = center ? center(l1, width) : l1;
 
         List<Component> l2 = new ArrayList<>();
-        for (String s : plugin.getConfig().getStringList("motd.line2")) l2.add(text.parse(s, r));
+        for (String s : plugin.getConfig().getStringList("motd.line2")) {
+            Component c = text.parse(s, r);
+            l2.add(center ? center(c, width) : c);
+        }
         line2 = List.copyOf(l2);
 
         List<String> h = new ArrayList<>();
@@ -65,6 +71,41 @@ public final class MotdListener implements Listener {
         List<String> names = new ArrayList<>();
         for (Player p : Bukkit.getOnlinePlayers()) names.add(p.getName());
         onlineNames = List.copyOf(names);
+    }
+
+    // ───────────── Centrage (largeurs de la police par défaut de Minecraft) ─────────────
+
+    private static Component center(Component c, int width) {
+        int w = width(c, false);
+        int spaces = Math.max(0, (width - w) / 2 / 4); // un espace = 4 px
+        return Component.text(" ".repeat(spaces)).append(c);
+    }
+
+    private static int width(Component c, boolean parentBold) {
+        net.kyori.adventure.text.format.TextDecoration.State st = c.decoration(net.kyori.adventure.text.format.TextDecoration.BOLD);
+        boolean bold = st == net.kyori.adventure.text.format.TextDecoration.State.TRUE
+                || (st == net.kyori.adventure.text.format.TextDecoration.State.NOT_SET && parentBold);
+        int w = 0;
+        if (c instanceof net.kyori.adventure.text.TextComponent t) {
+            String content = t.content();
+            for (int i = 0; i < content.length(); i++) {
+                char ch = content.charAt(i);
+                w += charWidth(ch) + (bold && ch != ' ' ? 1 : 0);
+            }
+        }
+        for (Component child : c.children()) w += width(child, bold);
+        return w;
+    }
+
+    private static int charWidth(char ch) {
+        if (ch == ' ') return 4;
+        if ("!,.:;|i'".indexOf(ch) >= 0) return ch == '\'' || ch == 'l' ? 3 : 2;
+        if (ch == 'l' || ch == '`') return 3;
+        if ("It[]".indexOf(ch) >= 0) return 4;
+        if ("fk<>\"()*{}".indexOf(ch) >= 0) return 5;
+        if (ch == '@' || ch == '~') return 7;
+        if (ch < 128) return 6;
+        return 6; // symboles et petites capitales (approximation)
     }
 
     @EventHandler(priority = EventPriority.HIGH)
