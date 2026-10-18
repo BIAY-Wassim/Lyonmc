@@ -79,8 +79,8 @@ resource-world:
 # Site lyonmc.fr : le plugin y écrit les classements, profils et le guide (JSON) toutes les minutes
 web:
   enabled: true
-  # Dossier "data" du site (doit appartenir à l'utilisateur qui lance le serveur Minecraft)
-  export-path: "/var/www/lyonmc/data"
+  # Dossier "data" du site. Un chemin relatif part du dossier du serveur (celui qui contient plugins/)
+  export-path: "siteweb/data"
   interval-seconds: 60
   ip: "lyonmc.fr"
   discord: ""

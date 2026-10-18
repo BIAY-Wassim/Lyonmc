@@ -364,6 +364,17 @@ code.cmd { font: 500 0.92em/1 var(--sans); background: var(--tuff-2); padding: 3
 
 .notice { background: var(--tuff); border: 1px solid var(--seam); border-radius: var(--radius); padding: 16px 18px; color: var(--andesite); }
 
+/* Carte : la Dynmap occupe tout l'écran sous le menu */
+body.is-map { height: 100vh; height: 100dvh; min-height: 0; }
+body.is-map .footer { display: none; }
+body.is-map main { display: flex; flex-direction: column; min-height: 0; }
+.map-bar { border-bottom: 1px solid var(--seam); }
+.map-bar .wrap { display: flex; align-items: baseline; gap: 6px 16px; flex-wrap: wrap; padding-block: 12px; }
+.map-bar h1 { font: 600 var(--step-1)/1.2 var(--sans); margin: 0; }
+.map-full { margin-left: auto; font-size: var(--step--1); color: var(--andesite); }
+.map-full:hover { color: var(--calcite); }
+.map-frame { flex: 1; display: block; width: 100%; min-height: 0; border: 0; background: #0f1013; }
+
 /* ───────────── Mobile ───────────── */
 @media (max-width: 900px) {
   .hero .wrap { grid-template-columns: 1fr; gap: 8px; }
