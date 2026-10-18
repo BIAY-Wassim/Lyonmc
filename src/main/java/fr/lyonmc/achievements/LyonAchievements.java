@@ -230,10 +230,8 @@ public final class LyonAchievements extends JavaPlugin {
         tasks.clear();
 
         long interval = Math.max(5L, getConfig().getLong("settings.update-interval-ticks", 20L));
-        tasks.add(Bukkit.getScheduler().runTaskTimer(this, () -> {
-            boards.tick();
-            chat.refreshAll();
-        }, 1L, interval));
+        tasks.add(Bukkit.getScheduler().runTaskTimer(this, boards::tick, 1L, interval));
+        tasks.add(Bukkit.getScheduler().runTaskTimer(this, chat::refreshAll, 2L, 100L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, motd::refresh, 20L, 100L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this,
                 () -> heads.preload(stats.ranking().subList(0, Math.min(10, stats.ranking().size()))), 200L, 12000L));

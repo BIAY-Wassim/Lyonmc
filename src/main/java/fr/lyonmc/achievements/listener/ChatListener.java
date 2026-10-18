@@ -111,6 +111,9 @@ public final class ChatListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         if (!plugin.getConfig().getBoolean("chat.enabled", true)) return;
         Player p = event.getPlayer();
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (p.isOnline()) refresh(p);
+        }, 5L);
         TagResolver r = Placeholder.unparsed("player", p.getName());
         event.joinMessage(text.parse(plugin.getConfig().getString("chat.join-message", ""), r));
         if (plugin.getConfig().getBoolean("chat.welcome.enabled", true)) {

@@ -83,7 +83,7 @@ discord:
   name: "LyonMC"
 
 settings:
-  update-interval-ticks: 10
+  update-interval-ticks: 20
   autosave-minutes: 5
   timezone: "Europe/Paris"
   exclude-root-advancements: false

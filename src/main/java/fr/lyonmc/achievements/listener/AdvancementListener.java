@@ -124,10 +124,11 @@ public final class AdvancementListener implements Listener {
         TagResolver all = TagResolver.resolver(base, Placeholder.component("advancement", advComponent));
 
         // Annonce
+        boolean announce = event.getAdvancement().getDisplay() == null || event.getAdvancement().getDisplay().doesAnnounceToChat();
         if (plugin.getConfig().getBoolean("announcements.replace-vanilla", true)) {
             event.message(null);
             String path = challenge ? "announcements.challenge-message" : "announcements.message";
-            Bukkit.broadcast(text.parse(plugin.getConfig().getString(path, ""), all));
+            if (announce) Bukkit.broadcast(text.parse(plugin.getConfig().getString(path, ""), all));
         }
 
         // Effets pour le joueur

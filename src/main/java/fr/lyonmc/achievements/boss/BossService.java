@@ -119,6 +119,7 @@ public final class BossService implements Listener {
     }
 
     public String nextText() {
+        if (arena() == null) return "pas encore programmée (arène à définir)";
         ZonedDateTime n = next();
         if (n == null) return "aucune apparition prévue";
         long minutes = ChronoUnit.MINUTES.between(ZonedDateTime.now(plugin.text().zone()), n);
@@ -131,7 +132,7 @@ public final class BossService implements Listener {
 
     /** Appelé toutes les 20 secondes. */
     public void tickSchedule() {
-        if (cfg() == null || !cfg().getBoolean("enabled", true) || !plugin.module("boss")) return;
+        if (cfg() == null || !cfg().getBoolean("enabled", true) || !plugin.module("boss") || arena() == null) return;
         ZonedDateTime now = ZonedDateTime.now(plugin.text().zone()).withSecond(0).withNano(0);
         for (Slot s : schedule()) {
             ZonedDateTime at = now.with(TemporalAdjusters.nextOrSame(s.day())).with(s.time());
@@ -230,8 +231,7 @@ public final class BossService implements Listener {
     public void tick() {
         if (boss == null) return;
         if (!active()) {
-            if (boss.isDead()) return; // la mort est gérée dans onDeath
-            end(false, "<gray>Le boss a disparu.");
+            end(false, boss.isDead() ? null : "<gray>Le boss a disparu.");
             return;
         }
         tickCount++;

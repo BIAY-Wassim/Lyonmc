@@ -115,7 +115,7 @@ public final class MenuCommands implements TabExecutor {
                     return;
                 }
                 String type = args[2].toLowerCase(Locale.ROOT);
-                String id = args.length > 3 ? args[3].toLowerCase(Locale.ROOT) : type;
+                String id = (args.length > 3 ? args[3] : type).toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_-]", "_");
                 h.create(id, type, p.getLocation());
                 plugin.msg(sender, "<gray>Hologramme <white>" + id + "</white> (" + type + ") créé ici.");
             }
