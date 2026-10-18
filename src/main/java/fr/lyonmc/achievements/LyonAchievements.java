@@ -37,6 +37,7 @@ import fr.lyonmc.achievements.team.TeamService;
 import fr.lyonmc.achievements.teleport.TeleportCommands;
 import fr.lyonmc.achievements.teleport.Teleporter;
 import fr.lyonmc.achievements.util.Text;
+import fr.lyonmc.achievements.web.WebExportService;
 import fr.lyonmc.achievements.world.ResourceWorldService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -91,6 +92,7 @@ public final class LyonAchievements extends JavaPlugin {
     private ResourceWorldService resources;
     private AchievementsMenu achievementsMenu;
     private HubMenu hub;
+    private WebExportService web;
 
     private final List<BukkitTask> tasks = new ArrayList<>();
 
@@ -162,9 +164,10 @@ public final class LyonAchievements extends JavaPlugin {
         achievementsMenu = new AchievementsMenu(registry, stats, text, heads);
         hub = new HubMenu(this);
         achievementsMenu.setHub(p -> hub.open(p));
+        web = new WebExportService(this);
 
         listen(new AdvancementListener(this, registry, stats, boards, text), chat, new MenuListener(this), heads, motd,
-                missionListener, custom, teamCommand, teleporter, teleportCommands, boss);
+                missionListener, custom, teamCommand, teleporter, teleportCommands, boss, web);
 
         SuccesCommand succes = new SuccesCommand(this, registry, stats, boards, achievementsMenu, text);
         command(succes, "succes", "classement", "carte");
@@ -257,6 +260,10 @@ public final class LyonAchievements extends JavaPlugin {
             for (Player p : Bukkit.getOnlinePlayers()) rewards.check(p);
         }, 6000L, 6000L));
 
+        // Site web : export des données
+        long webTicks = Math.max(10L, getConfig().getLong("web.interval-seconds", 60L)) * 20L;
+        tasks.add(Bukkit.getScheduler().runTaskTimer(this, web::export, 200L, webTicks));
+
         long saveTicks = Math.max(1L, getConfig().getLong("settings.autosave-minutes", 5L)) * 60L * 20L;
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, () -> {
             stats.saveAsync();
@@ -288,6 +295,7 @@ public final class LyonAchievements extends JavaPlugin {
         daily.load();
         missions.load();
         holograms.load();
+        web.invalidateContent();
         for (Player p : Bukkit.getOnlinePlayers()) stats.refreshOnline(p);
         stats.recomputeAll();
         stats.rebuildRanking();
@@ -337,4 +345,5 @@ public final class LyonAchievements extends JavaPlugin {
     public ResourceWorldService resources() { return resources; }
     public AchievementsMenu achievementsMenu() { return achievementsMenu; }
     public HubMenu hub() { return hub; }
+    public WebExportService web() { return web; }
 }

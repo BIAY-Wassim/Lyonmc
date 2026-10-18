@@ -94,6 +94,8 @@ public final class Profile {
     /** Chemins (dans evenements.yml) de lots à donner à la prochaine connexion. */
     public final List<String> pendingBundles = new ArrayList<>();
     public boolean actionbar = true;
+    public long lastSeen;
+    public long playtimeSeconds;
     public boolean firstJoinDone;
 
     private transient boolean dirty;
@@ -171,6 +173,8 @@ public final class Profile {
         p.pendingBundles.addAll(c.getStringList("pending-bundles"));
         p.actionbar = c.getBoolean("settings.actionbar", true);
         p.firstJoinDone = c.getBoolean("first-join-done", false);
+        p.lastSeen = c.getLong("last-seen");
+        p.playtimeSeconds = c.getLong("playtime-seconds");
         return p;
     }
 
@@ -217,6 +221,8 @@ public final class Profile {
         c.set("pending-bundles", new ArrayList<>(pendingBundles));
         c.set("settings.actionbar", actionbar);
         c.set("first-join-done", firstJoinDone);
+        c.set("last-seen", lastSeen);
+        c.set("playtime-seconds", playtimeSeconds);
         return c;
     }
 }

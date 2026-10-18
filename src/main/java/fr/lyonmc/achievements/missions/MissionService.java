@@ -81,6 +81,10 @@ public final class MissionService {
         byTier.computeIfAbsent(def.tier(), k -> new ArrayList<>()).add(def);
     }
 
+    public java.util.Collection<MissionDef> all() {
+        return defs.values();
+    }
+
     public MissionDef def(String id) {
         return defs.get(id);
     }
