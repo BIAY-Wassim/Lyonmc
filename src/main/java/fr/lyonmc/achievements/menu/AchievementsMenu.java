@@ -120,7 +120,7 @@ public final class AchievementsMenu {
         headLore.add(Component.text(Text.percent(s.count(), total) + " % complété", Text.DARK));
         headLore.add(EMPTY);
         for (AdvancementDisplay.Frame f : List.of(AdvancementDisplay.Frame.TASK, AdvancementDisplay.Frame.GOAL, AdvancementDisplay.Frame.CHALLENGE)) {
-            headLore.add(kv(AdvancementRegistry.frameName(f) + "s", s.count(f) + " / " + registry.total(f)));
+            headLore.add(kv(AdvancementRegistry.framePlural(f), s.count(f) + " / " + registry.total(f)));
         }
         AdvancementRegistry.Entry last = s.lastKey() == null ? null : registry.get(s.lastKey());
         if (last != null) {

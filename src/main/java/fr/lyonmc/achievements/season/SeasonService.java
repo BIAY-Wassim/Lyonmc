@@ -213,10 +213,10 @@ public final class SeasonService {
 
         Bukkit.broadcast(Component.empty());
         Bukkit.broadcast(plugin.text().parse("<accent>✦</accent> <white><bold>Fin de la " + finishedName + "</bold></white> <accent>✦</accent>"));
-        String[] medals = {"<#ffd86b>♛ 1", "<#c8c8c8>✧ 2", "<#d29a6a>✧ 3"};
+        String[] medals = {"<#ffd86b>♛ 1</#ffd86b>", "<#c8c8c8>✧ 2</#c8c8c8>", "<#d29a6a>✧ 3</#d29a6a>"};
         StringBuilder discord = new StringBuilder();
         for (int i = 0; i < Math.min(3, top.size()); i++) {
-            Bukkit.broadcast(plugin.text().parse("  " + medals[i] + "</> <white>" + top.get(i).name + "</white> <dark_gray>"
+            Bukkit.broadcast(plugin.text().parse("  " + medals[i] + " <white>" + top.get(i).name + "</white> <dark_gray>"
                     + Text.num(top.get(i).seasonPoints) + " pts"));
             discord.append(i + 1).append(". ").append(top.get(i).name).append(" — ").append(top.get(i).seasonPoints).append(" pts\n");
         }

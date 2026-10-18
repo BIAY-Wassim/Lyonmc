@@ -11,7 +11,7 @@ Plugin Paper / Purpur **1.21.8** pour la survie LyonMC, par **wassdead**.
 | Succès LyonMC | 22 vrais progrès en plus (onglet « LyonMC » dans l'écran des progrès) | — |
 | Missions | 3 missions par jour (facile, moyenne, difficile) + 3 par semaine, série de jours avec bonus | `/missions` |
 | Économie | Pièces gagnées avec les succès, missions, boss… Compatible Vault | `/money`, `/pay`, `/baltop` |
-| Parcours | 24 paliers de récompenses débloqués automatiquement | `/parcours` |
+| Parcours | 23 paliers de récompenses débloqués automatiquement | `/parcours` |
 | Titres | Titre devant le pseudo dans le chat | `/titres` |
 | Cosmétiques | Couleur du pseudo, traînées de particules | `/cosmetiques` |
 | Boutique | Titres, cosmétiques, emplacements de home | `/boutique` |

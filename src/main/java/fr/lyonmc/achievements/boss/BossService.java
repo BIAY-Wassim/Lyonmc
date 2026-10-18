@@ -414,7 +414,7 @@ public final class BossService implements Listener {
         Bukkit.broadcast(Component.empty());
         Bukkit.broadcast(plugin.text().parse("<dark_gray>[<red>Boss</red>]</dark_gray> ").append(plugin.text().parse(cfg().getString("name", "Le Colosse")))
                 .append(plugin.text().parse(" <gray>a été vaincu !")));
-        String[] medals = {"<#ffd86b>♛ 1", "<#c8c8c8>✧ 2", "<#d29a6a>✧ 3"};
+        String[] medals = {"<#ffd86b>♛ 1</#ffd86b>", "<#c8c8c8>✧ 2</#c8c8c8>", "<#d29a6a>✧ 3</#d29a6a>"};
         StringBuilder discord = new StringBuilder();
         for (int i = 0; i < ranking.size(); i++) {
             UUID u = ranking.get(i).getKey();
@@ -422,7 +422,7 @@ public final class BossService implements Listener {
             Profile p = plugin.profiles().get(u);
             if (p == null) continue;
             if (i < 3) {
-                Bukkit.broadcast(plugin.text().parse("  " + medals[i] + "</> <white>" + p.name + "</white> <dark_gray>"
+                Bukkit.broadcast(plugin.text().parse("  " + medals[i] + " <white>" + p.name + "</white> <dark_gray>"
                         + String.format(Locale.FRANCE, "%.0f", pct) + " % des dégâts"));
                 discord.append(i + 1).append(". ").append(p.name).append(" — ").append(String.format(Locale.FRANCE, "%.0f", pct)).append(" %\n");
             }

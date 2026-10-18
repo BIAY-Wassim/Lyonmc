@@ -46,80 +46,105 @@ jobs:
           echo 'view-distance=4' >> server.properties
           echo 'simulation-distance=4' >> server.properties
           mkdir -p ../bot && cd ../bot && npm init -y >/dev/null && npm install --silent mineflayer >/dev/null
-      - name: Écrire le bot
+      - name: Écrire les bots
         run: |
           cat > bot/bot.js <<'JS'
           const mineflayer = require('mineflayer')
           const md = require('minecraft-data')
+          const role = process.argv[2]
           const versions = md.supportedVersions.pc.filter(v => v.startsWith('1.21'))
           const version = versions.includes('1.21.8') ? '1.21.8' : versions[versions.length - 1]
-          console.log('BOT version', version)
-          const bot = mineflayer.createBot({ host: '127.0.0.1', port: 25565, username: 'Testeur', version })
+          const bot = mineflayer.createBot({ host: '127.0.0.1', port: 25565, username: role, version })
           const sleep = ms => new Promise(r => setTimeout(r, ms))
-          bot.on('messagestr', m => console.log('CHAT', m))
-          bot.on('kicked', r => console.log('KICKED', JSON.stringify(r)))
-          bot.on('error', e => console.log('BOTERR', e.message))
-          bot.on('windowOpen', w => console.log('WINDOW', w.title ? JSON.stringify(w.title).slice(0, 120) : '', w.slots.length))
-          async function cmd(c, wait = 2500) { console.log('CMD', c); bot.chat(c); await sleep(wait) }
+          const log = (...a) => console.log(role, ...a)
+          bot.on('messagestr', m => { if (m.trim()) log('CHAT', m) })
+          bot.on('kicked', r => log('KICKED', JSON.stringify(r)))
+          bot.on('error', e => log('BOTERR', e.message))
+          bot.on('windowOpen', w => log('WINDOW', w.title ? JSON.stringify(w.title).slice(0, 100) : ''))
+          async function cmd(c, wait = 2500) { log('CMD', c); bot.chat(c); await sleep(wait) }
           async function click(slot, wait = 2500) {
-            if (!bot.currentWindow) { console.log('NOWINDOW for click', slot); return }
-            console.log('CLICK', slot); await bot.clickWindow(slot, 0, 0).catch(e => console.log('CLICKERR', e.message)); await sleep(wait)
+            if (!bot.currentWindow) { log('NOWINDOW', slot); return }
+            const it = bot.currentWindow.slots[slot]
+            log('CLICK', slot, it ? it.name : 'vide'); await bot.clickWindow(slot, 0, 0).catch(e => log('CLICKERR', e.message)); await sleep(wait)
           }
           async function close() { if (bot.currentWindow) bot.closeWindow(bot.currentWindow); await sleep(800) }
-          bot.once('spawn', async () => {
-            console.log('BOT spawned')
-            await sleep(25000)
+          async function testeur() {
             await cmd('salut tout le monde')
             await cmd('/menu'); await click(22); await click(10); await close()
             await cmd('/menu'); await click(19); await close()
-            await cmd('/missions'); await click(20 + 0); await close()
-            await cmd('/succes'); await cmd('/succes menu'); await click(18 + 1); await close()
+            await cmd('/succes'); await cmd('/succes menu'); await click(19); await close()
             await cmd('/classement'); await close()
             await cmd('/titres'); await click(10); await close()
             await cmd('/cosmetiques'); await close()
-            await cmd('/boutique'); await click(10); await click(11); await close()
-            await cmd('/parcours'); await close()
-            await cmd('/saison'); await close()
-            await cmd('/money'); await cmd('/baltop')
+            await cmd('/boutique'); await click(11); await click(11); await close()
+            await cmd('/cosmetiques'); await click(10); await close()
+            await cmd('/parcours'); await close(); await cmd('/saison'); await close()
             await cmd('/sethome base'); await cmd('/homes'); await close(); await cmd('/home base', 5000)
             await cmd('/setspawn'); await cmd('/spawn', 5000)
             bot.setQuickBarSlot(0); await sleep(500)
-            await cmd('/hdv vendre 100 2'); await cmd('/hdv'); await close(); await cmd('/hdv ventes'); await close()
-            await cmd('/equipe creer Testeurs TST'); await cmd('/equipe'); await close(); await cmd('/equipe chat'); await cmd('coucou equipe'); await cmd('!coucou tous'); await cmd('/equipe chat')
-            await cmd('/equipe top')
-            await cmd('/lmc holo creer podium'); await cmd('/lmc holo creer succes tableau'); await cmd('/lmc holo liste')
-            await cmd('/boss arene'); await cmd('/boss lancer', 25000); await cmd('/boss stop')
-            await cmd('/rtp', 15000)
-            await cmd('/ressources', 15000)
-            await cmd('/back', 5000)
-            await cmd('/missions'); await click(20); await close()
-            await cmd('/lmc missions reset Testeur')
-            await cmd('/recompense'); await close()
-            await cmd('/menu'); await click(51); await close()
-            console.log('BOT done')
-            bot.quit()
+            log('HAND', bot.heldItem ? bot.heldItem.name + ' x' + bot.heldItem.count : 'rien')
+            await cmd('/hdv vendre 100 2'); await cmd('/hdv'); await close()
+            await cmd('/equipe creer Testeurs TST'); await cmd('/equipe inviter Acheteur', 15000)
+            await cmd('/tpaccept', 6000)
+            await cmd('/lmc holo creer podium'); await cmd('/lmc holo creer saison classement-saison')
+            await cmd('/gamemode creative'); await cmd('/boss arene'); await cmd('/boss lancer', 4000)
+            await cmd('/attribute @e[type=minecraft:wither_skeleton,limit=1,sort=nearest] minecraft:max_health base set 6', 1500)
+            for (let i = 0; i < 40; i++) {
+              const e = bot.nearestEntity(en => en.name === 'wither_skeleton')
+              if (!e) { log('BOSS introuvable'); break }
+              await bot.lookAt(e.position.offset(0, 1, 0)).catch(() => {})
+              bot.attack(e); await sleep(500)
+            }
+            await sleep(3000)
+            await cmd('/gamemode survival'); await cmd('/money'); await cmd('/parcours'); await close()
+            await cmd('/rtp', 12000); await cmd('/ressources', 12000); await cmd('/back', 6000)
+            await cmd('/lmc saison fin', 4000)
+            await cmd('/saison'); await close()
+            log('done')
+          }
+          async function acheteur() {
+            await sleep(60000)
+            for (let i = 0; i < 25; i++) {
+              await cmd('/hdv', 2000)
+              const it = bot.currentWindow && bot.currentWindow.slots[0]
+              if (it && it.name === 'diamond') { await click(0, 2000); await click(11, 3000); break }
+              await close(); await sleep(3000)
+            }
+            await close()
+            log('INV', bot.inventory.items().map(i => i.name + ' x' + i.count).join(', '))
+            for (let i = 0; i < 6; i++) { await cmd('/equipe rejoindre Testeurs', 3000) }
+            await cmd('/tpa Testeur', 12000)
+            await cmd('/pay Testeur 500'); await cmd('/money'); await cmd('/equipe info')
+            log('done')
+          }
+          bot.once('spawn', async () => {
+            log('spawned', version)
+            await sleep(25000)
+            try { if (role === 'Testeur') await testeur(); else await acheteur() } catch (e) { log('EXC', e.message) }
+            await sleep(2000); bot.quit()
           })
           JS
-      - name: Démarrer le serveur et le bot
+      - name: Démarrer le serveur et les bots
         run: |
           cd srv
           mkfifo in
           (
             for i in $(seq 1 240); do grep -q "Done (" logs/latest.log 2>/dev/null && break; sleep 1; done
             sleep 3
-            (cd ../bot && timeout 400 node bot.js > ../bot.log 2>&1 &)
-            sleep 15
-            for c in "op Testeur" "give Testeur diamond 5" "eco give Testeur 50000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:story/root" "advancement grant Testeur only minecraft:adventure/kill_a_mob"; do echo "$c"; sleep 2; done
-            sleep 200
-            for c in "lmc saison fin" "baltop" "lmc reload"; do echo "$c"; sleep 4; done
-            sleep 10
+            (cd ../bot && timeout 480 node bot.js Testeur > ../bot.log 2>&1 &)
+            (cd ../bot && timeout 480 node bot.js Acheteur > ../bot2.log 2>&1 &)
+            sleep 12
+            for c in "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob"; do echo "$c"; sleep 1; done
+            sleep 300
+            for c in "baltop" "lmc reload"; do echo "$c"; sleep 4; done
+            sleep 8
             echo "stop"
           ) > in &
-          timeout 700 java -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
+          timeout 760 java -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
       - name: Analyse des journaux
         if: always()
         run: |
-          echo "=== BOT ==="; cat bot.log | head -200
+          echo "=== BOT ==="; cat bot.log bot2.log | head -300
           cd srv
           echo "=== LyonAchievements ==="; grep -n "LyonAchievements" logs/latest.log | head -60
           echo "=== Erreurs ==="; grep -nE "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -80 || true
@@ -130,13 +155,13 @@ jobs:
       - name: Publier les journaux (branche ci-logs)
         if: always()
         run: |
-          mkdir -p /tmp/logs && cp bot.log /tmp/logs/ 2>/dev/null || true
+          mkdir -p /tmp/logs && cp bot.log bot2.log /tmp/logs/ 2>/dev/null || true
           cp srv/logs/latest.log /tmp/logs/server.log 2>/dev/null || true
           git config user.name "ci"
           git config user.email "ci@users.noreply.github.com"
           git checkout --orphan ci-logs
           git rm -rq --cached . || true
           cp /tmp/logs/* . 
-          git add bot.log server.log
+          git add bot.log bot2.log server.log
           git commit -qm "logs ${{ github.run_id }}"
           git push -qf origin HEAD:ci-logs

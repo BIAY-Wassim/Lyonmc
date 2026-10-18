@@ -188,6 +188,15 @@ public final class AdvancementRegistry {
         };
     }
 
+    /** Pluriel : progrès, objectifs, défis */
+    public static String framePlural(AdvancementDisplay.Frame frame) {
+        return switch (frame) {
+            case CHALLENGE -> "Défis";
+            case GOAL -> "Objectifs";
+            default -> "Progrès";
+        };
+    }
+
     public static String frameName(AdvancementDisplay.Frame frame) {
         return switch (frame) {
             case CHALLENGE -> "Défi";

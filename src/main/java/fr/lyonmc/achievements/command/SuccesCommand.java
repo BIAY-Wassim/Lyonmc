@@ -170,7 +170,7 @@ public final class SuccesCommand implements TabExecutor {
         for (AdvancementDisplay.Frame f : List.of(AdvancementDisplay.Frame.TASK, AdvancementDisplay.Frame.GOAL, AdvancementDisplay.Frame.CHALLENGE)) {
             if (!first) types.append(Component.text("   ", Text.DARK));
             first = false;
-            types.append(Component.text(AdvancementRegistry.frameName(f).toLowerCase(Locale.ROOT) + "s ", Text.GRAY))
+            types.append(Component.text(AdvancementRegistry.framePlural(f).toLowerCase(Locale.ROOT) + " ", Text.GRAY))
                     .append(Component.text(s.count(f), Text.WHITE))
                     .append(Component.text("/" + registry.total(f), Text.DARK));
         }
