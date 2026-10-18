@@ -44,7 +44,7 @@ Après une modification : `/lmc reload`.
 Le dossier `web/` contient le site (accueil, classements, profils joueurs, guide). Le plugin écrit les données en JSON toutes les minutes dans `web.export-path` (`/var/www/lyonmc/data` par défaut). La Dynmap est servie sur `/carte/` par Apache.
 
 1. `sudo bash deploy/installer-site.sh <utilisateur du serveur Minecraft>` installe ou met à jour le site sans toucher à `data/`.
-2. `deploy/lyonmc.conf` est la configuration Apache (site + `/carte/` vers le port 8123 de Dynmap). Modules : `proxy`, `proxy_http`, `headers`.
+2. `deploy/lyonmc.conf` est la configuration Apache en HTTPS (site + `/carte/` vers le port 8134 de Dynmap, anciens liens Dynmap redirigés). Modules : `ssl`, `rewrite`, `proxy`, `proxy_http`, `headers`.
 
 ## Compiler
 
