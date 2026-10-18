@@ -93,7 +93,8 @@ public final class WebExportService implements Listener {
             files.put("classements.json", GSON.toJson(leaderboards()));
             files.put("joueurs.json", GSON.toJson(players()));
             long now = System.currentTimeMillis();
-            if (now - lastContent > 10 * 60_000L) {
+            // Le guide est regénéré toutes les 10 minutes, ou tout de suite s'il a disparu du dossier
+            if (now - lastContent > 10 * 60_000L || !Files.exists(folder().resolve("contenu.json"))) {
                 files.put("contenu.json", GSON.toJson(content()));
                 lastContent = now;
             }
