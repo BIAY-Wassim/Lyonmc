@@ -314,11 +314,7 @@ public final class BossService implements Listener {
                 int n = enraged ? 5 : 3;
                 for (int i = 0; i < n; i++) {
                     Location l = loc.clone().add(ThreadLocalRandom.current().nextDouble(-4, 4), 0, ThreadLocalRandom.current().nextDouble(-4, 4));
-                    Entity m = w.spawn(l, enraged ? WitherSkeleton.class : Skeleton.class, ent -> {
-                        ent.getPersistentDataContainer().set(minionKey, PersistentDataType.BYTE, (byte) 1);
-                        ent.setPersistent(false);
-                        if (ent instanceof LivingEntity le) set(le, Attribute.MAX_HEALTH, 20);
-                    });
+                    Entity m = enraged ? w.spawn(l, WitherSkeleton.class, this::tagMinion) : w.spawn(l, Skeleton.class, this::tagMinion);
                     minions.add(m);
                     w.spawnParticle(Particle.LARGE_SMOKE, l, 10, 0.3, 0.6, 0.3, 0.01);
                 }
@@ -354,6 +350,12 @@ public final class BossService implements Listener {
             }
         }
         minions.removeIf(m -> !m.isValid());
+    }
+
+    private void tagMinion(Entity ent) {
+        ent.getPersistentDataContainer().set(minionKey, PersistentDataType.BYTE, (byte) 1);
+        ent.setPersistent(false);
+        if (ent instanceof LivingEntity le) set(le, Attribute.MAX_HEALTH, 20);
     }
 
     private void say(String mini) {
