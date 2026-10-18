@@ -76,6 +76,15 @@ resource-world:
   border-radius: 3000
   monthly-reset: true
 
+# Site lyonmc.fr : le plugin y écrit les classements, profils et le guide (JSON) toutes les minutes
+web:
+  enabled: true
+  # Dossier "data" du site (doit appartenir à l'utilisateur qui lance le serveur Minecraft)
+  export-path: "/var/www/lyonmc/data"
+  interval-seconds: 60
+  ip: "lyonmc.fr"
+  discord: ""
+
 # Annonces sur Discord (laisser vide pour désactiver)
 # Discord : Paramètres du salon > Intégrations > Webhooks > Copier l'URL
 discord:
@@ -92,9 +101,9 @@ settings:
 
 # Site / carte en direct (dynmap)
 map:
-  url: "https://lyonmc.fr"
+  url: "https://lyonmc.fr/carte"
   # /carte affiche ce message (lien cliquable)
-  message: "<accent>➤</accent> <white>Dynmap</white> <gray>du serveur en direct : <click:open_url:'https://lyonmc.fr'><hover:show_text:'<gray>Ouvrir la Dynmap'><white><u>lyonmc.fr</u></white></hover></click>"
+  message: "<accent>➤</accent> <white>Dynmap</white> <gray>du serveur en direct : <click:open_url:'https://lyonmc.fr/carte'><hover:show_text:'<gray>Ouvrir la Dynmap'><white><u>lyonmc.fr/carte</u></white></hover></click>"
 
 progress-bar:
   length: 20
@@ -230,7 +239,7 @@ chat:
       - ""
       - "  <accent>➤</accent> <click:run_command:'/menu'><hover:show_text:'<gray>Ouvrir le menu'><white><u>/menu</u></white></hover></click> <gray>tout le serveur en un clic"
       - "  <accent>➤</accent> <click:run_command:'/missions'><hover:show_text:'<gray>Voir les missions'><white><u>/missions</u></white></hover></click> <gray>tes missions du jour"
-      - "  <accent>➤</accent> <click:open_url:'https://lyonmc.fr'><hover:show_text:'<gray>Ouvrir la Dynmap'><white><u>lyonmc.fr</u></white></hover></click> <gray>pour voir la <white>Dynmap</white> en direct"
+      - "  <accent>➤</accent> <click:open_url:'https://lyonmc.fr/carte'><hover:show_text:'<gray>Ouvrir la Dynmap'><white><u>lyonmc.fr</u></white></hover></click> <gray>pour voir la <white>Dynmap</white> en direct"
       - ""
 
 below-name:
