@@ -88,7 +88,7 @@ jobs:
             await cmd('/tpaccept', 6000)
             await cmd('/lmc holo creer podium'); await cmd('/lmc holo creer saison classement-saison')
             await cmd('/gamemode creative'); await cmd('/boss arene'); await cmd('/boss lancer', 4000)
-            await cmd('/attribute @e[type=minecraft:wither_skeleton,limit=1,sort=nearest] minecraft:max_health base set 6', 1500)
+            await cmd('/item replace entity Testeur weapon.mainhand with minecraft:netherite_sword[minecraft:enchantments={levels:{"minecraft:sharpness":255}}]', 1500)
             for (let i = 0; i < 40; i++) {
               const e = bot.nearestEntity(en => en.name === 'wither_skeleton')
               if (!e) { log('BOSS introuvable'); break }

@@ -50,6 +50,7 @@ public final class Teleporter implements Listener {
             plugin.msg(player, "<gray>Destination introuvable.");
             return;
         }
+        if (player.isDead()) return;
         cancel(player.getUniqueId(), false);
         int seconds = warmup(player);
         if (seconds <= 0) {
@@ -59,7 +60,7 @@ public final class Teleporter implements Listener {
         Location origin = player.getLocation().clone();
         int[] left = {seconds * 2};
         BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            if (!player.isOnline()) {
+            if (!player.isOnline() || player.isDead()) {
                 cancel(player.getUniqueId(), false);
                 return;
             }
@@ -84,6 +85,7 @@ public final class Teleporter implements Listener {
     }
 
     private void go(Player player, Location to, String label, Consumer<Player> after) {
+        if (!player.isOnline() || player.isDead()) return;
         back.put(player.getUniqueId(), player.getLocation().clone());
         player.teleportAsync(to, PlayerTeleportEvent.TeleportCause.PLUGIN).thenAccept(ok -> {
             if (!ok) return;
