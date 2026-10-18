@@ -473,16 +473,32 @@
     if (anchor) document.getElementById(anchor)?.scrollIntoView();
   }
 
+  // ───────────── Carte (Dynmap intégrée) ─────────────
+  function carte() {
+    setTitle("Carte");
+    if (app.querySelector("iframe.map-frame")) return; // déjà affichée, on ne recharge pas la carte
+    const src = "/dynmap/" + location.search;
+    app.innerHTML = `
+      <div class="map-bar"><div class="wrap">
+        <h1>Carte en direct</h1>
+        <span class="muted small">Le monde du serveur, mis à jour en continu.</span>
+        <a class="map-full" href="${esc(src)}" target="_blank" rel="noopener">Ouvrir en plein écran</a>
+      </div></div>
+      <iframe class="map-frame" src="${esc(src)}" title="Carte Dynmap du serveur LyonMC" allow="fullscreen"></iframe>`;
+  }
+
   // ───────────── Routage ─────────────
   async function render(scroll = true) {
     const path = decodeURI(location.pathname).replace(/\/+$/, "") || "/";
     setNav(path);
     const parts = path.split("/").filter(Boolean);
+    document.body.classList.toggle("is-map", parts[0] === "carte");
     try {
       if (path === "/") await home();
       else if (parts[0] === "classements") await boards(parts[1]);
       else if (parts[0] === "joueur" && parts[1]) await player(parts[1], parts[2]);
       else if (parts[0] === "guide") await guide(location.hash.slice(1));
+      else if (parts[0] === "carte") carte();
       else {
         setTitle("Page introuvable");
         app.innerHTML = `<div class="page-head"><div class="wrap"><h1>Page introuvable</h1><p>Cette page n'existe pas. <a href="/" data-link>Retour à l'accueil</a></p></div></div>`;

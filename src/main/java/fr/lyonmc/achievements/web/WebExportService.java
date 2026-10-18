@@ -40,8 +40,8 @@ public final class WebExportService implements Listener {
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
     private final LyonAchievements plugin;
-    private boolean warned;
-    private long lastContent;
+    private volatile boolean warned;
+    private volatile long lastContent;
 
     public WebExportService(LyonAchievements plugin) {
         this.plugin = plugin;
@@ -55,8 +55,11 @@ public final class WebExportService implements Listener {
         return cfg() != null && cfg().getBoolean("enabled", true);
     }
 
+    /** Dossier d'export. Un chemin relatif part du dossier du serveur (celui qui contient plugins/). */
     private Path folder() {
-        return Path.of(cfg().getString("export-path", "/var/www/lyonmc/data"));
+        Path p = Path.of(cfg().getString("export-path", "siteweb/data"));
+        if (p.isAbsolute()) return p;
+        return plugin.getDataFolder().getAbsoluteFile().getParentFile().getParentFile().toPath().resolve(p).normalize();
     }
 
     // ───────────────────────────── Suivi des joueurs ─────────────────────────────
@@ -117,6 +120,7 @@ public final class WebExportService implements Listener {
             }
             warned = false;
         } catch (IOException e) {
+            lastContent = 0;
             if (!warned) {
                 warned = true;
                 plugin.getLogger().warning("Export du site impossible dans " + dir + " (" + e.getMessage() + "). "
