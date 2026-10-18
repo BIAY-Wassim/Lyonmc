@@ -1,0 +1,53 @@
+# ─────────────────────────────────────────────────────────────
+#   Événements · LyonMC
+#   Saisons mensuelles, week-end bonus, boss mondial.
+#   Après modification : /lmc reload
+# ─────────────────────────────────────────────────────────────
+
+# ───────────────────────── Saisons ─────────────────────────
+# Une saison = un mois. Le classement de saison repart à zéro le 1er du mois.
+season:
+  enabled: true
+  # Points gagnés par nouveau succès (les missions et le boss en donnent aussi)
+  points:
+    task: 10
+    goal: 25
+    challenge: 60
+  # Samedi et dimanche : points de saison multipliés
+  weekend-multiplier: 2.0
+  weekend-announce: true
+  # Points minimum pour la récompense de participation
+  participation-min-points: 100
+  rewards:
+    "1": { coins: 10000, title: champion, color: or }
+    "2": { coins: 6000, title: finaliste }
+    "3": { coins: 3000, title: finaliste }
+    top10: { coins: 1000 }
+    participation: { coins: 200 }
+
+# ───────────────────────── Boss mondial ─────────────────────────
+# Apparaît aux horaires prévus dans l'arène (à définir en jeu avec /boss arene).
+boss:
+  enabled: true
+  name: "<#ff6b6b><bold>Le Colosse</bold>"
+  entity: WITHER_SKELETON
+  scale: 2.6
+  # Vie : base + par joueur présent (maximum 1024)
+  health-base: 400
+  health-per-player: 150
+  damage: 12
+  armor: 12
+  # Jours en anglais (MONDAY ... SUNDAY), heure de Paris
+  schedule:
+    - "WEDNESDAY 21:00"
+    - "SATURDAY 21:00"
+  warnings-minutes: [15, 5, 1]
+  duration-minutes: 15
+  # Pourcentage minimum des dégâts pour être récompensé
+  min-damage-percent: 2
+  rewards:
+    participation: { coins: 400, season-points: 60, xp-levels: 5 }
+    top1: { coins: 1500, season-points: 200, items: ["NETHERITE_SCRAP:2"] }
+    top2: { coins: 1000, season-points: 140, items: ["DIAMOND:6"] }
+    top3: { coins: 700, season-points: 100, items: ["DIAMOND:3"] }
+    last-hit: { coins: 300 }

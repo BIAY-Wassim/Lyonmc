@@ -15,7 +15,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.*;
 
 import java.util.*;
@@ -31,7 +30,7 @@ public final class BoardManager {
     private static final int MAX_LINES = 15;
     private static final String TEAM_PREFIX = "lmc_s";
 
-    private final JavaPlugin plugin;
+    private final fr.lyonmc.achievements.LyonAchievements plugin;
     private final AdvancementRegistry registry;
     private final StatsService stats;
     private final Text text;
@@ -40,7 +39,7 @@ public final class BoardManager {
     private List<UUID> lastOrder = List.of();
     private int orderVersion = 0;
 
-    public BoardManager(JavaPlugin plugin, AdvancementRegistry registry, StatsService stats, Text text) {
+    public BoardManager(fr.lyonmc.achievements.LyonAchievements plugin, AdvancementRegistry registry, StatsService stats, Text text) {
         this.plugin = plugin;
         this.registry = registry;
         this.stats = stats;
@@ -225,6 +224,8 @@ public final class BoardManager {
             Component listName = text.parse(
                     plugin.getConfig().getString("tablist.name-format." + Text.rankKey(rank), "<player>"),
                     Placeholder.unparsed("player", player.getName()),
+                    Placeholder.component("name", plugin.rewards().coloredName(player.getUniqueId(), player.getName(), Text.WHITE)),
+                    Placeholder.component("team", plugin.teams().tagComponent(plugin.teams().teamOf(player.getUniqueId()))),
                     Placeholder.unparsed("rank", String.valueOf(rank)),
                     Placeholder.unparsed("done", String.valueOf(s == null ? 0 : s.count())));
             if (!listName.equals(player.playerListName())) player.playerListName(listName);

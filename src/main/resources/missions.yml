@@ -1,0 +1,86 @@
+# ─────────────────────────────────────────────────────────────
+#   Missions · LyonMC
+#   Chaque jour : 1 mission facile, 1 moyenne, 1 difficile.
+#   Chaque semaine (lundi) : 3 missions hebdomadaires.
+#   Terminer les 3 missions du jour fait avancer la série.
+#   Après modification : /lmc reload
+# ─────────────────────────────────────────────────────────────
+
+settings:
+  daily: { easy: 1, medium: 1, hard: 1 }
+  weekly: 3
+  # Changements de mission gratuits par jour, puis prix
+  free-rerolls: 1
+  reroll-price: 150
+  # Bonus quand les 3 missions du jour sont terminées
+  all-daily-bonus: { coins: 150, season-points: 25, xp: 100 }
+  # +X % de pièces par jour de série (plafonné)
+  streak-bonus-percent: 10
+  streak-bonus-max: 100
+  # Affiche la progression au-dessus de la barre d'action
+  actionbar: true
+
+# Récompenses de base par difficulté
+rewards:
+  easy: { coins: 60, season-points: 10, xp: 40 }
+  medium: { coins: 120, season-points: 20, xp: 80 }
+  hard: { coins: 250, season-points: 40, xp: 160 }
+  weekly: { coins: 900, season-points: 120, xp: 400 }
+
+# type : KILL (entités, HOSTILE = tous les monstres, ANY = tout), MINE (blocs naturels),
+#        HARVEST (cultures mûres), FISH, BREED (ANY ou entités), CRAFT (objets), SMELT (objets),
+#        TRADE (villageois), ENCHANT, WALK (mètres), EAT (aliments ou ANY), TAME, PLACE (blocs ou ANY)
+# name : <amount> est remplacé par la quantité
+daily:
+  easy:
+    zombies:      { type: KILL, targets: [ZOMBIE, HUSK, DROWNED, ZOMBIE_VILLAGER], amount: 15, name: "Tuer <amount> zombies", icon: ROTTEN_FLESH }
+    squelettes:   { type: KILL, targets: [SKELETON, STRAY, BOGGED], amount: 12, name: "Tuer <amount> squelettes", icon: BONE }
+    araignees:    { type: KILL, targets: [SPIDER, CAVE_SPIDER], amount: 10, name: "Tuer <amount> araignées", icon: STRING }
+    bucheron:     { type: MINE, targets: [OAK_LOG, BIRCH_LOG, SPRUCE_LOG, JUNGLE_LOG, ACACIA_LOG, DARK_OAK_LOG, MANGROVE_LOG, CHERRY_LOG, PALE_OAK_LOG], amount: 64, name: "Couper <amount> bûches", icon: IRON_AXE }
+    pierre:       { type: MINE, targets: [STONE, DEEPSLATE, COBBLESTONE, ANDESITE, DIORITE, GRANITE, TUFF], amount: 192, name: "Miner <amount> blocs de pierre", icon: STONE_PICKAXE }
+    ble:          { type: HARVEST, targets: [WHEAT], amount: 48, name: "Récolter <amount> blés", icon: WHEAT }
+    carottes:     { type: HARVEST, targets: [CARROTS, POTATOES, BEETROOTS], amount: 48, name: "Récolter <amount> légumes", icon: CARROT }
+    peche:        { type: FISH, amount: 8, name: "Pêcher <amount> fois", icon: FISHING_ROD }
+    elevage:      { type: BREED, targets: [ANY], amount: 8, name: "Faire naître <amount> animaux", icon: WHEAT_SEEDS }
+    marche:       { type: WALK, amount: 2000, name: "Parcourir <amount> mètres", icon: LEATHER_BOOTS }
+    cuisine:      { type: SMELT, targets: [COOKED_BEEF, COOKED_PORKCHOP, COOKED_CHICKEN, COOKED_MUTTON, COOKED_RABBIT, COOKED_COD, COOKED_SALMON, BAKED_POTATO], amount: 24, name: "Cuire <amount> aliments", icon: FURNACE }
+    construction: { type: PLACE, targets: [ANY], amount: 300, name: "Poser <amount> blocs", icon: BRICKS }
+  medium:
+    monstres:     { type: KILL, targets: [HOSTILE], amount: 50, name: "Éliminer <amount> monstres", icon: IRON_SWORD }
+    creepers:     { type: KILL, targets: [CREEPER], amount: 10, name: "Tuer <amount> creepers", icon: GUNPOWDER }
+    fer:          { type: MINE, targets: [IRON_ORE, DEEPSLATE_IRON_ORE], amount: 24, name: "Miner <amount> minerais de fer", icon: RAW_IRON }
+    charbon:      { type: MINE, targets: [COAL_ORE, DEEPSLATE_COAL_ORE], amount: 40, name: "Miner <amount> minerais de charbon", icon: COAL }
+    cuivre:       { type: MINE, targets: [COPPER_ORE, DEEPSLATE_COPPER_ORE], amount: 32, name: "Miner <amount> minerais de cuivre", icon: RAW_COPPER }
+    commerce:     { type: TRADE, amount: 8, name: "Faire <amount> échanges avec des villageois", icon: EMERALD }
+    enchantement: { type: ENCHANT, amount: 3, name: "Enchanter <amount> objets", icon: ENCHANTING_TABLE }
+    pecheur:      { type: FISH, amount: 20, name: "Pêcher <amount> fois", icon: COD }
+    randonnee:    { type: WALK, amount: 6000, name: "Parcourir <amount> mètres", icon: CHAINMAIL_BOOTS }
+    fournaise:    { type: SMELT, targets: [IRON_INGOT, GOLD_INGOT, COPPER_INGOT], amount: 48, name: "Fondre <amount> lingots", icon: BLAST_FURNACE }
+    eleveur:      { type: BREED, targets: [ANY], amount: 20, name: "Faire naître <amount> animaux", icon: HAY_BLOCK }
+    dompteur:     { type: TAME, amount: 2, name: "Apprivoiser <amount> animaux", icon: BONE }
+  hard:
+    diamants:     { type: MINE, targets: [DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE], amount: 8, name: "Miner <amount> minerais de diamant", icon: DIAMOND }
+    or:           { type: MINE, targets: [GOLD_ORE, DEEPSLATE_GOLD_ORE, NETHER_GOLD_ORE], amount: 24, name: "Miner <amount> minerais d'or", icon: RAW_GOLD }
+    lapis:        { type: MINE, targets: [LAPIS_ORE, DEEPSLATE_LAPIS_ORE], amount: 16, name: "Miner <amount> minerais de lapis", icon: LAPIS_LAZULI }
+    redstone:     { type: MINE, targets: [REDSTONE_ORE, DEEPSLATE_REDSTONE_ORE], amount: 24, name: "Miner <amount> minerais de redstone", icon: REDSTONE }
+    endermen:     { type: KILL, targets: [ENDERMAN], amount: 12, name: "Tuer <amount> endermen", icon: ENDER_PEARL }
+    blazes:       { type: KILL, targets: [BLAZE], amount: 12, name: "Tuer <amount> blazes", icon: BLAZE_ROD }
+    sorcieres:    { type: KILL, targets: [WITCH], amount: 3, name: "Tuer <amount> sorcières", icon: GLASS_BOTTLE }
+    nether:       { type: MINE, targets: [NETHER_QUARTZ_ORE], amount: 64, name: "Miner <amount> minerais de quartz", icon: QUARTZ }
+    massacre:     { type: KILL, targets: [HOSTILE], amount: 150, name: "Éliminer <amount> monstres", icon: DIAMOND_SWORD }
+    grand-voyage: { type: WALK, amount: 15000, name: "Parcourir <amount> mètres", icon: DIAMOND_BOOTS }
+    marchand:     { type: TRADE, amount: 24, name: "Faire <amount> échanges avec des villageois", icon: EMERALD_BLOCK }
+    enchanteur:   { type: ENCHANT, amount: 8, name: "Enchanter <amount> objets", icon: EXPERIENCE_BOTTLE }
+
+weekly:
+  chasseur:       { type: KILL, targets: [HOSTILE], amount: 500, name: "Éliminer <amount> monstres", icon: NETHERITE_SWORD }
+  mineur:         { type: MINE, targets: [ANY], amount: 3000, name: "Miner <amount> blocs", icon: DIAMOND_PICKAXE }
+  diamantaire:    { type: MINE, targets: [DIAMOND_ORE, DEEPSLATE_DIAMOND_ORE], amount: 32, name: "Miner <amount> minerais de diamant", icon: DIAMOND_BLOCK }
+  agriculteur:    { type: HARVEST, targets: [ANY], amount: 500, name: "Récolter <amount> cultures", icon: HAY_BLOCK }
+  explorateur:    { type: WALK, amount: 40000, name: "Parcourir <amount> mètres", icon: ELYTRA }
+  negociant:      { type: TRADE, amount: 60, name: "Faire <amount> échanges avec des villageois", icon: EMERALD_BLOCK }
+  grand-pecheur:  { type: FISH, amount: 75, name: "Pêcher <amount> fois", icon: TROPICAL_FISH }
+  batisseur:      { type: PLACE, targets: [ANY], amount: 3000, name: "Poser <amount> blocs", icon: SCAFFOLDING }
+  ancien:         { type: MINE, targets: [ANCIENT_DEBRIS], amount: 6, name: "Miner <amount> débris antiques", icon: ANCIENT_DEBRIS }
+  enchanteur:     { type: ENCHANT, amount: 20, name: "Enchanter <amount> objets", icon: ENCHANTING_TABLE }
+  eleveur:        { type: BREED, targets: [ANY], amount: 80, name: "Faire naître <amount> animaux", icon: HAY_BLOCK }
