@@ -106,7 +106,7 @@ code.cmd { font: 500 .9em/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 .topbar { position: sticky; top: 0; z-index: 30; background: rgba(13, 17, 25, .86); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .topbar .wrap { display: flex; align-items: center; gap: 22px; min-height: 60px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 400 1.5rem/1 var(--pixel); letter-spacing: .02em; }
-.brand .cube { width: 22px; height: 22px; border-radius: 3px; background: url(/img/grass_side.png) 0 0 / 22px 22px; image-rendering: pixelated; }
+.brand .logo { width: 28px; height: 28px; border-radius: 4px; }
 .nav { display: flex; gap: 2px; margin-left: auto; }
 .nav a { text-decoration: none; color: var(--ink-2); padding: 7px 12px; border-radius: 8px; font-weight: 500; }
 .nav a:hover { color: var(--ink); background: var(--panel); }
@@ -141,7 +141,8 @@ code.cmd { font: 500 .9em/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   background: rgba(10, 14, 22, .55); border: 1px solid rgba(255, 255, 255, .14); backdrop-filter: blur(10px); color: var(--ink);
 }
 .join .label { font-size: var(--step--1); color: var(--ink-2); margin: 0 0 8px 2px; }
-.join .row { display: flex; gap: 8px; }
+.join .row { display: flex; gap: 8px; align-items: center; }
+.srv-icon { width: 42px; height: 42px; flex: none; border-radius: 6px; image-rendering: pixelated; }
 .join .field { flex: 1; min-width: 0; display: flex; align-items: center; padding: 0 14px; min-height: 42px; background: rgba(0, 0, 0, .45); border: 1px solid rgba(255, 255, 255, .1); border-radius: 8px; font: 400 1.3rem/1 var(--pixel); letter-spacing: .03em; color: #fff; }
 .join .meta { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: var(--step--1); color: var(--ink-2); flex-wrap: wrap; }
 .faces { display: flex; }

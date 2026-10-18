@@ -18,6 +18,8 @@
   const tr = (key, fallback) => (key && FR[key]) || fallback || key || "";
   const plink = (name, cls = "") => `<a class="${cls}" href="/joueur/${encodeURIComponent(name)}" data-link>${esc(name)}</a>`;
   const pct = (r) => `${String(r ?? 0).replace(".", ",")} %`;
+  /** Icône du serveur (celle de la liste des serveurs), via l'API mcstatus.io. */
+  const serverIcon = (ip) => `https://api.mcstatus.io/v2/icon/${encodeURIComponent(ip || "lyonmc.fr")}`;
 
   function ago(ms) {
     if (!ms) return "";
@@ -292,7 +294,7 @@
             <p class="hero-lead">Survie Java 1.21.8. ${num(totals.achievements || 146)} succès à obtenir, des missions chaque jour, un boss deux fois par semaine et un classement qui repart chaque mois.</p>
             <div class="join">
               <p class="label">Adresse du serveur</p>
-              <div class="row"><span class="field">${esc(ip)}</span><button class="btn" type="button" id="copy">Copier</button></div>
+              <div class="row"><img class="srv-icon" src="${serverIcon(ip)}" alt="" onerror="this.onerror=null;this.src='/img/grass_side.png'"><span class="field">${esc(ip)}</span><button class="btn" type="button" id="copy">Copier</button></div>
               <div class="meta"><span class="dot ${s?.online ? "on" : ""}"></span><span>${s ? `${s.online} en ligne sur ${s.max}` : "Statut indisponible"}</span><span class="faces">${online}</span></div>
             </div>
           </div>
