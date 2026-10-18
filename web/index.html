@@ -8,24 +8,25 @@
   <meta property="og:title" content="LyonMC · Survie Minecraft 1.21.8">
   <meta property="og:description" content="Succès, missions du jour, saisons, boss mondial et classements. Rejoins-nous sur lyonmc.fr">
   <meta property="og:type" content="website">
-  <meta name="theme-color" content="#22252b">
-  <link rel="icon" href="/img/icons/nether_star.png">
+  <meta name="theme-color" content="#0f131b">
+  <link rel="icon" href="/img/grass_side.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Jersey+10&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;500;600;700&family=Tiny5&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
   <header class="topbar">
     <div class="wrap">
-      <a class="brand" href="/" data-link><img class="pixelated" src="/img/icons/nether_star.png" alt="">LyonMC</a>
+      <a class="brand" href="/" data-link><span class="cube"></span>LyonMC</a>
       <nav class="nav" aria-label="Navigation principale">
         <a href="/" data-link>Accueil</a>
         <a href="/classements" data-link>Classements</a>
+        <a href="/joueurs" data-link>Joueurs</a>
         <a href="/guide" data-link>Guide</a>
         <a href="/carte" data-link>Carte</a>
       </nav>
-      <span class="online-pill" id="online-pill"><span class="dot"></span><span>…</span></span>
+      <span class="online" id="online"><span class="dot"></span><span>…</span></span>
     </div>
   </header>
 
@@ -33,14 +34,15 @@
 
   <footer class="footer">
     <div class="wrap">
-      <span>LyonMC, serveur Minecraft survie Java 1.21.8</span>
+      <span>LyonMC, survie Java 1.21.8</span>
       <a href="/guide" data-link>Guide</a>
       <a href="/carte" data-link>Carte en direct</a>
       <a id="discord-link" href="#" hidden>Discord</a>
-      <span class="spacer">Données mises à jour chaque minute</span>
+      <span class="legal">Pas un produit officiel Minecraft. Non approuvé par Mojang ni Microsoft.</span>
     </div>
   </footer>
 
+  <div class="tip" id="tip" role="tooltip" hidden></div>
   <script src="/assets/app.js" defer></script>
 </body>
 </html>
