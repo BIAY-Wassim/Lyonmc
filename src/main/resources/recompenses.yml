@@ -1,0 +1,359 @@
+# ─────────────────────────────────────────────────────────────
+#   Récompenses · LyonMC
+#   Monnaie, titres, cosmétiques, parcours de paliers,
+#   récompense quotidienne et boutique.
+#   Textes au format MiniMessage. Après modification : /lmc reload
+# ─────────────────────────────────────────────────────────────
+
+currency:
+  singular: "pièce"
+  plural: "pièces"
+  symbol: "⛁"
+  # Offert à la première connexion
+  starting-balance: 100
+
+# Pièces gagnées à chaque nouveau succès, selon son type
+achievement-coins:
+  task: 15
+  goal: 40
+  challenge: 150
+
+# ───────────────────────── Titres ─────────────────────────
+# Affichés devant le pseudo dans le chat. Le joueur choisit avec /titres.
+# Un titre se débloque par un palier (plus bas), par une saison, ou s'achète (price).
+titles:
+  novice:
+    display: "<gray>Novice"
+    description: "Le début de l'aventure"
+    default: true
+  aventurier:
+    display: "<#b5e3b0>Aventurier"
+    description: "Atteindre 10 % des succès"
+  explorateur:
+    display: "<#8fd3c7>Explorateur"
+    description: "Atteindre 25 % des succès"
+  veteran:
+    display: "<#9ab8ff>Vétéran"
+    description: "Atteindre 50 % des succès"
+  maitre:
+    display: "<#c79bff>Maître"
+    description: "Atteindre 75 % des succès"
+  grand-maitre:
+    display: "<#ff9bd2>Grand Maître"
+    description: "Atteindre 90 % des succès"
+  legende:
+    display: "<gradient:#ffe29a:#ffb35c>Légende</gradient>"
+    description: "Obtenir tous les succès"
+  pionnier:
+    display: "<#e6e6e6>Pionnier"
+    description: "Terminer la catégorie Minecraft"
+  seigneur-nether:
+    display: "<#ff7a6b>Seigneur du Nether"
+    description: "Terminer la catégorie Nether"
+  conquerant-end:
+    display: "<#d8b4ff>Conquérant de l'End"
+    description: "Terminer la catégorie The End"
+  globe-trotteur:
+    display: "<#ffcf7a>Globe-trotteur"
+    description: "Terminer la catégorie Aventure"
+  fermier:
+    display: "<#a8e07a>Fermier émérite"
+    description: "Terminer la catégorie Agriculture"
+  temeraire:
+    display: "<#ff9a6b>Téméraire"
+    description: "Réussir 5 défis"
+  invincible:
+    display: "<gradient:#ff6b6b:#ffb35c>Invincible</gradient>"
+    description: "Réussir tous les défis"
+  assidu:
+    display: "<#9fd8ff>Assidu"
+    description: "Terminer 25 missions"
+  infatigable:
+    display: "<#7ab8ff>Infatigable"
+    description: "Terminer 100 missions"
+  regulier:
+    display: "<#ffd27a>Régulier"
+    description: "Série de 7 jours de missions"
+  machine:
+    display: "<gradient:#ffd27a:#ff8a5c>Machine</gradient>"
+    description: "Série de 30 jours de missions"
+  fidele:
+    display: "<#ffb3c7>Fidèle"
+    description: "7 récompenses quotidiennes d'affilée"
+  pilier:
+    display: "<#e8c872>Pilier du serveur"
+    description: "Jouer 100 heures"
+  tueur-de-colosse:
+    display: "<#ff6b6b>Tueur de Colosse"
+    description: "Vaincre 5 fois le boss mondial"
+  champion:
+    display: "<gradient:#ffe29a:#ffb35c><bold>Champion</bold></gradient>"
+    description: "Finir 1er d'une saison"
+  finaliste:
+    display: "<#ffd86b>Finaliste"
+    description: "Finir sur le podium d'une saison"
+  noctambule:
+    display: "<#8c9eff>Noctambule"
+    description: "En vente à la boutique"
+    price: 2500
+  batisseur:
+    display: "<#d2b48c>Bâtisseur"
+    description: "En vente à la boutique"
+    price: 3000
+  fortune:
+    display: "<#ffd86b>Fortuné"
+    description: "En vente à la boutique"
+    price: 8000
+  magnat:
+    display: "<gradient:#ffd86b:#fff3b0>Magnat</gradient>"
+    description: "En vente à la boutique"
+    price: 30000
+
+# ───────────────────────── Cosmétiques ─────────────────────────
+# Couleur du pseudo (chat et tablist)
+# value : "#hex", "gradient:#hex:#hex" ou "rainbow"
+colors:
+  menthe:
+    display: "Menthe"
+    value: "#9ff0c8"
+    icon: LIME_DYE
+  ciel:
+    display: "Ciel"
+    value: "#9fd8ff"
+    icon: LIGHT_BLUE_DYE
+  lavande:
+    display: "Lavande"
+    value: "#c9b3ff"
+    icon: PURPLE_DYE
+  corail:
+    display: "Corail"
+    value: "#ff9f8f"
+    icon: RED_DYE
+    price: 1500
+  or:
+    display: "Or"
+    value: "#ffd86b"
+    icon: YELLOW_DYE
+    price: 4000
+  aurore:
+    display: "Aurore"
+    value: "gradient:#ff9a8b:#ffd86b"
+    icon: ORANGE_DYE
+    price: 8000
+  ocean:
+    display: "Océan"
+    value: "gradient:#5ee7df:#7a9bff"
+    icon: CYAN_DYE
+    price: 8000
+  arc-en-ciel:
+    display: "Arc-en-ciel"
+    value: "rainbow"
+    icon: PINK_DYE
+    price: 25000
+
+# Traînées de particules derrière le joueur quand il se déplace
+trails:
+  notes:
+    display: "Notes"
+    particle: NOTE
+    icon: NOTE_BLOCK
+  coeurs:
+    display: "Cœurs"
+    particle: HEART
+    icon: POPPY
+  runes:
+    display: "Runes"
+    particle: ENCHANT
+    icon: ENCHANTED_BOOK
+  flammes:
+    display: "Flammes"
+    particle: FLAME
+    icon: BLAZE_POWDER
+    price: 3000
+  ames:
+    display: "Âmes"
+    particle: SOUL_FIRE_FLAME
+    icon: SOUL_LANTERN
+    price: 3000
+  neige:
+    display: "Neige"
+    particle: SNOWFLAKE
+    icon: SNOWBALL
+    price: 3000
+  cerisier:
+    display: "Cerisier"
+    particle: CHERRY_LEAVES
+    icon: CHERRY_SAPLING
+    price: 4000
+  etincelles:
+    display: "Étincelles"
+    particle: ELECTRIC_SPARK
+    icon: LIGHTNING_ROD
+    price: 5000
+  lueur:
+    display: "Lueur"
+    particle: GLOW
+    icon: GLOW_INK_SAC
+    price: 6000
+  poussiere-end:
+    display: "Poussière d'End"
+    particle: END_ROD
+    icon: END_ROD
+    price: 8000
+  totem:
+    display: "Totem"
+    particle: TOTEM_OF_UNDYING
+    icon: TOTEM_OF_UNDYING
+    price: 15000
+
+# ───────────────────────── Parcours de récompenses ─────────────────────────
+# Paliers débloqués automatiquement. Visibles avec /parcours.
+# condition.type :
+#   achievements (nombre), achievements-percent, challenges (nombre), challenges-percent,
+#   category (arg = story, nether, end, adventure, husbandry, lyonmc ; catégorie terminée),
+#   missions, mission-streak, login-streak, playtime-hours, boss-kills, coins-earned, titles
+# reward : coins, title, color, trail, homes, xp-levels, items ["DIAMOND:2"],
+#          commands ["give %player% minecraft:apple 1"] (console)
+# announce: true -> annoncé à tout le serveur
+paliers:
+  premiers-pas:
+    name: "Premiers pas"
+    icon: OAK_SAPLING
+    condition: { type: achievements, value: 5 }
+    reward: { coins: 150, xp-levels: 3 }
+  au-travail:
+    name: "Au travail"
+    icon: WRITABLE_BOOK
+    condition: { type: missions, value: 5 }
+    reward: { coins: 200, trail: notes }
+  aventurier:
+    name: "Aventurier"
+    icon: LEATHER_BOOTS
+    condition: { type: achievements-percent, value: 10 }
+    reward: { coins: 300, title: aventurier, color: menthe }
+  fidele:
+    name: "Fidèle"
+    icon: CAKE
+    condition: { type: login-streak, value: 7 }
+    reward: { coins: 500, title: fidele, trail: coeurs }
+  explorateur:
+    name: "Explorateur"
+    icon: COMPASS
+    condition: { type: achievements-percent, value: 25 }
+    reward: { coins: 600, title: explorateur, homes: 1, items: ["DIAMOND:3"] }
+  assidu:
+    name: "Assidu"
+    icon: BOOK
+    condition: { type: missions, value: 25 }
+    reward: { coins: 600, title: assidu, color: ciel }
+  pionnier:
+    name: "Pionnier"
+    icon: CRAFTING_TABLE
+    condition: { type: category, arg: story, value: 1 }
+    reward: { coins: 500, title: pionnier }
+  temeraire:
+    name: "Téméraire"
+    icon: IRON_SWORD
+    condition: { type: challenges, value: 5 }
+    reward: { coins: 800, title: temeraire }
+  regulier:
+    name: "Régulier"
+    icon: CAMPFIRE
+    condition: { type: mission-streak, value: 7 }
+    reward: { coins: 1000, title: regulier, trail: runes }
+  veteran:
+    name: "Vétéran"
+    icon: SHIELD
+    condition: { type: achievements-percent, value: 50 }
+    reward: { coins: 1500, title: veteran, color: lavande, homes: 1 }
+    announce: true
+  seigneur-nether:
+    name: "Seigneur du Nether"
+    icon: NETHERRACK
+    condition: { type: category, arg: nether, value: 1 }
+    reward: { coins: 1200, title: seigneur-nether }
+  fermier:
+    name: "Fermier émérite"
+    icon: WHEAT
+    condition: { type: category, arg: husbandry, value: 1 }
+    reward: { coins: 1500, title: fermier }
+  globe-trotteur:
+    name: "Globe-trotteur"
+    icon: FILLED_MAP
+    condition: { type: category, arg: adventure, value: 1 }
+    reward: { coins: 1500, title: globe-trotteur }
+  conquerant-end:
+    name: "Conquérant de l'End"
+    icon: END_STONE
+    condition: { type: category, arg: end, value: 1 }
+    reward: { coins: 1500, title: conquerant-end }
+  collectionneur:
+    name: "Collectionneur"
+    icon: NAME_TAG
+    condition: { type: titles, value: 10 }
+    reward: { coins: 2000 }
+  infatigable:
+    name: "Infatigable"
+    icon: ENCHANTED_BOOK
+    condition: { type: missions, value: 100 }
+    reward: { coins: 3000, title: infatigable }
+  tueur-de-colosse:
+    name: "Tueur de Colosse"
+    icon: WITHER_SKELETON_SKULL
+    condition: { type: boss-kills, value: 5 }
+    reward: { coins: 2500, title: tueur-de-colosse }
+  maitre:
+    name: "Maître"
+    icon: DIAMOND_CHESTPLATE
+    condition: { type: achievements-percent, value: 75 }
+    reward: { coins: 3000, title: maitre, homes: 1, items: ["NETHERITE_INGOT:1"] }
+    announce: true
+  pilier:
+    name: "Pilier du serveur"
+    icon: BEACON
+    condition: { type: playtime-hours, value: 100 }
+    reward: { coins: 3000, title: pilier, homes: 1 }
+    announce: true
+  grand-maitre:
+    name: "Grand Maître"
+    icon: NETHERITE_CHESTPLATE
+    condition: { type: achievements-percent, value: 90 }
+    reward: { coins: 5000, title: grand-maitre, trail: lueur }
+    announce: true
+  machine:
+    name: "Machine"
+    icon: SOUL_CAMPFIRE
+    condition: { type: mission-streak, value: 30 }
+    reward: { coins: 5000, title: machine }
+    announce: true
+  invincible:
+    name: "Invincible"
+    icon: TOTEM_OF_UNDYING
+    condition: { type: challenges-percent, value: 100 }
+    reward: { coins: 10000, title: invincible }
+    announce: true
+  legende:
+    name: "Légende"
+    icon: DRAGON_EGG
+    condition: { type: achievements-percent, value: 100 }
+    reward: { coins: 20000, title: legende, color: arc-en-ciel, trail: totem }
+    announce: true
+
+# ───────────────────────── Récompense quotidienne ─────────────────────────
+# Cycle de 7 jours (/recompense). Rater un jour remet la série à zéro.
+daily-login:
+  - { coins: 50 }
+  - { coins: 75 }
+  - { coins: 100, items: ["BREAD:16"] }
+  - { coins: 150 }
+  - { coins: 200, items: ["IRON_INGOT:16"] }
+  - { coins: 300, xp-levels: 3 }
+  - { coins: 600, items: ["DIAMOND:3"], xp-levels: 5 }
+
+# ───────────────────────── Boutique ─────────────────────────
+# Les titres et cosmétiques avec un "price" sont en vente dans /boutique.
+shop:
+  home-slot:
+    price: 4000
+    price-increase: 2000
+    max: 3

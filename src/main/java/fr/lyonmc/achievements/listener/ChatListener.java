@@ -18,7 +18,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Map;
 import java.util.UUID;
@@ -30,16 +29,16 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ChatListener implements Listener {
 
-    private record Card(Component badge, Component name) {
+    private record Card(Component badge, Component name, Component title, Component team) {
     }
 
-    private final JavaPlugin plugin;
+    private final fr.lyonmc.achievements.LyonAchievements plugin;
     private final AdvancementRegistry registry;
     private final StatsService stats;
     private final Text text;
     private final Map<UUID, Card> cards = new ConcurrentHashMap<>();
 
-    public ChatListener(JavaPlugin plugin, AdvancementRegistry registry, StatsService stats, Text text) {
+    public ChatListener(fr.lyonmc.achievements.LyonAchievements plugin, AdvancementRegistry registry, StatsService stats, Text text) {
         this.plugin = plugin;
         this.registry = registry;
         this.stats = stats;
@@ -60,10 +59,13 @@ public final class ChatListener implements Listener {
         Component badge = text.parse(plugin.getConfig().getString("chat.badge." + Text.rankKey(rank), ""), r);
         TextColor nameColor = TextColor.fromHexString(plugin.getConfig().getString("chat.name-color", "#e6e6e6"));
         Component hover = text.lines(plugin.getConfig().getStringList("chat.hover"), r);
-        Component name = Component.text(p.getName(), nameColor == null ? Text.WHITE : nameColor)
+        Component name = plugin.rewards().coloredName(p.getUniqueId(), p.getName(), nameColor == null ? Text.WHITE : nameColor)
                 .hoverEvent(HoverEvent.showText(hover))
                 .clickEvent(ClickEvent.runCommand("/succes " + p.getName()));
-        cards.put(p.getUniqueId(), new Card(badge, name));
+        fr.lyonmc.achievements.core.Profile profile = plugin.profiles().get(p.getUniqueId());
+        Component title = plugin.rewards().titleTag(profile);
+        Component team = plugin.teams().tagComponent(plugin.teams().teamOf(p.getUniqueId()));
+        cards.put(p.getUniqueId(), new Card(badge, name, title, team));
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -71,13 +73,36 @@ public final class ChatListener implements Listener {
         if (!plugin.getConfig().getBoolean("chat.enabled", true)) return;
         Player source = event.getPlayer();
         Card card = cards.get(source.getUniqueId());
-        String format = plugin.getConfig().getString("chat.format", "<badge><name> <dark_gray>›</dark_gray> <message>");
+        String format = plugin.getConfig().getString("chat.format", "<badge><team><title><name> <dark_gray>›</dark_gray> <message>");
         TextColor msgColor = TextColor.fromHexString(plugin.getConfig().getString("chat.message-color", "#bfbfbf"));
         Component badge = card == null ? Component.empty() : card.badge();
         Component name = card == null ? Component.text(source.getName(), Text.WHITE) : card.name();
+        Component title = card == null ? Component.empty() : card.title();
+        Component team = card == null ? Component.empty() : card.team();
+
+        // Chat d'équipe : seuls les coéquipiers voient le message (sauf s'il commence par !)
+        String plain = net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(event.message());
+        if (plugin.teams().inTeamChat(source.getUniqueId()) && plugin.teams().teamOf(source.getUniqueId()) != null) {
+            if (plain.startsWith("!")) {
+                event.message(event.message().replaceText(net.kyori.adventure.text.TextReplacementConfig.builder()
+                        .matchLiteral("!").times(1).replacement("").build()));
+            } else {
+                event.viewers().removeIf(a -> a instanceof Player vp
+                        && !plugin.teams().sameTeam(vp.getUniqueId(), source.getUniqueId()));
+                String teamFormat = plugin.getConfig().getString("chat.team-format",
+                        "<team><dark_gray>(équipe)</dark_gray> <name> <dark_gray>›</dark_gray> <#bfe3ff><message>");
+                event.renderer((player, displayName, message, viewer) -> text.parse(teamFormat,
+                        Placeholder.component("team", team),
+                        Placeholder.component("name", name),
+                        Placeholder.component("message", message)));
+                return;
+            }
+        }
 
         event.renderer((player, displayName, message, viewer) -> text.parse(format,
                 Placeholder.component("badge", badge),
+                Placeholder.component("team", team),
+                Placeholder.component("title", title),
                 Placeholder.component("name", name),
                 Placeholder.component("message", message.colorIfAbsent(msgColor == null ? Text.GRAY : msgColor))));
     }

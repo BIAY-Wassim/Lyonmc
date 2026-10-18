@@ -56,6 +56,7 @@ public final class AdvancementRegistry {
                 categories.put(id, new Category(id, name, color == null ? NamedTextColor.WHITE : color));
             }
         }
+        categories.putIfAbsent("lyonmc", new Category("lyonmc", "LyonMC", TextColor.color(0xE8C872)));
         categories.putIfAbsent(OTHER, new Category(OTHER, "Autres", NamedTextColor.GRAY));
 
         boolean excludeRoots = plugin.getConfig().getBoolean("settings.exclude-root-advancements", false);
@@ -79,6 +80,8 @@ public final class AdvancementRegistry {
             if (namespace.equals("minecraft") && slash > 0) {
                 String prefix = path.substring(0, slash);
                 if (categories.containsKey(prefix)) cat = prefix;
+            } else if (!namespace.equals("minecraft") && categories.containsKey(namespace)) {
+                cat = namespace;
             }
 
             Advancement parent = adv.getParent();
@@ -167,6 +170,7 @@ public final class AdvancementRegistry {
     /** Icône du succès racine d'une catégorie (ex : minecraft:nether/root) */
     public ItemStack rootIcon(String category) {
         Entry root = entries.get("minecraft:" + category + "/root");
+        if (root == null) root = entries.get(category + ":root");
         if (root != null) return root.icon().clone();
         for (Advancement adv : (Iterable<Advancement>) Bukkit::advancementIterator) {
             if (adv.getKey().toString().equals("minecraft:" + category + "/root") && adv.getDisplay() != null) {

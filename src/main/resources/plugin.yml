@@ -3,38 +3,146 @@ version: '${project.version}'
 main: fr.lyonmc.achievements.LyonAchievements
 api-version: '1.21'
 author: wassdead
-description: Succès (advancements) des joueurs - scoreboard, tablist et classement pour lyonmc.fr
+description: Survie LyonMC - succès, missions, récompenses, économie, saisons, équipes, boss, HDV
 website: https://lyonmc.fr
+softdepend: [Vault]
 
 commands:
+  menu:
+    description: Menu principal LyonMC
+    aliases: [lyonmc, m]
+    permission: lyonmc.succes.use
   succes:
-    description: Affiche tes succès, le classement et les succès manquants
+    description: Ton profil de succès, le classement et les succès manquants
     usage: /succes [joueur|top|menu|sidebar|reload|import]
     aliases: [succès, achievements, advancements, ach, adv]
     permission: lyonmc.succes.use
   missions:
-    description: Menu des succès et des missions restantes
-    usage: /missions [catégorie]
-    aliases: [quetes, quêtes, objectifs]
+    description: Missions du jour et de la semaine
+    aliases: [quetes, quêtes, objectifs, quotidien]
     permission: lyonmc.succes.use
   classement:
     description: Podium et classement des succès
-    usage: /classement
     aliases: [podium, top]
     permission: lyonmc.succes.use
   carte:
-    description: Lien vers la carte du serveur en direct (lyonmc.fr)
-    usage: /carte
-    aliases: [map, site]
+    description: Lien vers la Dynmap (lyonmc.fr)
+    aliases: [map, site, dynmap]
+    permission: lyonmc.succes.use
+  titres:
+    description: Choisir son titre
+    aliases: [titre, title, titles]
+    permission: lyonmc.succes.use
+  cosmetiques:
+    description: Couleur de pseudo et traînées
+    aliases: [cosmétiques, cosmetics, cosmetique]
+    permission: lyonmc.succes.use
+  boutique:
+    description: Boutique du serveur
+    aliases: [shop]
+    permission: lyonmc.succes.use
+  parcours:
+    description: Parcours de récompenses (paliers)
+    aliases: [paliers, pass]
+    permission: lyonmc.succes.use
+  recompense:
+    description: Récompense quotidienne
+    aliases: [récompense, daily, journalier]
+    permission: lyonmc.succes.use
+  saison:
+    description: Classement de la saison
+    aliases: [season]
+    permission: lyonmc.succes.use
+  ressources:
+    description: Aller dans le monde ressources
+    aliases: [ressource, res, mine]
+    permission: lyonmc.succes.use
+  lmc:
+    description: Administration LyonMC
+    permission: lyonmc.admin
+  money:
+    description: Voir son solde
+    aliases: [balance, bal, pieces, pièces, argent]
+    permission: lyonmc.succes.use
+  pay:
+    description: Envoyer des pièces
+    aliases: [payer]
+    permission: lyonmc.succes.use
+  baltop:
+    description: Les joueurs les plus riches
+    aliases: [moneytop, richesse]
+    permission: lyonmc.succes.use
+  eco:
+    description: Gérer les pièces (admin)
+    permission: lyonmc.admin
+  equipe:
+    description: Équipes
+    aliases: [équipe, eq, clan]
+    permission: lyonmc.succes.use
+  sethome:
+    description: Définir un home
+    permission: lyonmc.succes.use
+  home:
+    description: Aller à un home
+    aliases: [maison]
+    permission: lyonmc.succes.use
+  delhome:
+    description: Supprimer un home
+    permission: lyonmc.succes.use
+  homes:
+    description: Liste des homes
+    permission: lyonmc.succes.use
+  spawn:
+    description: Aller au spawn
+    permission: lyonmc.succes.use
+  setspawn:
+    description: Définir le spawn (admin)
+    permission: lyonmc.admin
+  back:
+    description: Retourner à la position précédente
+    aliases: [retour]
+    permission: lyonmc.succes.use
+  tpa:
+    description: Demander à se téléporter à un joueur
+    permission: lyonmc.succes.use
+  tpahere:
+    description: Demander à un joueur de venir
+    permission: lyonmc.succes.use
+  tpaccept:
+    description: Accepter une demande de téléportation
+    aliases: [tpyes]
+    permission: lyonmc.succes.use
+  tpdeny:
+    description: Refuser une demande de téléportation
+    aliases: [tpno]
+    permission: lyonmc.succes.use
+  rtp:
+    description: Téléportation aléatoire
+    aliases: [wild, randomtp]
+    permission: lyonmc.succes.use
+  hdv:
+    description: Hôtel des ventes
+    aliases: [ah, auction, ventes]
+    permission: lyonmc.succes.use
+  boss:
+    description: Boss mondial
     permission: lyonmc.succes.use
 
 permissions:
   lyonmc.succes.use:
-    description: Utiliser /succes
+    description: Commandes joueurs
     default: true
   lyonmc.succes.others:
     description: Voir le profil des autres joueurs
     default: true
   lyonmc.succes.admin:
     description: /succes reload et /succes import
+    default: op
+  lyonmc.admin:
+    description: Administration LyonMC (/lmc, /eco, /setspawn, /boss arene)
+    default: op
+    children:
+      lyonmc.succes.admin: true
+  lyonmc.teleport.instant:
+    description: Téléportation sans délai
     default: op

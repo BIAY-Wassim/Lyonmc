@@ -26,7 +26,7 @@ import java.util.*;
  *  - accueil : profil, catégories, raccourcis
  *  - listes paginées : chaque succès avec sa progression et les critères restants
  */
-public final class MissionsMenu {
+public final class AchievementsMenu {
 
     public enum View { CATEGORY, ALMOST, CHALLENGES, ALL }
 
@@ -52,8 +52,14 @@ public final class MissionsMenu {
     private final Text text;
 
     private final HeadService heads;
+    private java.util.function.Consumer<Player> hub = Player::closeInventory;
 
-    public MissionsMenu(AdvancementRegistry registry, StatsService stats, Text text, HeadService heads) {
+    /** Action du bouton "Menu principal". */
+    public void setHub(java.util.function.Consumer<Player> hub) {
+        this.hub = hub;
+    }
+
+    public AchievementsMenu(AdvancementRegistry registry, StatsService stats, Text text, HeadService heads) {
         this.heads = heads;
         this.registry = registry;
         this.stats = stats;
@@ -194,6 +200,8 @@ public final class MissionsMenu {
                         EMPTY,
                         Component.text("➤ Cliquer pour ouvrir", text.accent())), false));
         holder.action(48, this::openTop);
+        inv.setItem(45, decorate(new ItemStack(Material.ARROW), title("Menu principal"), List.of(), false));
+        holder.action(45, p -> hub.accept(p));
         inv.setItem(49, decorate(new ItemStack(Material.BARRIER), title("Fermer"), List.of(), false));
         holder.action(49, Player::closeInventory);
         inv.setItem(46, decorate(new ItemStack(Material.FILLED_MAP), title("Dynmap"), List.of(

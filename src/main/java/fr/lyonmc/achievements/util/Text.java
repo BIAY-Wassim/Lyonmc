@@ -64,6 +64,27 @@ public final class Text {
         return accent;
     }
 
+    public java.time.ZoneId zone() {
+        return zone;
+    }
+
+    /** Fournisseur de placeholders supplémentaires (économie, saison, missions...). */
+    public interface Provider {
+        /** @param uuid joueur concerné, ou null pour un contexte "serveur" */
+        void add(TagResolver.Builder builder, java.util.UUID uuid);
+    }
+
+    private final List<Provider> providers = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    public void addProvider(Provider provider) {
+        providers.add(provider);
+    }
+
+    /** 12500 -> "12 500" */
+    public static String num(long n) {
+        return String.format(Locale.FRANCE, "%,d", n).replace('\u202f', ' ').replace('\u00a0', ' ');
+    }
+
     // ───────────────────────────── Messages ─────────────────────────────
 
     public Component parse(String mini, TagResolver... resolvers) {
@@ -219,6 +240,15 @@ public final class Text {
         b.resolver(Placeholder.unparsed("last_global_player", lg == null ? "personne" : lg.name()));
         b.resolver(Placeholder.component("last_global_adv", lgAdv == null ? Component.text("-", GRAY) : lgAdv.title().colorIfAbsent(accent)));
         b.resolver(Placeholder.unparsed("last_global_ago", lg == null ? "" : timeAgo(lg.lastTime())));
+
+        java.util.UUID target = s != null ? s.uuid() : viewer != null ? viewer.getUniqueId() : null;
+        for (Provider pr : providers) {
+            try {
+                pr.add(b, target);
+            } catch (RuntimeException ex) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING, "Placeholder en erreur", ex);
+            }
+        }
         return b.build();
     }
 

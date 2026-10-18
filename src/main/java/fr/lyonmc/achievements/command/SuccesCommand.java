@@ -5,7 +5,7 @@ import fr.lyonmc.achievements.board.BoardManager;
 import fr.lyonmc.achievements.data.AdvancementRegistry;
 import fr.lyonmc.achievements.data.PlayerStats;
 import fr.lyonmc.achievements.data.StatsService;
-import fr.lyonmc.achievements.menu.MissionsMenu;
+import fr.lyonmc.achievements.menu.AchievementsMenu;
 import fr.lyonmc.achievements.util.Text;
 import io.papermc.paper.advancement.AdvancementDisplay;
 import net.kyori.adventure.text.Component;
@@ -34,11 +34,11 @@ public final class SuccesCommand implements TabExecutor {
     private final AdvancementRegistry registry;
     private final StatsService stats;
     private final BoardManager boards;
-    private final MissionsMenu menu;
+    private final AchievementsMenu menu;
     private final Text text;
 
     public SuccesCommand(LyonAchievements plugin, AdvancementRegistry registry, StatsService stats,
-                         BoardManager boards, MissionsMenu menu, Text text) {
+                         BoardManager boards, AchievementsMenu menu, Text text) {
         this.plugin = plugin;
         this.registry = registry;
         this.stats = stats;
@@ -137,7 +137,7 @@ public final class SuccesCommand implements TabExecutor {
             for (AdvancementRegistry.Category c : registry.usedCategories()) {
                 if (c.id().equals(id) || c.name().equalsIgnoreCase(category)) {
                     stats.refreshOnline(p);
-                    menu.open(p, MissionsMenu.View.CATEGORY, c.id(), MissionsMenu.Filter.MISSING, 1);
+                    menu.open(p, AchievementsMenu.View.CATEGORY, c.id(), AchievementsMenu.Filter.MISSING, 1);
                     return;
                 }
             }

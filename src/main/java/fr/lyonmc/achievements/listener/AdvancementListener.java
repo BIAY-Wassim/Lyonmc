@@ -19,7 +19,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.java.JavaPlugin;
+import fr.lyonmc.achievements.LyonAchievements;
+import fr.lyonmc.achievements.core.Profile;
 
 import java.time.Duration;
 import java.util.List;
@@ -27,13 +28,13 @@ import java.util.UUID;
 
 public final class AdvancementListener implements Listener {
 
-    private final JavaPlugin plugin;
+    private final LyonAchievements plugin;
     private final AdvancementRegistry registry;
     private final StatsService stats;
     private final BoardManager boards;
     private final Text text;
 
-    public AdvancementListener(JavaPlugin plugin, AdvancementRegistry registry, StatsService stats,
+    public AdvancementListener(LyonAchievements plugin, AdvancementRegistry registry, StatsService stats,
                                BoardManager boards, Text text) {
         this.plugin = plugin;
         this.registry = registry;
@@ -50,6 +51,24 @@ public final class AdvancementListener implements Listener {
         stats.rebuildRanking();
         boards.create(p);
         boards.markOrderDirty();
+
+        Profile profile = plugin.profiles().get(p);
+        plugin.economy().ensureAccount(p);
+        plugin.missions().ensure(profile);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!p.isOnline()) return;
+            plugin.custom().onJoin(p, profile);
+            plugin.seasons().deliverPending(p, profile);
+            if (!profile.mailbox.isEmpty()) {
+                plugin.msg(p, "<gray>Pendant ton absence :");
+                for (String m : profile.mailbox) p.sendMessage(text.parse("  " + m));
+                profile.mailbox.clear();
+                profile.dirty();
+            }
+            plugin.daily().notifyJoin(p);
+            plugin.auctions().notifyJoin(p);
+            plugin.rewards().check(p);
+        }, 40L);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -85,6 +104,21 @@ public final class AdvancementListener implements Listener {
         if (newCount == oldCount) return; // déjà compté
 
         boolean challenge = entry.frame() == AdvancementDisplay.Frame.CHALLENGE;
+
+        // Gains : pièces et points de saison
+        String frameKey = switch (entry.frame()) {
+            case CHALLENGE -> "challenge";
+            case GOAL -> "goal";
+            default -> "task";
+        };
+        long coins = plugin.configs().rewards().getLong("achievement-coins." + frameKey, 0);
+        if (coins > 0 && plugin.module("economy")) plugin.economy().deposit(player, coins);
+        int points = plugin.seasons().addPoints(uuid, player.getName(), plugin.seasons().pointsFor(entry.frame()), true);
+        if (coins > 0 || points > 0) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> player.sendActionBar(text.parse(
+                    (coins > 0 ? "<accent>+" + plugin.economy().format(coins) + "</accent>" : "")
+                            + (points > 0 ? "   <gray>+" + points + " pts de saison" : ""))), 20L);
+        }
         TagResolver base = text.resolver(registry, stats, s, player);
         Component advComponent = text.advancement(registry, stats, entry);
         TagResolver all = TagResolver.resolver(base, Placeholder.component("advancement", advComponent));
@@ -119,8 +153,16 @@ public final class AdvancementListener implements Listener {
             }
         }
 
+        if (challenge) {
+            plugin.discord().send("Défi relevé", player.getName() + " a relevé le défi « "
+                    + net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(entry.title())
+                    + " » (" + newCount + "/" + total + ")", 0xD9C08C, uuid);
+        }
+        Bukkit.getScheduler().runTask(plugin, () -> plugin.rewards().check(player));
+
         // Tous les succès
         if (newCount >= total && oldCount < total) {
+            plugin.discord().send("Légende !", player.getName() + " a obtenu TOUS les succès du serveur !", 0xFFD86B, uuid);
             Bukkit.broadcast(text.parse(plugin.getConfig().getString("announcements.all-completed-message", ""), all));
             for (Player online : Bukkit.getOnlinePlayers()) {
                 online.playSound(online.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
@@ -132,6 +174,8 @@ public final class AdvancementListener implements Listener {
         PlayerStats newLeader = stats.top(1);
         if (newLeader == s && oldLeader != s && stats.ranking().size() > 1) {
             Bukkit.broadcast(text.parse(plugin.getConfig().getString("announcements.new-leader-message", ""), all));
+            plugin.discord().send("Nouveau n°1", player.getName() + " prend la première place du classement des succès avec "
+                    + newCount + " succès.", 0xFFD86B, uuid);
         } else if (newRank > 0 && (oldRank == 0 || newRank < oldRank)) {
             player.sendMessage(text.parse(plugin.getConfig().getString("announcements.rank-up-message", ""), all));
         }

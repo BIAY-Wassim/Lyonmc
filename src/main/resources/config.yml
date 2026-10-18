@@ -17,17 +17,70 @@
 #   <kills> (mobs + joueurs) <mob_kills> <player_kills> <deaths>
 #   <ping> <ping_bars>   <world>
 #   Nametag uniquement : <health> <max_health>
+#   <coins> <title> <team> <team_name> <season_points> <season_rank> <streak> <daily_done> <daily_total>
+#   <weekly_done> <missions_done>
 # Placeholders serveur :
 #   <top1_name> <top1_done> ... <top5_name> <top5_done>
 #   <online> <max_online> <tps> <date>
 #   <server_total>  succès débloqués par tous les joueurs
 #   <last_global_player> <last_global_adv> <last_global_ago>  dernier succès du serveur
+#   <season> <season_name> <season_left> <season_top1_name> <season_top1_points> ... <weekend_line>
+#
+# Les autres réglages sont dans missions.yml, recompenses.yml et evenements.yml.
 
 # Ne pas modifier
-config-version: 5
+config-version: 6
 
 theme:
   accent: "#e8c872"
+
+# Fonctionnalités (false = désactivée)
+modules:
+  economy: true
+  missions: true
+  teams: true
+  teleport: true
+  hdv: true
+  boss: true
+  resource-world: true
+  custom-advancements: true
+
+# Homes, /spawn, /tpa, /rtp
+teleport:
+  warmup-seconds: 3
+  homes-base: 2
+  rtp:
+    world: "world"
+    min-radius: 500
+    max-radius: 5000
+    cooldown-seconds: 600
+
+# Équipes
+teams:
+  max-members: 8
+  create-cost: 1000
+
+# Hôtel des ventes
+hdv:
+  max-listings: 5
+  tax-percent: 5
+  duration-hours: 48
+  min-price: 1
+  max-price: 1000000
+  announce: true
+
+# Monde ressources (réinitialisé chaque mois)
+resource-world:
+  enabled: true
+  name: "ressources"
+  border-radius: 3000
+  monthly-reset: true
+
+# Annonces sur Discord (laisser vide pour désactiver)
+# Discord : Paramètres du salon > Intégrations > Webhooks > Copier l'URL
+discord:
+  webhook-url: ""
+  name: "LyonMC"
 
 settings:
   update-interval-ticks: 10
@@ -76,16 +129,16 @@ sidebar:
     - "<accent>➤</accent> <white><bold>Profil"
     - " <gray>Rang <accent>♛</accent> <white>#<rank></white><dark_gray>/<ranked>"
     - " <gray>Succès <accent>★</accent> <white><done></white><dark_gray>/<total>"
-    - " <bar> <dark_gray><percent>%"
-    - " <gray>Défis <accent>✦</accent> <white><challenges></white><dark_gray>/<challenges_total>"
+    - " <gray>Pièces <accent>⛁</accent> <white><coins>"
     - ""
-    - "<accent>➤</accent> <white><bold>Session"
-    - " <gray>Temps <white>⌚ <session>"
-    - " <gray>Kills <white>⚔ <kills></white> <dark_gray>·</dark_gray> <gray>Morts <white>☠ <deaths>"
-    - ""
+    - "<accent>➤</accent> <white><bold>Aujourd'hui"
+    - " <gray>Missions <accent>✔</accent> <white><daily_done></white><dark_gray>/<daily_total> · série <white><streak>"
+    - " <gray>Saison <accent>✦</accent> <white><season_points></white> <dark_gray>pts · #<season_rank>"
+    - "<weekend_line>"
     - "<accent>➤</accent> <white><bold>Serveur"
     - " <gray>En ligne <white>☺ <online></white><dark_gray>/<max_online></dark_gray> <ping_bars>"
-    - "<white>Dynmap</white> <dark_gray>·</dark_gray> <accent>lyonmc.fr"
+    - ""
+    - "<white>/menu</white> <dark_gray>·</dark_gray> <accent>lyonmc.fr"
 
 # ───────────────────────── Tablist ─────────────────────────
 tablist:
@@ -95,21 +148,21 @@ tablist:
     - "<accent>✦</accent> <white><bold>LYONMC</bold></white> <accent>✦</accent>"
     - "<dark_gray>Survie · 1.21.8"
     - ""
-    - "<accent>★</accent> <white><done></white><dark_gray>/<total> succès</dark_gray>     <accent>♛</accent> <white>#<rank></white><dark_gray>/<ranked></dark_gray>     <accent>✦</accent> <white><challenges></white><dark_gray>/<challenges_total> défis"
+    - "<accent>★</accent> <white><done></white><dark_gray>/<total> succès</dark_gray>     <accent>♛</accent> <white>#<rank></white><dark_gray>/<ranked></dark_gray>     <accent>⛁</accent> <white><coins></white>     <accent>✦</accent> <white><season_points></white> <dark_gray>pts"
     - ""
   footer:
     - ""
     - "<#ffd86b>♛</#ffd86b> <white><top1_name></white> <dark_gray><top1_done></dark_gray>     <#c8c8c8>✧</#c8c8c8> <white><top2_name></white> <dark_gray><top2_done></dark_gray>     <#d29a6a>✧</#d29a6a> <white><top3_name></white> <dark_gray><top3_done>"
     - ""
     - "<gray>☺ <white><online></white><dark_gray>/<max_online></dark_gray>     ⚡ <ping_bars> <white><ping></white><dark_gray>ms</dark_gray>     ✔ <white><tps></white> <dark_gray>tps"
-    - "<white>Dynmap</white> <dark_gray>·</dark_gray> <accent>lyonmc.fr"
+    - "<white>/menu</white> <dark_gray>·</dark_gray> <white>Dynmap</white> <accent>lyonmc.fr"
     - ""
   name-format:
-    top1: "<#ffd86b>♛</#ffd86b> <white><player>"
-    top2: "<#c8c8c8>✧</#c8c8c8> <white><player>"
-    top3: "<#d29a6a>✧</#d29a6a> <white><player>"
-    other: "<dark_gray>#<rank></dark_gray> <gray><player>"
-    unranked: "<gray><player>"
+    top1: "<#ffd86b>♛</#ffd86b> <team><name>"
+    top2: "<#c8c8c8>✧</#c8c8c8> <team><name>"
+    top3: "<#d29a6a>✧</#d29a6a> <team><name>"
+    other: "<dark_gray>#<rank></dark_gray> <team><name>"
+    unranked: "<team><name>"
   show-score: true
   score-color: "#e8c872"
   sort-by-rank: true
@@ -118,17 +171,19 @@ tablist:
 nametag:
   enabled: true
   prefix:
-    top1: "<#ffd86b>♛ #1</#ffd86b> "
-    top2: "<#c8c8c8>✧ #2</#c8c8c8> "
-    top3: "<#d29a6a>✧ #3</#d29a6a> "
-    other: "<dark_gray>#<rank></dark_gray> "
-    unranked: ""
+    top1: "<#ffd86b>♛ #1</#ffd86b> <team>"
+    top2: "<#c8c8c8>✧ #2</#c8c8c8> <team>"
+    top3: "<#d29a6a>✧ #3</#d29a6a> <team>"
+    other: "<dark_gray>#<rank></dark_gray> <team>"
+    unranked: "<team>"
   below: "<white><health></white><red>❤</red>  <dark_gray>·</dark_gray>  <accent>★</accent> <white><done></white><dark_gray>/<total>"
 
 # ───────────────────────── Chat ─────────────────────────
 chat:
   enabled: true
-  format: "<badge><name> <dark_gray>›</dark_gray> <message>"
+  # <badge> rang, <team> tag d'équipe, <title> titre choisi, <name> pseudo (coloré, survolable)
+  format: "<badge><team><title><name> <dark_gray>›</dark_gray> <message>"
+  team-format: "<team><dark_gray>(équipe)</dark_gray> <name> <dark_gray>›</dark_gray> <#bfe3ff><message>"
   badge:
     top1: "<#ffd86b>♛</#ffd86b> "
     top2: "<#c8c8c8>✧</#c8c8c8> "
@@ -144,6 +199,9 @@ chat:
     - "<accent>★</accent> <gray>Succès <white><done></white><dark_gray>/<total>"
     - "<bar>"
     - "<accent>✦</accent> <gray>Défis <white><challenges></white><dark_gray>/<challenges_total>"
+    - "<accent>⛁</accent> <gray>Pièces <white><coins>"
+    - "<accent>✦</accent> <gray>Saison <white><season_points></white> <dark_gray>pts (#<season_rank>)"
+    - "<accent>✔</accent> <gray>Série de missions <white><streak></white> <dark_gray>j"
     - "<accent>⌚</accent> <gray>Temps de jeu <white><playtime>"
     - "<accent>⚔</accent> <gray>Kills <white><kills></white> <dark_gray>·</dark_gray> <gray>Morts <white><deaths>"
     - ""
@@ -168,7 +226,10 @@ chat:
       - "  <gray>Leader : <white><top1_name></white> <dark_gray>(★ <top1_done>)"
       - "  <gray>Dernier exploit : <white><last_global_player></white> <dark_gray>·</dark_gray> <last_global_adv>"
       - ""
-      - "  <accent>➤</accent> <click:run_command:'/missions'><hover:show_text:'<gray>Ouvrir le menu'><white><u>/missions</u></white></hover></click> <gray>pour voir ce qu'il te reste à faire"
+      - "  <accent>⛁</accent> <white><coins></white> <gray>pièces   <accent>✔</accent> <gray>missions du jour <white><daily_done></white><dark_gray>/<daily_total></dark_gray>   <gray>série <white><streak></white> <dark_gray>j"
+      - ""
+      - "  <accent>➤</accent> <click:run_command:'/menu'><hover:show_text:'<gray>Ouvrir le menu'><white><u>/menu</u></white></hover></click> <gray>tout le serveur en un clic"
+      - "  <accent>➤</accent> <click:run_command:'/missions'><hover:show_text:'<gray>Voir les missions'><white><u>/missions</u></white></hover></click> <gray>tes missions du jour"
       - "  <accent>➤</accent> <click:open_url:'https://lyonmc.fr'><hover:show_text:'<gray>Ouvrir la Dynmap'><white><u>lyonmc.fr</u></white></hover></click> <gray>pour voir la <white>Dynmap</white> en direct"
       - ""
 
@@ -186,7 +247,7 @@ motd:
   # Ligne 2 : une phrase au hasard à chaque rafraîchissement
   line2:
     - "<#ffb35c>✦</#ffb35c> <white>Dynmap</white> <gray>en direct sur</gray> <#ffe29a>lyonmc.fr</#ffe29a> <#ffb35c>✦</#ffb35c>"
-    - "<#ff6b6b><bold>NEW</bold></#ff6b6b> <gray>Succès, classement et</gray> <white>/missions</white>"
+    - "<#ff6b6b><bold>NEW</bold></#ff6b6b> <gray>Missions, saisons, boss mondial,</gray> <white>HDV</white>"
     - "<#ffe29a>★</#ffe29a> <white><server_total></white> <gray>succès débloqués par la communauté</gray>"
     - "<#ffe29a>♛</#ffe29a> <white><top1_name></white> <gray>mène avec</gray> <white><top1_done></white> <gray>succès</gray>"
   # Au survol du nombre de joueurs (couleurs simples uniquement)
