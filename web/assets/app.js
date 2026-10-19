@@ -10,8 +10,10 @@
   // ───────────── Outils ─────────────
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const num = (n) => Number(n || 0).toLocaleString("fr-FR");
-  const face = (uuid, size = 64) => `https://mc-heads.net/avatar/${uuid}/${size}`;
-  const body = (uuid) => `https://mc-heads.net/body/${uuid}/240`;
+  // Le jour est ajouté à l'adresse des skins : les navigateurs reprennent le skin à jour au moins une fois par jour
+  const DAY = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const face = (uuid, size = 64) => `https://mc-heads.net/avatar/${uuid}/${size}?d=${DAY}`;
+  const body = (uuid) => `https://mc-heads.net/body/${uuid}/240?d=${DAY}`;
   const icon = (id) => `/img/icons/${id}.png`;
   const img = (src, cls = "", alt = "") => `<img class="${cls}" src="${src}" alt="${esc(alt)}" loading="lazy" onerror="this.style.visibility='hidden'">`;
   const ico = (id, cls = "") => `<span class="ico ${cls}">${img(icon(id))}</span>`;
