@@ -43,6 +43,7 @@ public final class RewardService {
     private final Map<String, CosmeticDef> trails = new LinkedHashMap<>();
     private final List<Palier> paliers = new ArrayList<>();
     private BukkitTask trailTask;
+    private int trailTick;
     private final Map<UUID, Location> lastPos = new HashMap<>();
 
     public RewardService(LyonAchievements plugin) {
@@ -198,6 +199,18 @@ public final class RewardService {
         return Component.text(name, tc == null ? fallback : tc);
     }
 
+    /** Couleur du pseudo au-dessus de la tête (les équipes n'ont que 16 couleurs : on prend la plus proche). */
+    public net.kyori.adventure.text.format.NamedTextColor nameColor(UUID uuid) {
+        Profile p = plugin.profiles().get(uuid);
+        CosmeticDef c = p == null || p.color == null ? null : colors.get(p.color);
+        if (c == null || !hasCosmetic(p, "color", c.id())) return net.kyori.adventure.text.format.NamedTextColor.WHITE;
+        String v = c.value();
+        if (v.equalsIgnoreCase("rainbow")) return net.kyori.adventure.text.format.NamedTextColor.LIGHT_PURPLE;
+        if (v.startsWith("gradient:")) v = v.substring(9).split(":")[0];
+        TextColor tc = TextColor.fromHexString(v);
+        return tc == null ? net.kyori.adventure.text.format.NamedTextColor.WHITE : net.kyori.adventure.text.format.NamedTextColor.nearestTo(tc);
+    }
+
     /** Aperçu d'une couleur appliquée à un texte. */
     public Component colorPreview(CosmeticDef c, String text) {
         String v = c.value();
@@ -210,6 +223,7 @@ public final class RewardService {
     private void startTrails() {
         if (trailTask != null) trailTask.cancel();
         trailTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            trailTick++;
             for (Player player : Bukkit.getOnlinePlayers()) {
                 Profile p = plugin.profiles().get(player.getUniqueId());
                 if (p == null || p.trail == null) continue;
@@ -218,8 +232,20 @@ public final class RewardService {
                 if (player.getGameMode() == GameMode.SPECTATOR || player.isInvisible()) continue;
                 Location now = player.getLocation();
                 Location before = lastPos.put(player.getUniqueId(), now);
-                if (before == null || before.getWorld() != now.getWorld() || before.distanceSquared(now) < 0.01) continue;
-                player.getWorld().spawnParticle(def.particle(), now.clone().add(0, 0.15, 0), 2, 0.2, 0.05, 0.2, 0.01);
+                // Au hub, les joueurs se montrent : traînée plus fournie et aura quand ils ne bougent pas
+                boolean hub = plugin.spawnHub() != null && plugin.spawnHub().inHub(now);
+                boolean moving = before != null && before.getWorld() == now.getWorld() && before.distanceSquared(now) >= 0.01;
+                if (!moving) {
+                    if (hub && trailTick % 7 == 0) {
+                        double a = (trailTick / 7 % 12) * Math.PI / 6;
+                        for (int k = 0; k < 3; k++) {
+                            double ang = a + k * 2 * Math.PI / 3;
+                            player.getWorld().spawnParticle(def.particle(), now.clone().add(Math.cos(ang) * 0.7, 0.2, Math.sin(ang) * 0.7), 1, 0, 0, 0, 0);
+                        }
+                    }
+                    continue;
+                }
+                player.getWorld().spawnParticle(def.particle(), now.clone().add(0, 0.15, 0), hub ? 5 : 2, 0.2, 0.05, 0.2, 0.01);
             }
         }, 20L, 3L);
     }

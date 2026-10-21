@@ -74,7 +74,7 @@ hub:
     animals: true      # pas frapper les animaux et villageois du hub
     hunger: true
     monsters: true     # pas d'apparition de monstres
-  join-message: "<gray>Bienvenue au hub ! <white><click:run_command:'/back'><hover:show_text:'<gray>Retourner où tu étais'><u>/back</u></hover></click></white> <gray>pour retourner où tu t'étais déconnecté."
+  join-message: "<gray>Bienvenue au hub ! La <white>boussole</white> te ramène en survie, là où tu t'étais déconnecté."
 
 # Équipes
 teams:
@@ -96,6 +96,40 @@ resource-world:
   name: "ressources"
   border-radius: 3000
   monthly-reset: true
+  # Tout ce qui pousse à miner ici plutôt que dans le monde principal
+  bonus:
+    enabled: true
+    # Célérité (minage plus rapide) : 1 = Célérité I, 0 = désactivé
+    haste: 1
+    # Chance (%) que les minerais cassés donnent le double (sauf Toucher de soie)
+    double-drop-chance: 25
+    # Filons de minerais en plus dans chaque nouveau chunk
+    extra-veins: 8
+    # Pièces gagnées par minerai cassé (seulement dans ce monde)
+    coins:
+      coal: 1
+      copper: 1
+      quartz: 1
+      iron: 2
+      redstone: 2
+      lapis: 3
+      gold: 4
+      diamond: 15
+      emerald: 20
+      ancient_debris: 30
+    # Chance (%) de trouver un trésor en cassant de la pierre ou de la deepslate
+    treasure-chance: 0.3
+    treasures:
+      - "coins:40"
+      - "coins:40"
+      - "coins:80"
+      - "coins:150"
+      - "item:DIAMOND:1"
+      - "item:EMERALD:2"
+      - "item:GOLD_INGOT:4"
+      - "item:IRON_INGOT:6"
+      - "item:EXPERIENCE_BOTTLE:6"
+      - "item:NAME_TAG:1"
 
 # Site lyonmc.fr : le plugin y écrit les classements, profils et le guide (JSON) toutes les minutes
 web:
@@ -207,6 +241,11 @@ nametag:
     other: "<dark_gray>#<rank></dark_gray> <team>"
     unranked: "<team>"
   below: "<white><health></white><red>❤</red>  <dark_gray>·</dark_gray>  <accent>★</accent> <white><done></white><dark_gray>/<total>"
+  # Grade devant le pseudo (au-dessus de la tête)
+  grade: true
+  # Au hub, les joueurs se montrent : titre après le pseudo et une autre ligne en dessous
+  hub-title: true
+  hub-below: "<accent>★</accent> <white><done></white><dark_gray>/<total></dark_gray>  <dark_gray>·</dark_gray>  <accent>⛁</accent> <white><coins>"
 
 # ───────────────────────── Chat ─────────────────────────
 chat:

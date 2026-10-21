@@ -55,12 +55,14 @@ public final class BoardManager {
         final String[] entries = new String[MAX_LINES];
         int sortedVersion = -1;
         final Map<UUID, Component> lastPrefix = new HashMap<>();
+        final Map<UUID, Component> lastSuffix = new HashMap<>();
+        final Map<UUID, NamedTextColor> lastColor = new HashMap<>();
         final Map<UUID, Component> lastBelow = new HashMap<>();
         Component lastHeader, lastFooter;
     }
 
     /** Ce que les autres voient d'un joueur (calculé une fois par tick). */
-    private record Tag(Component prefix, Component below, int score) {
+    private record Tag(Component prefix, Component suffix, NamedTextColor color, Component below, int score) {
     }
 
     // ───────────────────────────── Cycle de vie ─────────────────────────────
@@ -112,6 +114,8 @@ public final class BoardManager {
             Team t = other.scoreboard.getEntryTeam(player.getName());
             if (t != null && t.getName().startsWith(TEAM_PREFIX)) t.removeEntry(player.getName());
             other.lastPrefix.remove(player.getUniqueId());
+            other.lastSuffix.remove(player.getUniqueId());
+            other.lastColor.remove(player.getUniqueId());
             other.lastBelow.remove(player.getUniqueId());
         }
         orderVersion++;
@@ -176,7 +180,7 @@ public final class BoardManager {
         int rank = stats.rank(p.getUniqueId());
         int count = s == null ? 0 : s.count();
         if (!plugin.getConfig().getBoolean("nametag.enabled", true)) {
-            return new Tag(Component.empty(), null, count);
+            return new Tag(Component.empty(), Component.empty(), NamedTextColor.WHITE, null, count);
         }
         AttributeInstance maxAttr = p.getAttribute(Attribute.MAX_HEALTH);
         double max = maxAttr == null ? 20.0 : maxAttr.getValue();
@@ -184,9 +188,18 @@ public final class BoardManager {
                 text.resolver(registry, stats, s, p),
                 Placeholder.unparsed("health", String.valueOf((int) Math.ceil(p.getHealth()))),
                 Placeholder.unparsed("max_health", String.valueOf((int) Math.round(max))));
+        // Au hub, les joueurs se montrent : grade, titre et une autre ligne sous le pseudo
+        boolean hub = plugin.spawnHub() != null && plugin.spawnHub().inHub(p.getLocation());
         Component prefix = text.parse(plugin.getConfig().getString("nametag.prefix." + Text.rankKey(rank), ""), r);
-        Component below = text.parse(plugin.getConfig().getString("nametag.below", ""), r);
-        return new Tag(prefix, below, count);
+        if (plugin.getConfig().getBoolean("nametag.grade", true)) prefix = prefix.append(plugin.grades().chatTag(p.getUniqueId()));
+        Component title = plugin.rewards().titleRaw(plugin.profiles().get(p.getUniqueId()));
+        Component suffix = hub && plugin.getConfig().getBoolean("nametag.hub-title", true) && !title.equals(Component.empty())
+                ? Component.text(" [", Text.DARK).append(title).append(Component.text("]", Text.DARK)) : Component.empty();
+        String belowFormat = hub ? plugin.getConfig().getString("nametag.hub-below",
+                "<accent>★</accent> <white><done></white><dark_gray>/<total></dark_gray>  <dark_gray>·</dark_gray>  <accent>⛁</accent> <white><coins>")
+                : plugin.getConfig().getString("nametag.below", "");
+        Component below = text.parse(belowFormat, r);
+        return new Tag(prefix, suffix, plugin.rewards().nameColor(p.getUniqueId()), below, count);
     }
 
     private void updatePersonal(Player player, PlayerBoard b) {
@@ -248,6 +261,8 @@ public final class BoardManager {
                 t.addEntry(target.getName());
             }
             b.lastPrefix.clear();
+            b.lastSuffix.clear();
+            b.lastColor.clear();
             b.sortedVersion = orderVersion;
         }
 
@@ -262,6 +277,16 @@ public final class BoardManager {
                 Team t = b.scoreboard.getEntryTeam(target.getName());
                 if (t != null) t.prefix(tag.prefix());
                 b.lastPrefix.put(id, tag.prefix());
+            }
+            if (!tag.suffix().equals(b.lastSuffix.get(id))) {
+                Team t = b.scoreboard.getEntryTeam(target.getName());
+                if (t != null) t.suffix(tag.suffix());
+                b.lastSuffix.put(id, tag.suffix());
+            }
+            if (tag.color() != b.lastColor.get(id)) {
+                Team t = b.scoreboard.getEntryTeam(target.getName());
+                if (t != null) t.color(tag.color());
+                b.lastColor.put(id, tag.color());
             }
 
             if (b.below != null) {

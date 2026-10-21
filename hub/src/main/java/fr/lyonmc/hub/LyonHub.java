@@ -27,6 +27,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
     private HubWorlds worlds;
     private SkinService skins;
     private NpcService npcs;
+    private fr.lyonmc.hub.player.HubPlayers players;
     private fr.lyonmc.hub.world.SchematicPaster paster;
 
     @Override
@@ -43,6 +44,11 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
         npcs.start();
         getServer().getPluginManager().registerEvents(worlds, this);
         getServer().getPluginManager().registerEvents(npcs, this);
+        players = new fr.lyonmc.hub.player.HubPlayers(this, worlds);
+        getServer().getPluginManager().registerEvents(players, this);
+        getServer().getPluginManager().registerEvents(players.menus(), this);
+        // Joueurs déjà au hub (après un /reload)
+        for (org.bukkit.entity.Player online : Bukkit.getOnlinePlayers()) if (players.inHub(online)) players.enter(online, null);
         var cmd = getCommand("lyonhub");
         if (cmd != null) {
             cmd.setExecutor(this);
@@ -53,6 +59,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
 
     @Override
     public void onDisable() {
+        if (players != null) players.restoreAll();
         if (npcs != null) {
             npcs.stop();
             npcs.despawnAll();
@@ -182,6 +189,9 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                 msg(sender, "<gray>Collage lancé, le serveur continue de tourner pendant ce temps…");
                 paster.paste(p, s, worlds.hasStartPlatform(p.getWorld()));
             }
+            case "construire", "build" -> {
+                if (p != null) players.toggleBuild(p);
+            }
             case "reload" -> {
                 reloadConfig();
                 npcs.load();
@@ -199,6 +209,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                         "<white>/lyonhub deplacer <id></white> <dark_gray>déplacer un PNJ ici",
                         "<white>/lyonhub suppr <id></white> <dark_gray>supprimer un PNJ",
                         "<white>/lyonhub coller <fichier></white> <dark_gray>coller une construction (.schem) autour de toi",
+                        "<white>/lyonhub construire</white> <dark_gray>mode construction au hub (créatif)",
                         "<white>/lyonhub liste</white> <dark_gray>· <white>/lyonhub reload")) {
                     sender.sendMessage(MM.deserialize("  " + line));
                 }
@@ -219,7 +230,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
-            out.addAll(List.of("monde", "coller", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste", "reload"));
+            out.addAll(List.of("monde", "construire", "coller", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste", "reload"));
         } else if (args.length == 2) {
             switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "podium" -> Rankings.BOARDS.forEach(b -> out.add(b.id()));

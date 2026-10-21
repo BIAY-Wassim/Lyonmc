@@ -440,3 +440,7 @@ body.is-map main { display: flex; flex-direction: column; min-height: 0; }
 ol.grades { list-style: none; padding: 0; margin: 14px 0 26px; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
 ol.grades li { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; }
 ol.grades small { color: var(--ink-2); }
+
+/* Monde ressources : avantages */
+ul.perks { list-style: none; padding: 0; margin: 16px 0 24px; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+ul.perks li { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; }

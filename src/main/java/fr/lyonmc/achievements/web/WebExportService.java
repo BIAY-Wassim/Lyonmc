@@ -500,6 +500,7 @@ public final class WebExportService implements Listener {
         settings.put("teamMax", plugin.teams().maxMembers());
         settings.put("hdvTax", plugin.auctions().tax());
         settings.put("hdvMax", plugin.auctions().maxListings());
+        settings.put("resourceBonus", plugin.resourceBonus().describe());
         settings.put("rtpCooldown", plugin.getConfig().getLong("teleport.rtp.cooldown-seconds", 600));
         m.put("settings", settings);
         return m;

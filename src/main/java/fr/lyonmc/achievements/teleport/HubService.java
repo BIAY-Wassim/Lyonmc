@@ -122,7 +122,7 @@ public final class HubService implements Listener {
             p.teleportAsync(hub);
             if (returning && !inHub(from)) {
                 p.sendMessage(plugin.prefixed(plugin.getConfig().getString("hub.join-message",
-                        "<gray>Bienvenue au hub ! <white><click:run_command:'/back'><hover:show_text:'<gray>Retourner où tu étais'><u>/back</u></hover></click></white> <gray>pour retourner où tu t'étais déconnecté.")));
+                        "<gray>Bienvenue au hub ! La <white>boussole</white> te ramène en survie, là où tu t'étais déconnecté.")));
             }
         });
     }

@@ -110,7 +110,15 @@ jobs:
             }
             await sleep(3000)
             await cmd('/gamemode survival'); await cmd('/money'); await cmd('/parcours'); await close()
-            await cmd('/rtp', 12000); await cmd('/ressources', 12000); await cmd('/back', 6000)
+            await cmd('/rtp', 12000); await cmd('/ressources', 14000)
+            log('EFFETS', JSON.stringify(bot.entity.effects))
+            await cmd('/give Testeur iron_pickaxe'); await cmd('/setblock ~1 ~ ~ minecraft:diamond_ore', 1500)
+            try {
+              const pick = bot.inventory.items().find(i => i.name === 'iron_pickaxe'); if (pick) await bot.equip(pick, 'hand')
+              const ore = bot.blockAt(bot.entity.position.offset(1, 0, 0).floored()); log('MINERAI', ore && ore.name)
+              if (ore && ore.name.includes('ore')) { await bot.dig(ore, true); await sleep(1500) }
+            } catch (er) { log('DIGERR', er.message) }
+            await cmd('/money'); await cmd('/back', 6000)
             await cmd('/lmc saison fin', 4000)
             await cmd('/saison'); await close()
             // Monde du hub, spawn et PNJ
@@ -130,6 +138,13 @@ jobs:
             log('NPCS', npcs.length, npcs.map(e => e.username + '@' + e.position.toString()).join(' '))
             const jouer = npcs.find(e => e.position.x > 2)
             if (jouer) { await bot.activateEntity(jouer).catch(er => log('ACTERR', er.message)); await sleep(2500); await close() }
+            // Inventaire et règles du hub
+            log('HUB INV', bot.game.gameMode, bot.inventory.items().map(i => i.name + ' x' + i.count).join(', '))
+            await cmd('/advancement grant Testeur only minecraft:adventure/sleep_in_bed')
+            bot.setQuickBarSlot(0); await sleep(500); bot.activateItem(); await sleep(2500)
+            await click(10, 6000)
+            log('SURVIE INV', bot.game.gameMode, bot.game.dimension, bot.inventory.items().map(i => i.name + ' x' + i.count).join(', '))
+            await cmd('/advancement grant Testeur only minecraft:adventure/sleep_in_bed')
             for (let i = 0; i < 200 && !gradeSignal; i++) await sleep(1000)
             await cmd('/titres'); await click(47); await click(10); await close()
             await cmd('je suis légende ?')

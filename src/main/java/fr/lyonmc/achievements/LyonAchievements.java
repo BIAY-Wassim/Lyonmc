@@ -67,6 +67,7 @@ public final class LyonAchievements extends JavaPlugin {
     private ProfileStore profiles;
     private BoardManager boards;
     private ChatListener chat;
+    private fr.lyonmc.achievements.world.ResourceBonusService resourceBonus;
     private fr.lyonmc.achievements.teleport.HubService spawnHub;
     private fr.lyonmc.achievements.rewards.GradeService grades;
     private MotdListener motd;
@@ -156,6 +157,7 @@ public final class LyonAchievements extends JavaPlugin {
         holograms = new HologramService(this);
         holograms.cleanup();
         holograms.load();
+        resourceBonus = new fr.lyonmc.achievements.world.ResourceBonusService(this);
         resources = new ResourceWorldService(this);
         try {
             resources.init();
@@ -172,7 +174,7 @@ public final class LyonAchievements extends JavaPlugin {
         web = new WebExportService(this);
 
         listen(new AdvancementListener(this, registry, stats, boards, text), chat, new MenuListener(this), heads, motd,
-                missionListener, custom, teamCommand, teleporter, teleportCommands, spawnHub, boss, web);
+                missionListener, custom, teamCommand, teleporter, teleportCommands, spawnHub, resourceBonus, boss, web);
 
         SuccesCommand succes = new SuccesCommand(this, registry, stats, boards, achievementsMenu, text);
         command(succes, "succes", "classement", "carte");
@@ -239,6 +241,7 @@ public final class LyonAchievements extends JavaPlugin {
 
         long interval = Math.max(5L, getConfig().getLong("settings.update-interval-ticks", 20L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, boards::tick, 1L, interval));
+        tasks.add(Bukkit.getScheduler().runTaskTimer(this, resourceBonus::tick, 40L, 100L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, () -> {
             for (Player p : Bukkit.getOnlinePlayers()) grades.check(p);
             chat.refreshAll();
@@ -355,6 +358,7 @@ public final class LyonAchievements extends JavaPlugin {
     public AchievementsMenu achievementsMenu() { return achievementsMenu; }
     public HubMenu hub() { return hub; }
     public ChatListener chat() { return chat; }
+    public fr.lyonmc.achievements.world.ResourceBonusService resourceBonus() { return resourceBonus; }
     public fr.lyonmc.achievements.teleport.HubService spawnHub() { return spawnHub; }
     public fr.lyonmc.achievements.rewards.GradeService grades() { return grades; }
     public WebExportService web() { return web; }
