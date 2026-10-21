@@ -28,7 +28,6 @@ import org.bukkit.entity.Player;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
 import java.util.EnumSet;
 import java.util.List;
@@ -117,23 +116,8 @@ final class NpcPackets {
     /** Entrée « joueur » invisible dans TAB : nécessaire au client pour connaître le skin. */
     private static ClientboundPlayerInfoUpdatePacket playerInfo(GameProfile gp) {
         try {
-            Object entry = entry(gp);
-            EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions = EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER);
-            for (Constructor<?> c : ClientboundPlayerInfoUpdatePacket.class.getDeclaredConstructors()) {
-                Class<?>[] t = c.getParameterTypes();
-                if (t.length == 2 && t[0] == EnumSet.class && t[1] == List.class) {
-                    c.setAccessible(true);
-                    return (ClientboundPlayerInfoUpdatePacket) c.newInstance(actions, List.of(entry));
-                }
-            }
-            ClientboundPlayerInfoUpdatePacket packet = new ClientboundPlayerInfoUpdatePacket(actions, List.of());
-            for (Field f : ClientboundPlayerInfoUpdatePacket.class.getDeclaredFields()) {
-                if (f.getType() == List.class && !Modifier.isStatic(f.getModifiers())) {
-                    f.setAccessible(true);
-                    f.set(packet, List.of(entry));
-                }
-            }
-            return packet;
+            ClientboundPlayerInfoUpdatePacket.Entry entry = (ClientboundPlayerInfoUpdatePacket.Entry) entry(gp);
+            return new ClientboundPlayerInfoUpdatePacket(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER), List.of(entry));
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("Impossible de créer le paquet du PNJ", e);
         }
