@@ -126,7 +126,7 @@ public final class HubMenus implements Listener {
         button(h, 13, item(Material.COMPASS, "<green><bold>Jouer", List.of(
                 "<gray>Survie, monde ressources,", "<gray>aventure au hasard, homes.", "", "<#e8c872>➤ Cliquer")), "jouer");
         ItemStack head = item(Material.PLAYER_HEAD, "<white><bold>Mon profil", List.of(
-                "<gray>Tes succès, ton grade, tes stats.", "", "<#e8c872>➤ Cliquer")));
+                "<gray>Tes succès, ton grade, tes stats.", "", "<#e8c872>➤ Cliquer"));
         if (head.getItemMeta() instanceof SkullMeta sm) {
             sm.setPlayerProfile(p.getPlayerProfile());
             head.setItemMeta(sm);
