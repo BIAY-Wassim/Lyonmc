@@ -29,6 +29,8 @@ public final class SkinService {
     private final File file;
     private final Map<String, Skin> cache = new ConcurrentHashMap<>();
     private final Set<String> loading = ConcurrentHashMap.newKeySet();
+    /** Dernier échec par joueur : on ne redemande pas à Mojang avant 30 minutes. */
+    private final Map<String, Long> failed = new ConcurrentHashMap<>();
 
     public SkinService(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -83,6 +85,11 @@ public final class SkinService {
                 return;
             }
         }
+        Long fail = failed.get(k);
+        if (fail != null && System.currentTimeMillis() - fail < 30 * 60_000L) {
+            if (c != null) callback.accept(c);
+            return;
+        }
         if (!loading.add(k)) {
             if (c != null) callback.accept(c);
             return;
@@ -101,7 +108,12 @@ public final class SkinService {
                 plugin.getLogger().fine("Skin introuvable pour " + name + " : " + e.getMessage());
             }
             Skin result = s != null ? s : c;
-            if (s != null) cache.put(k, s);
+            if (s != null) {
+                cache.put(k, s);
+                failed.remove(k);
+            } else {
+                failed.put(k, System.currentTimeMillis());
+            }
             Bukkit.getScheduler().runTask(plugin, () -> {
                 loading.remove(k);
                 callback.accept(result);
