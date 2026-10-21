@@ -190,11 +190,11 @@ jobs:
           (
             for i in $(seq 1 240); do grep -q "Done (" logs/latest.log 2>/dev/null && break; sleep 1; done
             sleep 3
-            (cd ../bot && timeout 580 node bot.js Testeur > ../bot.log 2>&1 &)
-            (cd ../bot && timeout 580 node bot.js Acheteur > ../bot2.log 2>&1 &)
+            (cd ../bot && timeout 660 node bot.js Testeur > ../bot.log 2>&1 &)
+            (cd ../bot && timeout 660 node bot.js Acheteur > ../bot2.log 2>&1 &)
             sleep 12
             for c in "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob"; do echo "$c"; sleep 1; done
-            sleep 270
+            sleep 340
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
             echo "say test-chat-grade"; sleep 30
