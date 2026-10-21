@@ -143,6 +143,8 @@ jobs:
             const jouer = npcs.find(e => e.position.x > 2)
             if (jouer) { await bot.activateEntity(jouer).catch(er => log('ACTERR', er.message)); await sleep(2500); await close() }
             // Inventaire et règles du hub
+            await cmd('/missions'); await close()
+            bot.setControlState('forward', true); await sleep(3000); bot.setControlState('forward', false)
             log('HUB INV', bot.game.gameMode, bot.inventory.items().map(i => i.name + ' x' + i.count).join(', '))
             await cmd('/advancement grant Testeur only minecraft:adventure/sleep_in_bed')
             bot.setQuickBarSlot(0); await sleep(500); bot.activateItem(); await sleep(2500)

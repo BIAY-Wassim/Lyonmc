@@ -179,6 +179,8 @@ public final class MissionService {
 
     public void progress(Player player, MissionType type, String key, boolean hostile, int amount) {
         if (amount <= 0 || !plugin.module("missions")) return;
+        // Au hub, rien ne compte (marcher, etc.)
+        if (plugin.spawnHub() != null && plugin.spawnHub().inHub(player.getLocation())) return;
         Profile p = plugin.profiles().get(player);
         ensure(p);
         progressList(player, p, p.daily, false, type, key, hostile, amount);
