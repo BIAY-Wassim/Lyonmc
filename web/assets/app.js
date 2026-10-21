@@ -387,7 +387,7 @@
     const total = s?.totals?.achievements || 0;
     const rows = c?.[key] || [];
     const pos = (i) => i < 3 ? `<span class="pos b b${i + 1}">${i + 1}</span>` : `<span class="pos">${i + 1}</span>`;
-    const who = (p) => `<span class="who"><strong>${esc(p.name)}</strong>${p.team ? `<span class="tag">${esc(p.team)}</span>` : ""}${p.title ? `<span class="t">${p.title}</span>` : ""}</span>`;
+    const who = (p) => `<span class="who"><strong>${esc(p.name)}</strong>${p.team ? `<span class="tag">${esc(p.team)}</span>` : ""}<span class="t">${p.grade ? `<span class="grade">${p.grade}</span>` : ""}${p.title ? `${p.grade ? " · " : ""}${p.title}` : ""}</span></span>`;
     const val = {
       achievements: (p) => `${p.count}<small> / ${total}</small><span class="meter"><i style="width:${total ? (p.count / total) * 100 : 0}%"></i></span>`,
       season: (p) => `${num(p.points)}<small> pts</small>`,
@@ -451,7 +451,7 @@
               : b.count - a.count);
       document.getElementById("plist").innerHTML = sorted.map((p) => `<a class="card pcard" href="/joueur/${encodeURIComponent(p.name)}" data-link>${img(face(p.uuid, 64))}
         <div><strong>${p.online ? `<span class="dot on" title="En ligne"></span>` : ""}${esc(p.name)}</strong>
-        <span>${p.count} succès${p.rank ? `, ${p.rank === 1 ? "1er" : p.rank + "e"}` : ""}</span>${p.title ? `<span>${p.title}</span>` : ""}</div></a>`).join("") || `<p class="empty">Aucun joueur ne correspond.</p>`;
+        <span>${p.count} succès${p.rank ? `, ${p.rank === 1 ? "1er" : p.rank + "e"}` : ""}</span>${p.grade || p.title ? `<span>${p.grade ? `<span class="grade">${p.grade}</span>` : ""}${p.grade && p.title ? " · " : ""}${p.title || ""}</span>` : ""}</div></a>`).join("") || `<p class="empty">Aucun joueur ne correspond.</p>`;
     };
     document.getElementById("pq").addEventListener("input", draw);
     document.getElementById("sort").addEventListener("change", draw);
@@ -502,6 +502,7 @@
           <div class="sky ${p.rank === 1 ? "gold" : ""}">${img(body(p.uuid), "body", p.name)}</div>
           <div class="info">
             <h1>${esc(p.name)}</h1>
+            ${p.grade ? `<p class="grade-line"><span class="grade">${p.grade}</span></p>` : ""}
             ${p.title ? `<p class="title">${p.title}</p>` : ""}
             ${p.teamInfo ? `<p class="small muted" style="margin:0">Équipe <strong style="color:var(--ink)">${esc(p.teamInfo.name)}</strong><span class="tag" style="color:${esc(p.teamInfo.color)}">${esc(p.teamInfo.tag)}</span></p>` : ""}
             <p class="seen">${status}</p>
@@ -580,13 +581,13 @@
     ["Général", [["/menu", "Le menu principal : tout le serveur en un clic"], ["/missions", "Tes missions du jour et de la semaine"], ["/recompense", "Récompense du jour"], ["/succes", "Ton profil de succès"], ["/classement", "Le podium des succès"], ["/saison", "Le classement du mois"], ["/carte", "Lien vers la carte en direct"]]],
     ["Récompenses", [["/parcours", "Les paliers à débloquer"], ["/titres", "Choisir ton titre"], ["/cosmetiques", "Couleur de pseudo et traînées"], ["/boutique", "Acheter titres, cosmétiques et homes"]]],
     ["Pièces", [["/money", "Ton solde"], ["/pay <joueur> <montant>", "Envoyer des pièces"], ["/baltop", "Les plus riches"], ["/hdv", "Hôtel des ventes"], ["/hdv vendre <prix>", "Vendre l'objet en main"], ["/hdv recuperer", "Récupérer tes objets non vendus"]]],
-    ["Déplacements", [["/sethome <nom>", "Créer un home"], ["/home <nom>", "Aller à un home"], ["/homes", "Tes homes"], ["/spawn", "Retour au spawn"], ["/tpa <joueur>", "Demander à rejoindre un joueur"], ["/tpahere <joueur>", "Demander à un joueur de venir"], ["/tpaccept", "Accepter une demande"], ["/back", "Revenir à ta position précédente"], ["/rtp", "Téléportation aléatoire"], ["/ressources", "Aller dans le monde ressources"]]],
+    ["Déplacements", [["/sethome <nom>", "Créer un home"], ["/home <nom>", "Aller à un home"], ["/homes", "Tes homes"], ["/hub", "Retour au hub (aussi /spawn)"], ["/tpa <joueur>", "Demander à rejoindre un joueur"], ["/tpahere <joueur>", "Demander à un joueur de venir"], ["/tpaccept", "Accepter une demande"], ["/back", "Revenir à ta position précédente"], ["/rtp", "Téléportation aléatoire"], ["/ressources", "Aller dans le monde ressources"]]],
     ["Équipes", [["/equipe", "Menu de ton équipe"], ["/equipe creer <nom> <tag>", "Fonder une équipe"], ["/equipe inviter <joueur>", "Inviter un joueur"], ["/equipe rejoindre <équipe>", "Accepter une invitation"], ["/equipe chat", "Parler seulement à ton équipe"], ["/equipe home", "Home de l'équipe"]]],
     ["Événements", [["/boss", "Prochain boss, ou rejoindre l'arène"]]],
   ];
   const SECTIONS = [
     ["debuter", "Bien commencer"], ["menus", "Le menu principal"], ["commandes", "Commandes"], ["missions", "Missions"], ["pieces", "Pièces et boutique"],
-    ["parcours", "Parcours de récompenses"], ["titres", "Titres et cosmétiques"], ["saisons", "Saisons"], ["boss", "Boss mondial"],
+    ["parcours", "Parcours de récompenses"], ["titres", "Grades, titres et cosmétiques"], ["saisons", "Saisons"], ["boss", "Boss mondial"],
     ["equipes", "Équipes"], ["hdv", "Hôtel des ventes"], ["teleport", "Homes et téléportation"], ["ressources", "Monde ressources"], ["succes", "Tous les succès"],
   ];
   const DAYS = { MONDAY: "lundi", TUESDAY: "mardi", WEDNESDAY: "mercredi", THURSDAY: "jeudi", FRIDAY: "vendredi", SATURDAY: "samedi", SUNDAY: "dimanche" };
@@ -629,7 +630,11 @@
         <p>Titres et cosmétiques avec un prix, et des emplacements de home en plus. Tout s'achète avec <code class="cmd">/boutique</code>.</p>`,
       parcours: `<p>${(g.paliers || []).length} paliers se débloquent tout seuls quand tu remplis leur condition. Ta progression est visible avec <code class="cmd">/parcours</code>.</p>
         <ol class="path">${(g.paliers || []).map((p, i) => `<li class="card"><span class="n">${i + 1}</span>${ico(p.icon, "sm")}<div><strong>${esc(p.name)}</strong><span class="muted small">${esc(p.condition)}</span><br>${bundle(p.rewards)}</div></li>`).join("")}</ol>`,
-      titres: `<p>Ton titre s'affiche devant ton pseudo dans le chat. Choisis-le avec <code class="cmd">/titres</code>.</p>
+      titres: `<h3 style="margin-top:0">Grades</h3>
+        <p>Ton grade monte tout seul selon la part des succès que tu as obtenus. Personne ne le choisit : il s'affiche devant ton pseudo dans le chat, et tout le serveur est prévenu quand tu passes au suivant.</p>
+        <ol class="grades">${(g.grades || []).map((x) => `<li class="card"><b>${x.html}</b><small>${x.percent ? `dès ${String(x.percent).replace(/\.0$/, "")} % des succès` : "au départ"}</small></li>`).join("")}</ol>
+        <h3>Titres</h3>
+        <p>En plus du grade, tu peux afficher un titre entre crochets. Tu les gagnes avec les paliers, les saisons ou la boutique, et tu choisis lequel porter avec <code class="cmd">/titres</code>.</p>
         <div class="titles-grid">${(g.titles || []).map((t) => `<div class="card"><b>${t.html}</b><small>${esc(t.description)}${t.price ? `, ${num(t.price)} pièces` : ""}</small></div>`).join("")}</div>
         <h3>Couleurs de pseudo</h3>
         <div class="titles-grid">${(g.colors || []).map((c) => `<div class="card"><b>${c.html}</b><small>${c.price ? `${num(c.price)} pièces` : "Débloquée par un palier"}</small></div>`).join("")}</div>
@@ -643,7 +648,8 @@
         ${rewardsTable([["Participation", g.boss?.rewards?.participation], ["Meilleurs dégâts", g.boss?.rewards?.top1], ["2e", g.boss?.rewards?.top2], ["3e", g.boss?.rewards?.top3], ["Coup de grâce", g.boss?.rewards?.["last-hit"]]])}`,
       equipes: `<p>Fonde une équipe avec <code class="cmd">/equipe creer &lt;nom&gt; &lt;tag&gt;</code> pour ${num(st.teamCost)} pièces, jusqu'à ${st.teamMax} membres. Ton équipe a un tag devant le pseudo, un chat privé, un home commun et sa place dans le classement des équipes. Les coéquipiers ne peuvent pas se blesser, sauf si le chef active le combat.</p>`,
       hdv: `<p>Prends un objet en main et tape <code class="cmd">/hdv vendre &lt;prix&gt;</code>. Tu peux avoir ${st.hdvMax} objets en vente en même temps. Une taxe de ${String(st.hdvTax).replace(/\.0$/, "")} % est prélevée sur chaque vente. Les objets non vendus se récupèrent avec <code class="cmd">/hdv recuperer</code>.</p>`,
-      teleport: `<p>Tu as ${st.homesBase} homes au départ. Les paliers et la boutique en donnent d'autres. Toutes les téléportations ont un court délai : ne bouge pas pendant le compte à rebours. <code class="cmd">/rtp</code> t'envoie dans un endroit sûr au hasard, une fois toutes les ${Math.round((st.rtpCooldown || 600) / 60)} minutes.</p>`,
+      teleport: `<p>À chaque connexion, tu arrives au <strong>hub</strong>, le spawn du serveur. Tu y trouves les statistiques du serveur et les classements en direct. <code class="cmd">/back</code> te ramène là où tu t'étais déconnecté, et <code class="cmd">/hub</code> te ramène au hub à tout moment.</p>
+        <p>Tu as ${st.homesBase} homes au départ. Les paliers et la boutique en donnent d'autres. Toutes les téléportations ont un court délai : ne bouge pas pendant le compte à rebours. <code class="cmd">/rtp</code> t'envoie dans un endroit sûr au hasard, une fois toutes les ${Math.round((st.rtpCooldown || 600) / 60)} minutes.</p>`,
       ressources: `<p>Le monde ressources est fait pour miner sans abîmer le monde principal. Il est remis à neuf le 1er de chaque mois : n'y construis rien d'important. Accès avec <code class="cmd">/ressources</code>.</p>`,
       succes: `<p>${totalAdv} succès au total, répartis en ${(g.categories || []).length} catégories. Les succès secrets restent cachés tant que personne ne les a obtenus. Le pourcentage indique la part des joueurs qui l'ont.</p>
         ${(g.categories || []).map((c) => `<div class="cat-block"><h3>${img(icon(catIcon[c.id] || "book"))}${esc(catName(c))} <span class="muted small">${c.advancements.length} succès</span></h3>
