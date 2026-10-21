@@ -55,6 +55,25 @@ teleport:
     max-radius: 5000
     cooldown-seconds: 600
 
+# Hub : le spawn défini avec /setspawn. Les joueurs y arrivent à chaque connexion
+# (/back les ramène où ils s'étaient déconnectés). /hub, /lobby et /spawn y mènent.
+hub:
+  enabled: true
+  teleport-on-join: true
+  # Rayon (en blocs) de la zone protégée autour du spawn
+  radius: 48
+  # Les admins (lyonmc.admin) ne sont pas bloqués
+  protect:
+    build: true        # casser, poser, seaux, cultures, cadres, porte-armures
+    containers: true   # ouvrir les coffres, fours, tonneaux du hub
+    explosions: true
+    fire: true
+    damage: true       # aucun dégât pour les joueurs dans le hub
+    animals: true      # pas frapper les animaux et villageois du hub
+    hunger: true
+    monsters: true     # pas d'apparition de monstres
+  join-message: "<gray>Bienvenue au hub ! <white><click:run_command:'/back'><hover:show_text:'<gray>Retourner où tu étais'><u>/back</u></hover></click></white> <gray>pour retourner où tu t'étais déconnecté."
+
 # Équipes
 teams:
   max-members: 8
@@ -190,8 +209,8 @@ nametag:
 # ───────────────────────── Chat ─────────────────────────
 chat:
   enabled: true
-  # <badge> rang, <team> tag d'équipe, <title> titre choisi, <name> pseudo (coloré, survolable)
-  format: "<badge><team><title><name> <dark_gray>›</dark_gray> <message>"
+  # <badge> rang, <grade> grade automatique, <team> tag d'équipe, <title> titre choisi, <name> pseudo (coloré, survolable)
+  format: "<badge><grade><team><title><name> <dark_gray>›</dark_gray> <message>"
   team-format: "<team><dark_gray>(équipe)</dark_gray> <name> <dark_gray>›</dark_gray> <#bfe3ff><message>"
   badge:
     top1: "<#ffd86b>♛</#ffd86b> "
@@ -204,6 +223,7 @@ chat:
   hover:
     - "<white><bold><player></bold>"
     - "<dark_gray>♛ Rang #<rank> sur <ranked>"
+    - "<dark_gray>✦ Grade</dark_gray> <grade>"
     - ""
     - "<accent>★</accent> <gray>Succès <white><done></white><dark_gray>/<total>"
     - "<bar>"
@@ -241,6 +261,16 @@ chat:
       - "  <accent>➤</accent> <click:run_command:'/missions'><hover:show_text:'<gray>Voir les missions'><white><u>/missions</u></white></hover></click> <gray>tes missions du jour"
       - "  <accent>➤</accent> <click:open_url:'https://lyonmc.fr/carte'><hover:show_text:'<gray>Ouvrir la Dynmap'><white><u>lyonmc.fr</u></white></hover></click> <gray>pour voir la <white>Dynmap</white> en direct"
       - ""
+
+# ───────────────────────── Grades ─────────────────────────
+# Les grades sont automatiques (liste et seuils dans recompenses.yml, section grades).
+grades:
+  # Afficher le grade dans le chat
+  chat: true
+  # Forme du grade devant le pseudo
+  chat-tag: "<grade> "
+  # Message à tout le serveur quand un joueur monte de grade
+  announce: "<accent>✦</accent> <white><player></white> <gray>est maintenant</gray> <grade><gray> !</gray>"
 
 below-name:
   enabled: false

@@ -92,6 +92,7 @@ public final class HubMenu {
 
         button(holder, inv, 28, Material.NAME_TAG, "Titres", List.of(
                 Items.line("Choisis le titre devant ton pseudo"),
+                Component.text("Grade : ", Text.GRAY).append(plugin.grades().display(p.getUniqueId())).append(Component.text(" (automatique)", Text.DARK)).decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false),
                 Items.kv("Débloqués", plugin.rewards().unlockedTitles(p) + " / " + plugin.rewards().titles().size())), false,
                 pl -> plugin.rewardMenus().openTitles(pl, 1));
         button(holder, inv, 29, Material.BLAZE_POWDER, "Cosmétiques", List.of(

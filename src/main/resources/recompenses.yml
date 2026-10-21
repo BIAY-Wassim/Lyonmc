@@ -18,32 +18,36 @@ achievement-coins:
   goal: 40
   challenge: 150
 
-# ───────────────────────── Titres ─────────────────────────
-# Affichés devant le pseudo dans le chat. Le joueur choisit avec /titres.
-# Un titre se débloque par un palier (plus bas), par une saison, ou s'achète (price).
-titles:
+# ───────────────────────── Grades (automatiques) ─────────────────────────
+# Le grade se calcule tout seul selon le pourcentage de succès obtenus.
+# Personne ne le choisit : il s'affiche dans le chat devant le pseudo.
+grades:
   novice:
     display: "<gray>Novice"
-    description: "Le début de l'aventure"
-    default: true
+    percent: 0
   aventurier:
     display: "<#b5e3b0>Aventurier"
-    description: "Atteindre 10 % des succès"
+    percent: 10
   explorateur:
     display: "<#8fd3c7>Explorateur"
-    description: "Atteindre 25 % des succès"
+    percent: 25
   veteran:
     display: "<#9ab8ff>Vétéran"
-    description: "Atteindre 50 % des succès"
+    percent: 50
   maitre:
     display: "<#c79bff>Maître"
-    description: "Atteindre 75 % des succès"
+    percent: 75
   grand-maitre:
     display: "<#ff9bd2>Grand Maître"
-    description: "Atteindre 90 % des succès"
+    percent: 90
   legende:
     display: "<gradient:#ffe29a:#ffb35c>Légende</gradient>"
-    description: "Obtenir tous les succès"
+    percent: 100
+
+# ───────────────────────── Titres ─────────────────────────
+# Affichés entre crochets devant le pseudo, en plus du grade. Le joueur choisit avec /titres.
+# Un titre se débloque par un palier (plus bas), par une saison, ou s'achète (price).
+titles:
   pionnier:
     display: "<#e6e6e6>Pionnier"
     description: "Terminer la catégorie Minecraft"
@@ -230,7 +234,7 @@ paliers:
     name: "Aventurier"
     icon: LEATHER_BOOTS
     condition: { type: achievements-percent, value: 10 }
-    reward: { coins: 300, title: aventurier, color: menthe }
+    reward: { coins: 300, color: menthe }
   fidele:
     name: "Fidèle"
     icon: CAKE
@@ -240,7 +244,7 @@ paliers:
     name: "Explorateur"
     icon: COMPASS
     condition: { type: achievements-percent, value: 25 }
-    reward: { coins: 600, title: explorateur, homes: 1, items: ["DIAMOND:3"] }
+    reward: { coins: 600, homes: 1, items: ["DIAMOND:3"] }
   assidu:
     name: "Assidu"
     icon: BOOK
@@ -265,7 +269,7 @@ paliers:
     name: "Vétéran"
     icon: SHIELD
     condition: { type: achievements-percent, value: 50 }
-    reward: { coins: 1500, title: veteran, color: lavande, homes: 1 }
+    reward: { coins: 1500, color: lavande, homes: 1 }
     announce: true
   seigneur-nether:
     name: "Seigneur du Nether"
@@ -306,7 +310,7 @@ paliers:
     name: "Maître"
     icon: DIAMOND_CHESTPLATE
     condition: { type: achievements-percent, value: 75 }
-    reward: { coins: 3000, title: maitre, homes: 1, items: ["NETHERITE_INGOT:1"] }
+    reward: { coins: 3000, homes: 1, items: ["NETHERITE_INGOT:1"] }
     announce: true
   pilier:
     name: "Pilier du serveur"
@@ -318,7 +322,7 @@ paliers:
     name: "Grand Maître"
     icon: NETHERITE_CHESTPLATE
     condition: { type: achievements-percent, value: 90 }
-    reward: { coins: 5000, title: grand-maitre, trail: lueur }
+    reward: { coins: 5000, trail: lueur }
     announce: true
   machine:
     name: "Machine"
@@ -336,7 +340,7 @@ paliers:
     name: "Légende"
     icon: DRAGON_EGG
     condition: { type: achievements-percent, value: 100 }
-    reward: { coins: 20000, title: legende, color: arc-en-ciel, trail: totem }
+    reward: { coins: 20000, color: arc-en-ciel, trail: totem }
     announce: true
 
 # ───────────────────────── Récompense quotidienne ─────────────────────────

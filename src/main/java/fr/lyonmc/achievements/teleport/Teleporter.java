@@ -110,6 +110,11 @@ public final class Teleporter implements Listener {
         return back.get(uuid);
     }
 
+    /** Fixe la position de /back (ex. : là où le joueur s'était déconnecté avant d'arriver au hub). */
+    public void remember(UUID uuid, Location location) {
+        if (location != null && location.getWorld() != null) back.put(uuid, location.clone());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player p && pending.containsKey(p.getUniqueId())) cancel(p.getUniqueId(), true);

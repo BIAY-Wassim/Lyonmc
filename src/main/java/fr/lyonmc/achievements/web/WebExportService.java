@@ -284,6 +284,9 @@ public final class WebExportService implements Listener {
         Profile p = plugin.profiles().get(uuid);
         Component title = p == null ? Component.empty() : plugin.rewards().titleRaw(p);
         if (!title.equals(Component.empty())) o.put("title", WebText.html(title));
+        fr.lyonmc.achievements.rewards.GradeService.Grade g = plugin.grades().of(uuid);
+        o.put("grade", WebText.html(plugin.text().parse(g.display())));
+        o.put("gradeId", g.id());
         Team t = plugin.teams().teamOf(uuid);
         if (t != null) o.put("team", t.tag);
         return o;
@@ -425,6 +428,16 @@ public final class WebExportService implements Listener {
             titles.add(o);
         }
         m.put("titles", titles);
+
+        List<Map<String, Object>> grades = new ArrayList<>();
+        for (fr.lyonmc.achievements.rewards.GradeService.Grade g : plugin.grades().all()) {
+            Map<String, Object> o = new LinkedHashMap<>();
+            o.put("id", g.id());
+            o.put("html", WebText.html(plugin.text().parse(g.display())));
+            o.put("percent", g.percent());
+            grades.add(o);
+        }
+        m.put("grades", grades);
 
         List<Map<String, Object>> colors = new ArrayList<>();
         for (RewardService.CosmeticDef c : rw.colors()) {

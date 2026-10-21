@@ -134,7 +134,7 @@ public final class MenuCommands implements TabExecutor {
     private void help(CommandSender sender) {
         String[] lines = {
                 "/lmc reload", "recharger toutes les configurations",
-                "/lmc holo creer <type> [id]", "hologramme de classement (succes, saison, equipes, podium, podium-saison)",
+                "/lmc holo creer <type> [id]", "hologramme (" + String.join(", ", HologramService.TYPES) + ")",
                 "/lmc holo suppr <id>", "supprimer un hologramme",
                 "/lmc saison fin", "terminer la saison maintenant",
                 "/lmc missions reset <joueur>", "nouvelles missions pour un joueur",

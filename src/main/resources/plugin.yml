@@ -93,7 +93,8 @@ commands:
     description: Liste des homes
     permission: lyonmc.succes.use
   spawn:
-    description: Aller au spawn
+    description: Aller au spawn (le hub)
+    aliases: [hub, lobby]
     permission: lyonmc.succes.use
   setspawn:
     description: Définir le spawn (admin)

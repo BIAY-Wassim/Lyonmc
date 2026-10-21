@@ -77,6 +77,13 @@ public final class RewardMenus {
         info.add(Items.line("dans le chat."));
         info.add(Items.EMPTY);
         info.add(Component.text("Actuel  ", Text.GRAY).append(p.title == null ? Component.text("aucun", Text.DARK) : rewards().titleRaw(p)));
+        info.add(Items.EMPTY);
+        GradeService.Grade grade = plugin.grades().of(player.getUniqueId());
+        GradeService.Grade next = plugin.grades().next(grade);
+        info.add(Component.text("Grade  ", Text.GRAY).append(plugin.text().parse(grade.display())).decoration(TextDecoration.ITALIC, false));
+        info.add(Items.dark("Automatique, selon tes succès."));
+        if (next != null) info.add(Items.dark("Prochain : " + net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
+                .serialize(plugin.text().parse(next.display())) + " à " + (int) next.percent() + " %"));
         inv.setItem(4, Items.item(Material.NAME_TAG, Component.text("Titres", Text.WHITE).decorate(TextDecoration.BOLD), info, false));
 
         int start = (current - 1) * GRID.length;

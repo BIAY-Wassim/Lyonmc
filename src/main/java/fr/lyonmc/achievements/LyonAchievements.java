@@ -67,6 +67,8 @@ public final class LyonAchievements extends JavaPlugin {
     private ProfileStore profiles;
     private BoardManager boards;
     private ChatListener chat;
+    private fr.lyonmc.achievements.teleport.HubService spawnHub;
+    private fr.lyonmc.achievements.rewards.GradeService grades;
     private MotdListener motd;
     private HeadService heads;
 
@@ -124,6 +126,8 @@ public final class LyonAchievements extends JavaPlugin {
         stats.load();
 
         economy = new EconomyService(this);
+        grades = new fr.lyonmc.achievements.rewards.GradeService(this);
+        grades.load();
         rewards = new RewardService(this);
         rewards.load();
         daily = new DailyRewardService(this);
@@ -141,6 +145,7 @@ public final class LyonAchievements extends JavaPlugin {
         teamCommand = new TeamCommand(this);
         teleporter = new Teleporter(this);
         teleportCommands = new TeleportCommands(this);
+        spawnHub = new fr.lyonmc.achievements.teleport.HubService(this);
         auctions = new AuctionService(this);
         auctions.load();
         auctionCommand = new AuctionCommand(this);
@@ -167,7 +172,7 @@ public final class LyonAchievements extends JavaPlugin {
         web = new WebExportService(this);
 
         listen(new AdvancementListener(this, registry, stats, boards, text), chat, new MenuListener(this), heads, motd,
-                missionListener, custom, teamCommand, teleporter, teleportCommands, boss, web);
+                missionListener, custom, teamCommand, teleporter, teleportCommands, spawnHub, boss, web);
 
         SuccesCommand succes = new SuccesCommand(this, registry, stats, boards, achievementsMenu, text);
         command(succes, "succes", "classement", "carte");
@@ -234,7 +239,10 @@ public final class LyonAchievements extends JavaPlugin {
 
         long interval = Math.max(5L, getConfig().getLong("settings.update-interval-ticks", 20L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, boards::tick, 1L, interval));
-        tasks.add(Bukkit.getScheduler().runTaskTimer(this, chat::refreshAll, 2L, 100L));
+        tasks.add(Bukkit.getScheduler().runTaskTimer(this, () -> {
+            for (Player p : Bukkit.getOnlinePlayers()) grades.check(p);
+            chat.refreshAll();
+        }, 2L, 100L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, motd::refresh, 20L, 100L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this,
                 () -> heads.preload(stats.ranking().subList(0, Math.min(10, stats.ranking().size()))), 200L, 12000L));
@@ -291,6 +299,7 @@ public final class LyonAchievements extends JavaPlugin {
         configs.load();
         text.reload();
         registry.load();
+        grades.load();
         rewards.load();
         daily.load();
         missions.load();
@@ -345,5 +354,8 @@ public final class LyonAchievements extends JavaPlugin {
     public ResourceWorldService resources() { return resources; }
     public AchievementsMenu achievementsMenu() { return achievementsMenu; }
     public HubMenu hub() { return hub; }
+    public ChatListener chat() { return chat; }
+    public fr.lyonmc.achievements.teleport.HubService spawnHub() { return spawnHub; }
+    public fr.lyonmc.achievements.rewards.GradeService grades() { return grades; }
     public WebExportService web() { return web; }
 }

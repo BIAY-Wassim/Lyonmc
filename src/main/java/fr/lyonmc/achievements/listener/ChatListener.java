@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ChatListener implements Listener {
 
-    private record Card(Component badge, Component name, Component title, Component team) {
+    private record Card(Component badge, Component grade, Component name, Component title, Component team) {
     }
 
     private final fr.lyonmc.achievements.LyonAchievements plugin;
@@ -58,14 +58,19 @@ public final class ChatListener implements Listener {
 
         Component badge = text.parse(plugin.getConfig().getString("chat.badge." + Text.rankKey(rank), ""), r);
         TextColor nameColor = TextColor.fromHexString(plugin.getConfig().getString("chat.name-color", "#e6e6e6"));
-        Component hover = text.lines(plugin.getConfig().getStringList("chat.hover"), r);
+        java.util.List<String> hoverLines = new java.util.ArrayList<>(plugin.getConfig().getStringList("chat.hover"));
+        if (!hoverLines.isEmpty() && hoverLines.stream().noneMatch(l -> l.contains("<grade>"))) {
+            hoverLines.add(Math.min(2, hoverLines.size()), "<dark_gray>✦ Grade</dark_gray> <grade>");
+        }
+        Component hover = text.lines(hoverLines, r);
         Component name = plugin.rewards().coloredName(p.getUniqueId(), p.getName(), nameColor == null ? Text.WHITE : nameColor)
                 .hoverEvent(HoverEvent.showText(hover))
                 .clickEvent(ClickEvent.runCommand("/succes " + p.getName()));
         fr.lyonmc.achievements.core.Profile profile = plugin.profiles().get(p.getUniqueId());
         Component title = plugin.rewards().titleTag(profile);
         Component team = plugin.teams().tagComponent(plugin.teams().teamOf(p.getUniqueId()));
-        cards.put(p.getUniqueId(), new Card(badge, name, title, team));
+        Component grade = plugin.grades().chatTag(p.getUniqueId());
+        cards.put(p.getUniqueId(), new Card(badge, grade, name, title, team));
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -73,7 +78,14 @@ public final class ChatListener implements Listener {
         if (!plugin.getConfig().getBoolean("chat.enabled", true)) return;
         Player source = event.getPlayer();
         Card card = cards.get(source.getUniqueId());
-        String format = plugin.getConfig().getString("chat.format", "<badge><team><title><name> <dark_gray>›</dark_gray> <message>");
+        String format = plugin.getConfig().getString("chat.format", "<badge><grade><team><title><name> <dark_gray>›</dark_gray> <message>");
+        // Anciens config.yml sans <grade> : on le place avant l'équipe (ou avant le pseudo)
+        if (!format.contains("<grade>")) {
+            format = format.contains("<team>") ? format.replaceFirst("<team>", "<grade><team>")
+                    : format.replaceFirst("<name>", "<grade><name>");
+        }
+        final String chatFormat = format;
+        Component grade = card == null ? Component.empty() : card.grade();
         TextColor msgColor = TextColor.fromHexString(plugin.getConfig().getString("chat.message-color", "#bfbfbf"));
         Component badge = card == null ? Component.empty() : card.badge();
         Component name = card == null ? Component.text(source.getName(), Text.WHITE) : card.name();
@@ -99,8 +111,9 @@ public final class ChatListener implements Listener {
             }
         }
 
-        event.renderer((player, displayName, message, viewer) -> text.parse(format,
+        event.renderer((player, displayName, message, viewer) -> text.parse(chatFormat,
                 Placeholder.component("badge", badge),
+                Placeholder.component("grade", grade),
                 Placeholder.component("team", team),
                 Placeholder.component("title", title),
                 Placeholder.component("name", name),
