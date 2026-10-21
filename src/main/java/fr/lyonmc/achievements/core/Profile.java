@@ -52,6 +52,8 @@ public final class Profile {
     public String grade;
     /** Grade affiché choisi par une Légende (null = automatique). */
     public String gradeChoice;
+    /** 0 = grade jamais calculé avec la bonne liste : la première mise à jour se fait sans annonce. */
+    public int gradeVersion;
     public final Set<String> cosmetics = new LinkedHashSet<>();
     public String color;
     public String trail;
@@ -135,6 +137,7 @@ public final class Profile {
         p.title = c.getString("title");
         p.grade = c.getString("grade");
         p.gradeChoice = c.getString("grade-choice");
+        p.gradeVersion = c.getInt("grade-version");
         p.cosmetics.addAll(c.getStringList("cosmetics"));
         p.color = c.getString("color");
         p.trail = c.getString("trail");
@@ -193,6 +196,7 @@ public final class Profile {
         c.set("title", title);
         c.set("grade", grade);
         c.set("grade-choice", gradeChoice);
+        c.set("grade-version", gradeVersion);
         c.set("cosmetics", new ArrayList<>(cosmetics));
         c.set("color", color);
         c.set("trail", trail);
