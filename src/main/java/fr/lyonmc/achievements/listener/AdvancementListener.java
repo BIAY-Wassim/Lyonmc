@@ -68,6 +68,7 @@ public final class AdvancementListener implements Listener {
             plugin.daily().notifyJoin(p);
             plugin.auctions().notifyJoin(p);
             plugin.rewards().check(p);
+            plugin.grades().check(p);
         }, 40L);
     }
 
@@ -159,7 +160,10 @@ public final class AdvancementListener implements Listener {
                     + net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(entry.title())
                     + " » (" + newCount + "/" + total + ")", 0xD9C08C, uuid);
         }
-        Bukkit.getScheduler().runTask(plugin, () -> plugin.rewards().check(player));
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            plugin.rewards().check(player);
+            plugin.grades().check(player);
+        });
 
         // Tous les succès
         if (newCount >= total && oldCount < total) {

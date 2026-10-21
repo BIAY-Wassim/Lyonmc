@@ -64,10 +64,12 @@ public final class RewardService {
         paliers.clear();
 
         ConfigurationSection t = cfg.getConfigurationSection("titles");
+        // Les grades (novice, aventurier...) sont automatiques : ce ne sont plus des titres à choisir
+        java.util.Set<String> gradeIds = plugin.grades() == null ? java.util.Set.of() : plugin.grades().ids();
         if (t != null) {
             for (String id : t.getKeys(false)) {
                 ConfigurationSection s = t.getConfigurationSection(id);
-                if (s == null) continue;
+                if (s == null || gradeIds.contains(id)) continue;
                 titles.put(id, new TitleDef(id, s.getString("display", id), s.getString("description", ""),
                         s.getBoolean("default", false), s.getLong("price", 0)));
             }
@@ -358,6 +360,7 @@ public final class RewardService {
         for (String t : b.titles()) {
             TitleDef def = titles.get(t);
             if (def != null) out.add(Component.text("Titre ", Text.GRAY).append(plugin.text().parse(def.display())));
+            else if (plugin.grades().byId(t) != null) out.add(Component.text("Grade ", Text.GRAY).append(plugin.text().parse(plugin.grades().byId(t).display())));
         }
         if (b.color() != null && colors.containsKey(b.color())) {
             CosmeticDef c = colors.get(b.color());

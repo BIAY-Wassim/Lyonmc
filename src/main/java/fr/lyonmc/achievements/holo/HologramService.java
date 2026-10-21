@@ -28,11 +28,12 @@ import java.util.*;
 
 /**
  * Hologrammes de classement (TextDisplay) et podium avec les vraies têtes des joueurs (ItemDisplay).
- * Types : succes, saison, equipes, podium, podium-saison.
+ * Types : serveur, bienvenue, succes, saison, equipes, fortune, missions, grades, podium, podium-saison.
  */
 public final class HologramService {
 
-    public static final List<String> TYPES = List.of("succes", "saison", "equipes", "podium", "podium-saison");
+    public static final List<String> TYPES = List.of("serveur", "bienvenue", "succes", "saison", "equipes", "fortune",
+            "missions", "grades", "podium", "podium-saison");
     private static final TextColor GOLD = TextColor.color(0xFFD86B);
     private static final TextColor SILVER = TextColor.color(0xC8C8C8);
     private static final TextColor BRONZE = TextColor.color(0xD29A6A);
@@ -139,6 +140,78 @@ public final class HologramService {
         TextColor accent = plugin.text().accent();
         List<Component> lines = new ArrayList<>();
         switch (type) {
+            case "serveur" -> {
+                lines.add(Component.text("✦ LyonMC ✦", accent).decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+                lines.add(Component.text("Survie 1.21.8", Text.DARK));
+                lines.add(Component.empty());
+                lines.add(kv("● En ligne", Bukkit.getOnlinePlayers().size() + " / " + Bukkit.getMaxPlayers(), TextColor.color(0x7CE38B)));
+                lines.add(kv("Joueurs venus", Text.num(plugin.profiles().all().size()), accent));
+                lines.add(kv("Succès débloqués", Text.num(plugin.stats().serverTotal()), accent));
+                long seconds = 0;
+                for (Profile p : plugin.profiles().all()) seconds += p.playtimeSeconds;
+                lines.add(kv("Heures de jeu", Text.num(seconds / 3600), accent));
+                lines.add(kv("Équipes", Text.num(plugin.teams().all().size()), accent));
+                lines.add(kv("Objets à l'HDV", Text.num(plugin.auctions().active().size()), accent));
+                PlayerStats top = plugin.stats().top(1);
+                if (top != null) lines.add(kv("♛ Leader", top.name() + "  ★ " + top.count(), GOLD));
+                lines.add(Component.empty());
+                lines.add(Component.text(plugin.seasons().name(), accent).append(Component.text("  fin dans " + plugin.seasons().timeLeft(), Text.DARK)));
+                if (plugin.module("boss")) {
+                    lines.add(plugin.boss().active()
+                            ? Component.text("⚔ Le boss est en cours !", TextColor.color(0xFF6B6B))
+                            : Component.text("⚔ Prochain boss ", Text.GRAY).append(Component.text(plugin.boss().nextText(), Text.WHITE)));
+                }
+            }
+            case "bienvenue" -> {
+                List<String> custom = plugin.getConfig().getStringList("holograms.bienvenue");
+                if (custom.isEmpty()) custom = List.of(
+                        "<accent><bold>Bienvenue sur LyonMC</bold>",
+                        "<gray>Survie entre potes, succès et saisons",
+                        "",
+                        "<white>/menu</white> <dark_gray>tout le serveur",
+                        "<white>/rtp</white> <dark_gray>partir à l'aventure",
+                        "<white>/home</white> <dark_gray>rentrer chez toi",
+                        "<white>/back</white> <dark_gray>là où tu étais",
+                        "<white>/missions</white> <dark_gray>missions du jour",
+                        "<white>/ressources</white> <dark_gray>le monde à miner",
+                        "<white>/equipe</white> <dark_gray>jouer en équipe",
+                        "<white>/hdv</white> <dark_gray>l'hôtel des ventes",
+                        "",
+                        "<gray>Ton grade monte tout seul avec tes succès");
+                for (String l : custom) lines.add(plugin.text().parse(l));
+            }
+            case "fortune" -> {
+                lines.add(Component.text("⛁ Les plus riches ⛁", accent));
+                List<Profile> r = plugin.economy().top();
+                for (int i = 0; i < 10; i++) {
+                    Profile p = i < r.size() ? r.get(i) : null;
+                    lines.add(line(i + 1, p == null ? "-" : p.name, p == null ? "" : plugin.economy().format(p.coins)));
+                }
+            }
+            case "missions" -> {
+                lines.add(Component.text("✔ Missions terminées ✔", accent));
+                List<Profile> r = new ArrayList<>(plugin.profiles().all());
+                r.removeIf(p -> p.missionsDone <= 0 || p.name == null);
+                r.sort(Comparator.comparingInt((Profile p) -> p.missionsDone).reversed());
+                for (int i = 0; i < 10; i++) {
+                    Profile p = i < r.size() ? r.get(i) : null;
+                    lines.add(line(i + 1, p == null ? "-" : p.name, p == null ? "" : "✔ " + Text.num(p.missionsDone)));
+                }
+            }
+            case "grades" -> {
+                lines.add(Component.text("✦ Les grades ✦", accent));
+                lines.add(Component.text("automatiques, selon tes succès", Text.DARK));
+                Map<String, Integer> counts = new HashMap<>();
+                for (PlayerStats s : plugin.stats().all()) counts.merge(plugin.grades().of(s.uuid()).id(), 1, Integer::sum);
+                List<fr.lyonmc.achievements.rewards.GradeService.Grade> all = new ArrayList<>(plugin.grades().all());
+                Collections.reverse(all);
+                for (var g : all) {
+                    int n = counts.getOrDefault(g.id(), 0);
+                    lines.add(plugin.text().parse(g.display())
+                            .append(Component.text("  " + (int) g.percent() + " %", Text.GRAY))
+                            .append(Component.text("  · " + n + " joueur" + (n > 1 ? "s" : ""), Text.DARK)));
+                }
+            }
             case "saison" -> {
                 lines.add(Component.text("✦ " + plugin.seasons().name() + " ✦", accent));
                 lines.add(Component.text("fin dans " + plugin.seasons().timeLeft(), Text.DARK));
@@ -168,6 +241,10 @@ public final class HologramService {
         }
         lines.add(Component.text("lyonmc.fr", Text.DARK));
         return Component.join(net.kyori.adventure.text.JoinConfiguration.newlines(), lines);
+    }
+
+    private static Component kv(String key, String value, TextColor color) {
+        return Component.text(key + "  ", Text.GRAY).append(Component.text(value, color == null ? Text.WHITE : color));
     }
 
     private Component line(int pos, String name, String value) {

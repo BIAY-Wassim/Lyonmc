@@ -93,7 +93,8 @@ public final class WebExportService implements Listener {
             files.put("classements.json", GSON.toJson(leaderboards()));
             files.put("joueurs.json", GSON.toJson(players()));
             long now = System.currentTimeMillis();
-            if (now - lastContent > 10 * 60_000L) {
+            // Le guide est regénéré toutes les 10 minutes, ou tout de suite s'il a disparu du dossier
+            if (now - lastContent > 10 * 60_000L || !Files.exists(folder().resolve("contenu.json"))) {
                 files.put("contenu.json", GSON.toJson(content()));
                 lastContent = now;
             }
@@ -283,6 +284,9 @@ public final class WebExportService implements Listener {
         Profile p = plugin.profiles().get(uuid);
         Component title = p == null ? Component.empty() : plugin.rewards().titleRaw(p);
         if (!title.equals(Component.empty())) o.put("title", WebText.html(title));
+        fr.lyonmc.achievements.rewards.GradeService.Grade g = plugin.grades().of(uuid);
+        o.put("grade", WebText.html(plugin.text().parse(g.display())));
+        o.put("gradeId", g.id());
         Team t = plugin.teams().teamOf(uuid);
         if (t != null) o.put("team", t.tag);
         return o;
@@ -424,6 +428,16 @@ public final class WebExportService implements Listener {
             titles.add(o);
         }
         m.put("titles", titles);
+
+        List<Map<String, Object>> grades = new ArrayList<>();
+        for (fr.lyonmc.achievements.rewards.GradeService.Grade g : plugin.grades().all()) {
+            Map<String, Object> o = new LinkedHashMap<>();
+            o.put("id", g.id());
+            o.put("html", WebText.html(plugin.text().parse(g.display())));
+            o.put("percent", g.percent());
+            grades.add(o);
+        }
+        m.put("grades", grades);
 
         List<Map<String, Object>> colors = new ArrayList<>();
         for (RewardService.CosmeticDef c : rw.colors()) {

@@ -118,6 +118,7 @@ public final class TeleportCommands implements TabExecutor, Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onFirstJoin(PlayerJoinEvent event) {
         if (!plugin.module("teleport") || event.getPlayer().hasPlayedBefore()) return;
+        if (plugin.spawnHub() != null && plugin.spawnHub().teleportsOnJoin()) return; // le hub s'en charge
         if (plugin.configs().state().getString("spawn") != null) {
             Bukkit.getScheduler().runTask(plugin, () -> event.getPlayer().teleportAsync(spawn()));
         }

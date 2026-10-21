@@ -57,7 +57,8 @@ jobs:
           const bot = mineflayer.createBot({ host: '127.0.0.1', port: 25565, username: role, version })
           const sleep = ms => new Promise(r => setTimeout(r, ms))
           const log = (...a) => console.log(role, ...a)
-          bot.on('messagestr', m => { if (m.trim()) log('CHAT', m) })
+          let gradeSignal = false
+          bot.on('messagestr', m => { if (m.trim()) log('CHAT', m); if (m.includes('test-chat-grade')) gradeSignal = true })
           bot.on('kicked', r => log('KICKED', JSON.stringify(r)))
           bot.on('error', e => log('BOTERR', e.message))
           bot.on('windowOpen', w => log('WINDOW', w.title ? JSON.stringify(w.title).slice(0, 100) : ''))
@@ -87,6 +88,9 @@ jobs:
             await cmd('/equipe creer Testeurs TST'); await cmd('/equipe inviter Acheteur', 15000)
             await cmd('/tpaccept', 6000)
             await cmd('/lmc holo creer podium'); await cmd('/lmc holo creer saison classement-saison')
+            for (const t of ['serveur', 'bienvenue', 'fortune', 'missions', 'grades']) await cmd('/lmc holo creer ' + t, 1500)
+            await cmd('/lmc holo liste'); await cmd('/hub', 5000); await cmd('/lobby', 5000)
+            await cmd('/titres'); await close()
             await cmd('/gamemode creative'); await cmd('/boss arene'); await cmd('/boss lancer', 4000)
             await cmd('/item replace entity Testeur weapon.mainhand with minecraft:netherite_sword[enchantments={sharpness:255}]', 1500)
             for (let i = 0; i < 40; i++) {
@@ -115,6 +119,8 @@ jobs:
             for (let i = 0; i < 6; i++) { await cmd('/equipe rejoindre Testeurs', 3000) }
             await cmd('/tpa Testeur', 12000)
             await cmd('/pay Testeur 500'); await cmd('/money'); await cmd('/equipe info')
+            for (let i = 0; i < 200 && !gradeSignal; i++) await sleep(1000)
+            await cmd('mon grade est visible ?'); await cmd('/titres'); await close()
             log('done')
           }
           bot.once('spawn', async () => {
@@ -135,7 +141,10 @@ jobs:
             (cd ../bot && timeout 480 node bot.js Acheteur > ../bot2.log 2>&1 &)
             sleep 12
             for c in "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob"; do echo "$c"; sleep 1; done
-            sleep 300
+            sleep 240
+            echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
+            echo "advancement grant Testeur everything"; sleep 20
+            echo "say test-chat-grade"; sleep 30
             for c in "baltop" "lmc reload"; do echo "$c"; sleep 4; done
             sleep 8
             echo "stop"

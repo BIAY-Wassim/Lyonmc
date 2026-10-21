@@ -48,6 +48,8 @@ public final class Profile {
     // Titres et cosmétiques
     public final Set<String> titles = new LinkedHashSet<>();
     public String title;
+    /** Grade automatique (calculé, jamais choisi par le joueur). */
+    public String grade;
     public final Set<String> cosmetics = new LinkedHashSet<>();
     public String color;
     public String trail;
@@ -129,6 +131,7 @@ public final class Profile {
         p.earned = c.getLong("earned");
         p.titles.addAll(c.getStringList("titles"));
         p.title = c.getString("title");
+        p.grade = c.getString("grade");
         p.cosmetics.addAll(c.getStringList("cosmetics"));
         p.color = c.getString("color");
         p.trail = c.getString("trail");
@@ -185,6 +188,7 @@ public final class Profile {
         c.set("earned", earned);
         c.set("titles", new ArrayList<>(titles));
         c.set("title", title);
+        c.set("grade", grade);
         c.set("cosmetics", new ArrayList<>(cosmetics));
         c.set("color", color);
         c.set("trail", trail);
