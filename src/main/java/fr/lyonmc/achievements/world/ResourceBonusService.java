@@ -73,8 +73,8 @@ public final class ResourceBonusService implements Listener {
     }
 
     private ConfigurationSection cfg() {
-        ConfigurationSection s = plugin.getConfig().getConfigurationSection("resource-world.bonus");
-        return s == null ? plugin.getConfig().createSection("resource-world.bonus") : s;
+        ConfigurationSection s = fr.lyonmc.achievements.core.Configs.section(plugin.getConfig(), "resource-world.bonus");
+        return s == null ? new org.bukkit.configuration.MemoryConfiguration() : s;
     }
 
     private boolean active(World w) {

@@ -259,7 +259,9 @@ public final class HubPlayers implements Listener {
     }
 
     public void giveHubItems(Player p) {
-        var sec = plugin.getConfig().getConfigurationSection("objets");
+        var cfg = plugin.getConfig();
+        var sec = cfg.isSet("objets") ? cfg.getConfigurationSection("objets")
+                : cfg.getDefaults() == null ? null : cfg.getDefaults().getConfigurationSection("objets");
         if (sec == null) return;
         for (String key : sec.getKeys(false)) {
             var c = sec.getConfigurationSection(key);

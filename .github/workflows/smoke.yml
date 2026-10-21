@@ -44,6 +44,7 @@ jobs:
           done
           cp target/LyonAchievements-*.jar srv/plugins/
           cp hub/build/libs/HUB-*.jar srv/plugins/
+          python3 hub/test/old_configs.py . srv
           pip install -q nbtlib numpy
           mkdir -p srv/plugins/HUB/schematics
           python3 hub/test/make_test_schem.py srv/plugins/HUB/schematics/test-hub.schem
