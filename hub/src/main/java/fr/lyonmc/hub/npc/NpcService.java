@@ -247,8 +247,9 @@ public final class NpcService implements Listener {
     public void start() {
         stop();
         tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, this::tickVisibility, 20L, 10L));
-        if (plugin.getConfig().getBoolean("look-at-players", true)) {
-            tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, this::tickLook, 25L, 3L));
+        // Les PNJ restent immobiles, tournés comme on les a posés ; ceux du podium ont une aura selon leur place
+        if (plugin.getConfig().getBoolean("aura", true)) {
+            tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, this::tickAura, 25L, 2L));
         }
         long refresh = Math.max(10, plugin.getConfig().getLong("refresh-seconds", 60)) * 20L;
         tasks.add(Bukkit.getScheduler().runTaskTimer(plugin, this::refreshRankings, refresh, refresh));
@@ -392,27 +393,41 @@ public final class NpcService implements Listener {
         n.looking.clear();
     }
 
-    private void tickLook() {
-        double ld = plugin.getConfig().getDouble("look-distance", 10);
-        double ld2 = ld * ld;
+    private int auraTick;
+
+    /** Aura du podium : or pour le 1er, argent pour le 2e, bronze pour le 3e. */
+    private void tickAura() {
+        auraTick++;
         for (Npc n : npcs.values()) {
-            if (n.viewers.isEmpty()) continue;
+            if (!n.type.equals("podium") || n.occupant == null || n.viewers.isEmpty() || n.rank > 3) continue;
             Location l = n.location();
             if (l == null) continue;
-            Location eye = l.clone().add(0, 1.62, 0);
-            for (UUID u : n.viewers) {
-                Player p = Bukkit.getPlayer(u);
-                if (p == null || !p.getWorld().equals(l.getWorld())) continue;
-                Location target = p.getEyeLocation();
-                if (target.distanceSquared(eye) <= ld2) {
-                    double dx = target.getX() - eye.getX(), dy = target.getY() - eye.getY(), dz = target.getZ() - eye.getZ();
-                    float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
-                    float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
-                    NpcPackets.look(p, n.entityId, yaw, pitch);
-                    n.looking.add(u);
-                } else if (n.looking.remove(u)) {
-                    NpcPackets.look(p, n.entityId, n.yaw, n.pitch);
+            org.bukkit.Color color = switch (n.rank) {
+                case 1 -> org.bukkit.Color.fromRGB(255, 205, 70);
+                case 2 -> org.bukkit.Color.fromRGB(215, 225, 235);
+                default -> org.bukkit.Color.fromRGB(215, 140, 80);
+            };
+            float size = n.rank == 1 ? 1.3f : 1.0f;
+            org.bukkit.Particle.DustOptions dust = new org.bukkit.Particle.DustOptions(color, size);
+            // Deux spirales qui montent autour du joueur
+            double t = auraTick * 0.25;
+            double h = (auraTick % 40) / 40.0 * 2.1;
+            for (int k = 0; k < 2; k++) {
+                double ang = t + k * Math.PI;
+                l.getWorld().spawnParticle(org.bukkit.Particle.DUST,
+                        l.getX() + Math.cos(ang) * 0.75, l.getY() + h, l.getZ() + Math.sin(ang) * 0.75, 1, 0, 0, 0, 0, dust);
+            }
+            // Anneau au sol
+            if (auraTick % 4 == 0) {
+                for (int k = 0; k < 8; k++) {
+                    double ang = k * Math.PI / 4 + t / 3;
+                    l.getWorld().spawnParticle(org.bukkit.Particle.DUST,
+                            l.getX() + Math.cos(ang) * 0.9, l.getY() + 0.1, l.getZ() + Math.sin(ang) * 0.9, 1, 0, 0, 0, 0, dust);
                 }
+            }
+            // Étincelles en plus pour le 1er
+            if (n.rank == 1 && auraTick % 6 == 0) {
+                l.getWorld().spawnParticle(org.bukkit.Particle.END_ROD, l.getX(), l.getY() + 2.3, l.getZ(), 1, 0.35, 0.1, 0.35, 0.01);
             }
         }
     }

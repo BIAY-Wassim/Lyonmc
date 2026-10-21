@@ -32,7 +32,7 @@ import java.util.*;
  */
 public final class HologramService {
 
-    public static final List<String> TYPES = List.of("serveur", "bienvenue", "succes", "saison", "equipes", "fortune",
+    public static final List<String> TYPES = List.of("ecran", "serveur", "bienvenue", "succes", "saison", "equipes", "fortune",
             "missions", "grades", "podium", "podium-saison");
     private static final TextColor GOLD = TextColor.color(0xFFD86B);
     private static final TextColor SILVER = TextColor.color(0xC8C8C8);
@@ -274,7 +274,9 @@ public final class HologramService {
 
     private List<Entity> spawn(Holo h, Location base) {
         List<Entity> out = new ArrayList<>();
-        if (h.type().startsWith("podium")) {
+        if (h.type().equals("ecran")) {
+            spawnScreen(h, base, out);
+        } else if (h.type().startsWith("podium")) {
             float yaw = base.getYaw();
             Vector right = new Vector(-Math.cos(Math.toRadians(yaw)), 0, -Math.sin(Math.toRadians(yaw)));
             double[][] pos = {{0, 1.6}, {-1.6, 1.1}, {1.6, 0.8}};
@@ -289,6 +291,157 @@ public final class HologramService {
         }
         refresh(h, out);
         return out;
+    }
+
+    // ───────────────────────────── Grand écran ─────────────────────────────
+
+    private static final int SCREEN_PANELS = 4;
+    /** Ligne barrée faite d'espaces : donne la même largeur à tous les panneaux. */
+    private static final Component RULE = Component.text(" ".repeat(40), TextColor.color(0x3A4150))
+            .decoration(net.kyori.adventure.text.format.TextDecoration.STRIKETHROUGH, true);
+
+    private float screenScale() {
+        return (float) Math.max(0.4, Math.min(4, plugin.getConfig().getDouble("holograms.ecran-taille", 1.0)));
+    }
+
+    /** Un mur d'écran tourné vers là où regardait celui qui l'a posé : titre, quatre panneaux, bas de page. */
+    private void spawnScreen(Holo h, Location base, List<Entity> out) {
+        float s = screenScale();
+        float yaw = base.getYaw();
+        Vector right = new Vector(Math.cos(Math.toRadians(yaw)), 0, Math.sin(Math.toRadians(yaw)));
+        double step = 4.45 * s;
+        double panelBottom = 1.0;
+        double panelTop = panelBottom + 14 * 0.25 * s;
+        out.add(fixed(base.clone().add(0, panelTop + 0.15 * s, 0), yaw, 2.4f * s, h.id() + ":header",
+                TextDisplay.TextAlignment.CENTER, 0));
+        for (int i = 0; i < SCREEN_PANELS; i++) {
+            double off = (i - (SCREEN_PANELS - 1) / 2.0) * step;
+            out.add(fixed(base.clone().add(right.clone().multiply(off)).add(0, panelBottom, 0), yaw, s, h.id() + ":p" + i,
+                    TextDisplay.TextAlignment.LEFT, 0xCC0E1219));
+        }
+        out.add(fixed(base.clone().add(0, panelBottom - 0.42 * s, 0), yaw, 1.15f * s, h.id() + ":footer",
+                TextDisplay.TextAlignment.CENTER, 0));
+    }
+
+    private TextDisplay fixed(Location l, float yaw, float scale, String tag, TextDisplay.TextAlignment align, int argb) {
+        Location at = l.clone();
+        at.setYaw(yaw);
+        at.setPitch(0);
+        return l.getWorld().spawn(at, TextDisplay.class, td -> {
+            td.getPersistentDataContainer().set(key, PersistentDataType.STRING, tag);
+            td.setPersistent(false);
+            td.setBillboard(Display.Billboard.FIXED);
+            td.setRotation(yaw, 0);
+            td.setShadowed(true);
+            td.setLineWidth(400);
+            td.setAlignment(align);
+            td.setBackgroundColor(Color.fromARGB(argb));
+            td.setDefaultBackground(false);
+            td.setTransformation(new Transformation(new Vector3f(), new AxisAngle4f(), new Vector3f(scale, scale, scale), new AxisAngle4f()));
+            td.setViewRange(2.5f);
+        });
+    }
+
+    private static Component title(String text, TextColor color) {
+        return Component.text(" " + text, color).decorate(net.kyori.adventure.text.format.TextDecoration.BOLD);
+    }
+
+    private static Component row(String key, String value, TextColor color) {
+        return Component.text(" " + key + "  ", Text.GRAY).append(Component.text(value, color));
+    }
+
+    private void refreshScreen(List<Entity> entities) {
+        TextColor accent = plugin.text().accent();
+        List<List<Component>> panels = new ArrayList<>();
+
+        // 1. Le serveur
+        List<Component> a = new ArrayList<>();
+        a.add(title("● Le serveur", TextColor.color(0x7CE38B)));
+        a.add(RULE);
+        a.add(row("En ligne", Bukkit.getOnlinePlayers().size() + " / " + Bukkit.getMaxPlayers(), TextColor.color(0x7CE38B)));
+        a.add(row("Joueurs venus", Text.num(plugin.profiles().all().size()), Text.WHITE));
+        a.add(row("Succès débloqués", Text.num(plugin.stats().serverTotal()), Text.WHITE));
+        long seconds = 0;
+        for (Profile p : plugin.profiles().all()) seconds += p.playtimeSeconds;
+        a.add(row("Heures de jeu", Text.num(seconds / 3600), Text.WHITE));
+        a.add(row("Équipes", Text.num(plugin.teams().all().size()), Text.WHITE));
+        a.add(row("Objets à l'HDV", Text.num(plugin.auctions().active().size()), Text.WHITE));
+        a.add(Component.empty());
+        a.add(Component.text(" Dernier exploit", accent));
+        PlayerStats lg = plugin.stats().lastGlobal();
+        var lgAdv = lg == null || lg.lastKey() == null ? null : plugin.registry().get(lg.lastKey());
+        a.add(lg == null ? Component.text(" personne pour l'instant", Text.DARK)
+                : Component.text(" " + lg.name() + " ", Text.WHITE).append(lgAdv == null ? Component.empty() : lgAdv.title().colorIfAbsent(Text.GRAY)));
+        panels.add(a);
+
+        // 2. Succès
+        List<Component> b = new ArrayList<>();
+        b.add(title("★ Top succès", GOLD));
+        b.add(RULE);
+        List<PlayerStats> r = plugin.stats().ranking();
+        for (int i = 0; i < 9; i++) {
+            PlayerStats p = i < r.size() ? r.get(i) : null;
+            b.add(Component.text(" ").append(line(i + 1, p == null ? "-" : p.name(), p == null ? "" : "★ " + p.count())));
+        }
+        b.add(Component.text(" " + plugin.registry().total() + " succès à obtenir", Text.DARK));
+        panels.add(b);
+
+        // 3. Saison et boss
+        List<Component> c = new ArrayList<>();
+        c.add(title("✦ " + plugin.seasons().name(), accent));
+        c.add(RULE);
+        c.add(Component.text(" fin dans " + plugin.seasons().timeLeft(), Text.DARK));
+        List<Profile> sr = plugin.seasons().ranking();
+        for (int i = 0; i < 5; i++) {
+            Profile p = i < sr.size() ? sr.get(i) : null;
+            c.add(Component.text(" ").append(line(i + 1, p == null ? "-" : p.name, p == null ? "" : Text.num(plugin.seasons().points(p)) + " pts")));
+        }
+        c.add(Component.empty());
+        if (plugin.module("boss")) {
+            c.add(Component.text(" ⚔ Boss mondial", TextColor.color(0xFF6B6B)));
+            c.add(plugin.boss().active() ? Component.text(" en cours, /boss pour y aller !", Text.WHITE)
+                    : Component.text(" " + plugin.boss().nextText(), Text.WHITE));
+        }
+        panels.add(c);
+
+        // 4. Fortune et missions
+        List<Component> d = new ArrayList<>();
+        d.add(title("⛁ Les plus riches", TextColor.color(0xFFD86B)));
+        d.add(RULE);
+        List<Profile> rich = plugin.economy().top();
+        for (int i = 0; i < 5; i++) {
+            Profile p = i < rich.size() ? rich.get(i) : null;
+            d.add(Component.text(" ").append(line(i + 1, p == null ? "-" : p.name, p == null ? "" : plugin.economy().format(p.coins))));
+        }
+        d.add(Component.empty());
+        d.add(Component.text(" ✔ Missions", TextColor.color(0x9FD8FF)));
+        List<Profile> mi = new ArrayList<>(plugin.profiles().all());
+        mi.removeIf(p -> p.missionsDone <= 0 || p.name == null);
+        mi.sort(Comparator.comparingInt((Profile p) -> p.missionsDone).reversed());
+        for (int i = 0; i < 3; i++) {
+            Profile p = i < mi.size() ? mi.get(i) : null;
+            d.add(Component.text(" ").append(line(i + 1, p == null ? "-" : p.name, p == null ? "" : "✔ " + Text.num(p.missionsDone))));
+        }
+        panels.add(d);
+
+        // Même hauteur pour tous (le texte part du bas)
+        int max = 0;
+        for (List<Component> p : panels) max = Math.max(max, p.size());
+        for (List<Component> p : panels) while (p.size() < max) p.add(Component.empty());
+
+        for (Entity e : entities) {
+            if (!(e instanceof TextDisplay td)) continue;
+            String tag = e.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+            if (tag == null) continue;
+            if (tag.endsWith(":header")) {
+                td.text(Component.text("✦ LYONMC ✦", accent).decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+            } else if (tag.endsWith(":footer")) {
+                td.text(Component.text("lyonmc.fr", accent).append(Component.text("   ·   la boussole pour jouer   ·   l'étoile pour le menu", Text.GRAY)));
+            } else {
+                int i = tag.charAt(tag.length() - 1) - '0';
+                if (i >= 0 && i < panels.size()) td.text(Component.join(net.kyori.adventure.text.JoinConfiguration.newlines(), panels.get(i)));
+            }
+        }
     }
 
     private TextDisplay text(Location l, Component c, String tag) {
@@ -317,7 +470,9 @@ public final class HologramService {
     }
 
     private void refresh(Holo h, List<Entity> entities) {
-        if (h.type().startsWith("podium")) {
+        if (h.type().equals("ecran")) {
+            refreshScreen(entities);
+        } else if (h.type().startsWith("podium")) {
             List<Podium> top = podium(h.type());
             TextColor[] colors = {GOLD, SILVER, BRONZE};
             String[] labels = {"♛ 1", "✧ 2", "✧ 3"};

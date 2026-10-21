@@ -303,6 +303,12 @@ chat:
       - "  <accent>➤</accent> <click:open_url:'https://lyonmc.fr/carte'><hover:show_text:'<gray>Ouvrir la Dynmap'><white><u>lyonmc.fr</u></white></hover></click> <gray>pour voir la <white>Dynmap</white> en direct"
       - ""
 
+# ───────────────────────── Hologrammes ─────────────────────────
+# /lmc holo creer <type> : ecran, serveur, bienvenue, succes, saison, equipes, fortune, missions, grades...
+holograms:
+  # Taille du grand écran (/lmc holo creer ecran) : 1 = environ 18 blocs de large
+  ecran-taille: 1.0
+
 # ───────────────────────── Grades ─────────────────────────
 # Les grades sont automatiques (liste et seuils dans recompenses.yml, section grades).
 grades:
