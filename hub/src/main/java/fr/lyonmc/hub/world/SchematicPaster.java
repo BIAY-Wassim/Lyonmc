@@ -70,7 +70,7 @@ public final class SchematicPaster {
     @SuppressWarnings("unchecked")
     public Schem load(String name) throws IOException {
         File file = new File(folder(), name + ".schem");
-        if (!file.isFile()) throw new IOException("Fichier introuvable : plugins/LyonHub/schematics/" + name + ".schem");
+        if (!file.isFile()) throw new IOException("Fichier introuvable : plugins/HUB/schematics/" + name + ".schem");
         Map<String, Object> root = Nbt.read(file);
         if (root.size() == 1 && root.get("Schematic") instanceof Map<?, ?> inner) root = (Map<String, Object>) inner; // format v3
         int w = num(root.get("Width")) & 0xFFFF, h = num(root.get("Height")) & 0xFFFF, l = num(root.get("Length")) & 0xFFFF;

@@ -34,6 +34,6 @@ tasks {
         filesMatching("plugin.yml") { expand(props) }
     }
     jar {
-        archiveFileName = "LyonHub-${project.version}.jar"
+        archiveFileName = "HUB-${project.version}.jar"
     }
 }

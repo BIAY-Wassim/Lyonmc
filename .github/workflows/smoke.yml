@@ -43,10 +43,10 @@ jobs:
             curl -sL -o srv/plugins/$P.jar "$V"
           done
           cp target/LyonAchievements-*.jar srv/plugins/
-          cp hub/build/libs/LyonHub-*.jar srv/plugins/
+          cp hub/build/libs/HUB-*.jar srv/plugins/
           pip install -q nbtlib numpy
-          mkdir -p srv/plugins/LyonHub/schematics
-          python3 hub/test/make_test_schem.py srv/plugins/LyonHub/schematics/test-hub.schem
+          mkdir -p srv/plugins/HUB/schematics
+          python3 hub/test/make_test_schem.py srv/plugins/HUB/schematics/test-hub.schem
           cd srv
           echo "eula=true" > eula.txt
           echo 'online-mode=false' > server.properties
@@ -196,15 +196,15 @@ jobs:
           mkdir -p /tmp/logs && cp bot.log bot2.log /tmp/logs/ 2>/dev/null || true
           cp srv/logs/latest.log /tmp/logs/server.log 2>/dev/null || true
           mkdir -p /tmp/logs/data && cp srv/siteweb/data/*.json /tmp/logs/data/ 2>/dev/null || true
-          cp target/LyonAchievements-*.jar hub/build/libs/LyonHub-*.jar /tmp/logs/ 2>/dev/null || true
+          cp target/LyonAchievements-*.jar hub/build/libs/HUB-*.jar /tmp/logs/ 2>/dev/null || true
           git config user.name "ci"
           git config user.email "ci@users.noreply.github.com"
           git checkout --orphan ci-logs
           git rm -rq --cached . || true
           cp /tmp/logs/*.log . 
           mkdir -p data && cp /tmp/logs/data/*.json data/ 2>/dev/null || true
-          cp /tmp/logs/LyonAchievements-*.jar /tmp/logs/LyonHub-*.jar . 2>/dev/null || true
+          cp /tmp/logs/LyonAchievements-*.jar /tmp/logs/HUB-*.jar . 2>/dev/null || true
           git add bot.log bot2.log server.log data || true
-          for f in LyonAchievements-*.jar LyonHub-*.jar; do if [ -f "$f" ]; then git add "$f"; fi; done
+          for f in LyonAchievements-*.jar HUB-*.jar; do if [ -f "$f" ]; then git add "$f"; fi; done
           git commit -qm "logs ${{ github.run_id }}"
           git push -qf origin HEAD:ci-logs
