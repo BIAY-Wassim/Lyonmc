@@ -129,6 +129,9 @@ jobs:
             const at = (x, y, z) => { const b = bot.blockAt(new (require('vec3'))(x, y, z)); return b ? b.name + JSON.stringify(b.getProperties()) : 'non chargé' }
             log('BLOCS sol', at(0, 64, 0), '| plateforme', at(4, 64, 4), '| clôture', at(0, 65, 5), '| muret', at(0, 65, -5), '| vitre', at(0, 65, 10), '| escalier', at(22, 65, -10))
             await cmd('/lmc holo creer serveur hub-serveur')
+            bot.chat('/tp Testeur 0.5 65 12 180 0'); await sleep(2000)
+            await cmd('/lmc holo creer ecran', 4000)
+            log('ECRAN', Object.values(bot.entities).filter(e => e.name === 'text_display' && e.position.z > 8).length, 'textes')
             bot.chat('/tp Testeur 0.5 65 -3 0 0'); await sleep(2000)
             await cmd('/lyonhub podium succes 1'); await cmd('/lyonhub podium succes 2')
             bot.chat('/tp Testeur 3.5 65 -3 0 0'); await sleep(2000)

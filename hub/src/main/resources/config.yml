@@ -54,9 +54,8 @@ refresh-seconds: 60
 
 # Distance (blocs) à laquelle les PNJ apparaissent pour un joueur
 view-distance: 48
-# Les PNJ tournent la tête vers le joueur le plus proche
-look-at-players: true
-look-distance: 10
+# Aura autour des PNJ du podium (or, argent, bronze)
+aura: true
 
 # Commande lancée par le joueur qui clique sur un PNJ du podium (<player> = pseudo du PNJ)
 podium-command: "succes <player>"
