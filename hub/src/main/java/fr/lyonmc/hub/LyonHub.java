@@ -27,11 +27,14 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
     private HubWorlds worlds;
     private SkinService skins;
     private NpcService npcs;
+    private fr.lyonmc.hub.world.SchematicPaster paster;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         worlds = new HubWorlds(this);
+        paster = new fr.lyonmc.hub.world.SchematicPaster(this);
+        paster.folder();
         worlds.loadExisting();
         skins = new SkinService(this);
         npcs = new NpcService(this, skins);
@@ -149,6 +152,36 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                     sender.sendMessage(MM.deserialize("  <white>" + n.describe().replaceFirst(" ", "</white> <dark_gray>")));
                 }
             }
+            case "coller", "paste" -> {
+                if (p == null) return true;
+                if (args.length < 2) {
+                    List<String> files = paster.available();
+                    msg(sender, "<gray>Usage : <white>/lyonhub coller <fichier></white>");
+                    msg(sender, "<gray>Fichiers dans plugins/LyonHub/schematics : <white>" + (files.isEmpty() ? "aucun" : String.join(", ", files)));
+                    return true;
+                }
+                if (paster.busy()) {
+                    msg(sender, "<gray>Un collage est déjà en cours.");
+                    return true;
+                }
+                fr.lyonmc.hub.world.SchematicPaster.Schem s;
+                try {
+                    s = paster.load(args[1]);
+                } catch (java.io.IOException e) {
+                    msg(sender, "<red>" + e.getMessage());
+                    return true;
+                }
+                boolean confirm = args.length > 2 && args[2].equalsIgnoreCase("confirmer");
+                if (!confirm) {
+                    msg(sender, "<gray>Schematic <white>" + s.name() + "</white> : <white>" + s.width() + " × " + s.height() + " × " + s.length()
+                            + "</white> blocs, <white>" + String.format(Locale.FRANCE, "%,d", s.nonAir()) + "</white> blocs à poser.");
+                    msg(sender, "<gray>Il sera collé autour de toi : la place centrale arrive sous tes pieds. Aucune annulation possible : fais-le dans le monde vide du hub.");
+                    msg(sender, "<gray>Pour lancer : <white><click:run_command:'/lyonhub coller " + s.name() + " confirmer'><u>/lyonhub coller " + s.name() + " confirmer</u></click>");
+                    return true;
+                }
+                msg(sender, "<gray>Collage lancé, le serveur continue de tourner pendant ce temps…");
+                paster.paste(p, s, worlds.hasStartPlatform(p.getWorld()));
+            }
             case "reload" -> {
                 reloadConfig();
                 npcs.load();
@@ -165,6 +198,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                         "<white>/lyonhub commande <id> [commande]</white> <dark_gray>commande au clic",
                         "<white>/lyonhub deplacer <id></white> <dark_gray>déplacer un PNJ ici",
                         "<white>/lyonhub suppr <id></white> <dark_gray>supprimer un PNJ",
+                        "<white>/lyonhub coller <fichier></white> <dark_gray>coller une construction (.schem) autour de toi",
                         "<white>/lyonhub liste</white> <dark_gray>· <white>/lyonhub reload")) {
                     sender.sendMessage(MM.deserialize("  " + line));
                 }
@@ -185,12 +219,13 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
-            out.addAll(List.of("monde", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste", "reload"));
+            out.addAll(List.of("monde", "coller", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste", "reload"));
         } else if (args.length == 2) {
             switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "podium" -> Rankings.BOARDS.forEach(b -> out.add(b.id()));
                 case "texte", "commande", "deplacer", "suppr" -> npcs.all().forEach(n -> out.add(n.id()));
                 case "monde" -> out.add("hub");
+                case "coller" -> out.addAll(paster.available());
                 default -> {
                 }
             }
