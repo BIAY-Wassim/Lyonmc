@@ -153,6 +153,14 @@ public final class GradeService {
             p.dirty();
         }
         Grade now = of(player.getUniqueId());
+        if (p.gradeVersion < 1) {
+            // Premier calcul (ou serveur mis à jour) : pas d'annonce pour tout le monde
+            p.grade = now.id();
+            p.gradeVersion = 1;
+            p.dirty();
+            if (plugin.chat() != null) plugin.chat().refresh(player);
+            return;
+        }
         if (now.id().equals(p.grade)) return;
         Grade before = byId(p.grade);
         p.grade = now.id();
