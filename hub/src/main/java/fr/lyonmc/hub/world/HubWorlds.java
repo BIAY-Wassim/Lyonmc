@@ -73,6 +73,11 @@ public final class HubWorlds implements Listener {
         return w;
     }
 
+    /** La petite plateforme de départ de /lyonhub monde est-elle encore là ? */
+    public boolean hasStartPlatform(World w) {
+        return isHub(w) && w.getBlockAt(0, 64, 0).getType() == Material.SMOOTH_STONE;
+    }
+
     private boolean isHub(World w) {
         return w != null && names().contains(w.getName());
     }

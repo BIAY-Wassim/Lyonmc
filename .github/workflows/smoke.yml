@@ -44,6 +44,9 @@ jobs:
           done
           cp target/LyonAchievements-*.jar srv/plugins/
           cp hub/build/libs/LyonHub-*.jar srv/plugins/
+          pip install -q nbtlib numpy
+          mkdir -p srv/plugins/LyonHub/schematics
+          python3 hub/test/make_test_schem.py srv/plugins/LyonHub/schematics/test-hub.schem
           cd srv
           echo "eula=true" > eula.txt
           echo 'online-mode=false' > server.properties
@@ -112,6 +115,10 @@ jobs:
             await cmd('/saison'); await close()
             // Monde du hub, spawn et PNJ
             await cmd('/lyonhub monde', 8000); await cmd('/setspawn')
+            await cmd('/lyonhub coller'); await cmd('/lyonhub coller test-hub')
+            await cmd('/lyonhub coller test-hub confirmer', 30000)
+            const at = (x, y, z) => { const b = bot.blockAt(new (require('vec3'))(x, y, z)); return b ? b.name + JSON.stringify(b.getProperties()) : 'non chargé' }
+            log('BLOCS sol', at(0, 64, 0), '| plateforme', at(4, 64, 4), '| clôture', at(0, 65, 5), '| muret', at(0, 65, -5), '| vitre', at(0, 65, 10), '| escalier', at(22, 65, -10))
             await cmd('/lmc holo creer serveur hub-serveur')
             bot.chat('/tp Testeur 0.5 65 -3 0 0'); await sleep(2000)
             await cmd('/lyonhub podium succes 1'); await cmd('/lyonhub podium succes 2')
