@@ -94,6 +94,12 @@ public final class HubWorlds implements Listener {
         if (isHub(e.getPlayer().getWorld()) && e.getAdvancement().getKey().getNamespace().equals("minecraft")) e.setCancelled(true);
     }
 
+    /** Les statistiques Minecraft (distance, sauts...) ne bougent pas au hub. */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onStatistic(org.bukkit.event.player.PlayerStatisticIncrementEvent e) {
+        if (isHub(e.getPlayer().getWorld())) e.setCancelled(true);
+    }
+
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent e) {
         if (!plugin.getConfig().getBoolean("void-rescue", true)) return;
