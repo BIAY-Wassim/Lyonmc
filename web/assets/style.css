@@ -433,3 +433,10 @@ body.is-map main { display: flex; flex-direction: column; min-height: 0; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* Grades automatiques */
+.grade { font-weight: 600; }
+.profile-side .grade-line { margin: 0 0 4px; font-size: var(--step-1, 1.1rem); }
+ol.grades { list-style: none; padding: 0; margin: 14px 0 26px; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+ol.grades li { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; }
+ol.grades small { color: var(--ink-2); }
