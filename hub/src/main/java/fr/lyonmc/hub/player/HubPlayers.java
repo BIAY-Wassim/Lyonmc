@@ -61,6 +61,7 @@ public final class HubPlayers implements Listener {
     private final JavaPlugin plugin;
     private final HubWorlds worlds;
     private final HubMenus menus;
+    private final SurvivalPositions positions;
     private final NamespacedKey itemKey;
     private final File folder;
     private final Map<UUID, Location> returnPoints = new HashMap<>();
@@ -73,11 +74,16 @@ public final class HubPlayers implements Listener {
         this.itemKey = new NamespacedKey(plugin, "objet");
         this.folder = new File(plugin.getDataFolder(), "inventaires");
         if (!folder.isDirectory()) folder.mkdirs();
+        this.positions = new SurvivalPositions(plugin, worlds);
         this.menus = new HubMenus(plugin, this);
     }
 
     public HubMenus menus() {
         return menus;
+    }
+
+    public SurvivalPositions positions() {
+        return positions;
     }
 
     public boolean inHub(Player p) {

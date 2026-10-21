@@ -14,6 +14,10 @@ commands:
     aliases: [lhub]
     permission: lyonhub.admin
 
+  survie:
+    description: Revenir là où tu étais dans le monde survie
+    aliases: [survival]
+
 permissions:
   lyonhub.admin:
     description: Gérer le hub et les PNJ
