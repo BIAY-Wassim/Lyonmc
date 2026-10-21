@@ -7,6 +7,9 @@
 # Mondes vides chargés au démarrage (créés avec /lyonhub monde)
 worlds: [hub]
 
+# Mondes qui ne comptent pas comme « la survie » pour /survie (en plus du hub)
+hors-survie: [ressources]
+
 # Ramène au spawn du monde les joueurs qui tombent dans le vide du hub
 void-rescue: true
 

@@ -48,6 +48,9 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
         players = new fr.lyonmc.hub.player.HubPlayers(this, worlds);
         getServer().getPluginManager().registerEvents(players, this);
         getServer().getPluginManager().registerEvents(players.menus(), this);
+        getServer().getPluginManager().registerEvents(players.positions(), this);
+        var survie = getCommand("survie");
+        if (survie != null) survie.setExecutor(players.positions());
         // Joueurs déjà au hub (après un /reload)
         for (org.bukkit.entity.Player online : Bukkit.getOnlinePlayers()) if (players.inHub(online)) players.enter(online, null);
         var cmd = getCommand("lyonhub");

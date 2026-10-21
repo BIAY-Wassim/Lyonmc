@@ -65,6 +65,10 @@ public final class HubMenus implements Listener {
 
     private void goSurvival(Player p) {
         p.closeInventory();
+        if (players.positions().get(p) != null) {
+            players.positions().go(p);
+            return;
+        }
         Location back = players.returnPoint(p);
         if (back == null) {
             // Première partie : direction un endroit au hasard du monde survie
@@ -102,7 +106,7 @@ public final class HubMenus implements Listener {
     public void openPlay(Player p) {
         Holder h = new Holder();
         h.inventory = Bukkit.createInventory(h, 27, MM.deserialize("<dark_gray>Jouer"));
-        Location back = players.returnPoint(p);
+        Location back = players.positions().get(p) != null ? players.positions().get(p) : players.returnPoint(p);
         button(h, 10, item(Material.GRASS_BLOCK, "<green><bold>Survie", List.of(
                 back == null ? "<gray>Ta première aventure : départ" : "<gray>Retourner là où tu étais",
                 back == null ? "<gray>à un endroit au hasard." : "<dark_gray>" + back.getWorld().getName() + " " + back.getBlockX() + " " + back.getBlockY() + " " + back.getBlockZ(),
