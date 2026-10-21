@@ -22,8 +22,13 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: current
       - name: Compiler
-        run: mvn -B -q package
+        run: |
+          mvn -B -q package
+          gradle -p hub build --no-daemon --console=plain -q
       - name: Préparer le serveur de test
         run: |
           mkdir -p srv/plugins
@@ -38,6 +43,7 @@ jobs:
             curl -sL -o srv/plugins/$P.jar "$V"
           done
           cp target/LyonAchievements-*.jar srv/plugins/
+          cp hub/build/libs/LyonHub-*.jar srv/plugins/
           cd srv
           echo "eula=true" > eula.txt
           echo 'online-mode=false' > server.properties
@@ -104,6 +110,22 @@ jobs:
             await cmd('/rtp', 12000); await cmd('/ressources', 12000); await cmd('/back', 6000)
             await cmd('/lmc saison fin', 4000)
             await cmd('/saison'); await close()
+            // Monde du hub, spawn et PNJ
+            await cmd('/lyonhub monde', 8000); await cmd('/setspawn')
+            await cmd('/lmc holo creer serveur hub-serveur')
+            bot.chat('/tp Testeur 0.5 65 -3 0 0'); await sleep(2000)
+            await cmd('/lyonhub podium succes 1'); await cmd('/lyonhub podium succes 2')
+            bot.chat('/tp Testeur 3.5 65 -3 0 0'); await sleep(2000)
+            await cmd('/lyonhub pnj jouer Acheteur menu'); await cmd('/lyonhub texte jouer <green>Jouer|<gray>clic droit')
+            await cmd('/lyonhub liste')
+            bot.chat('/tp Testeur 1.5 65 2 180 0'); await sleep(6000)
+            const npcs = Object.values(bot.entities).filter(e => e.type === 'player' && e.username && e.username.startsWith('npc'))
+            log('NPCS', npcs.length, npcs.map(e => e.username + '@' + e.position.toString()).join(' '))
+            const jouer = npcs.find(e => e.position.x > 2)
+            if (jouer) { await bot.activateEntity(jouer).catch(er => log('ACTERR', er.message)); await sleep(2500); await close() }
+            for (let i = 0; i < 200 && !gradeSignal; i++) await sleep(1000)
+            await cmd('/titres'); await click(47); await click(10); await close()
+            await cmd('je suis légende ?')
             log('done')
           }
           async function acheteur() {
@@ -137,11 +159,11 @@ jobs:
           (
             for i in $(seq 1 240); do grep -q "Done (" logs/latest.log 2>/dev/null && break; sleep 1; done
             sleep 3
-            (cd ../bot && timeout 480 node bot.js Testeur > ../bot.log 2>&1 &)
-            (cd ../bot && timeout 480 node bot.js Acheteur > ../bot2.log 2>&1 &)
+            (cd ../bot && timeout 580 node bot.js Testeur > ../bot.log 2>&1 &)
+            (cd ../bot && timeout 580 node bot.js Acheteur > ../bot2.log 2>&1 &)
             sleep 12
             for c in "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob"; do echo "$c"; sleep 1; done
-            sleep 240
+            sleep 270
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
             echo "say test-chat-grade"; sleep 30
@@ -167,14 +189,15 @@ jobs:
           mkdir -p /tmp/logs && cp bot.log bot2.log /tmp/logs/ 2>/dev/null || true
           cp srv/logs/latest.log /tmp/logs/server.log 2>/dev/null || true
           mkdir -p /tmp/logs/data && cp srv/siteweb/data/*.json /tmp/logs/data/ 2>/dev/null || true
-          cp target/LyonAchievements-*.jar /tmp/logs/ 2>/dev/null || true
+          cp target/LyonAchievements-*.jar hub/build/libs/LyonHub-*.jar /tmp/logs/ 2>/dev/null || true
           git config user.name "ci"
           git config user.email "ci@users.noreply.github.com"
           git checkout --orphan ci-logs
           git rm -rq --cached . || true
           cp /tmp/logs/*.log . 
           mkdir -p data && cp /tmp/logs/data/*.json data/ 2>/dev/null || true
-          cp /tmp/logs/LyonAchievements-*.jar . 2>/dev/null || true
-          git add bot.log bot2.log server.log data LyonAchievements-*.jar
+          cp /tmp/logs/LyonAchievements-*.jar /tmp/logs/LyonHub-*.jar . 2>/dev/null || true
+          git add bot.log bot2.log server.log data || true
+          for f in LyonAchievements-*.jar LyonHub-*.jar; do if [ -f "$f" ]; then git add "$f"; fi; done
           git commit -qm "logs ${{ github.run_id }}"
           git push -qf origin HEAD:ci-logs

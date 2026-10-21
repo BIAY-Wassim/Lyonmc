@@ -1,0 +1,35 @@
+# ─────────────────────────────────────────────────────────────
+#   LyonHub · LyonMC
+#   Monde du hub et PNJ (podium avec les vrais skins des joueurs).
+#   Après modification : /lyonhub reload
+# ─────────────────────────────────────────────────────────────
+
+# Mondes vides chargés au démarrage (créés avec /lyonhub monde)
+worlds: [hub]
+
+# Ramène au spawn du monde les joueurs qui tombent dans le vide du hub
+void-rescue: true
+
+# Classements écrits par LyonAchievements (export du site), relatif au dossier du serveur
+classements: "siteweb/data/classements.json"
+# Relecture des classements (secondes)
+refresh-seconds: 60
+
+# Distance (blocs) à laquelle les PNJ apparaissent pour un joueur
+view-distance: 48
+# Les PNJ tournent la tête vers le joueur le plus proche
+look-at-players: true
+look-distance: 10
+
+# Commande lancée par le joueur qui clique sur un PNJ du podium (<player> = pseudo du PNJ)
+podium-command: "succes <player>"
+
+# Texte au-dessus des PNJ du podium. <rank> place, <board> classement, <player> pseudo, <value> score
+labels:
+  podium:
+    - "<rank> <dark_gray>·</dark_gray> <gray><board>"
+    - "<white><bold><player>"
+    - "<gray><value>"
+  empty:
+    - "<rank> <dark_gray>·</dark_gray> <gray><board>"
+    - "<dark_gray>Place libre"

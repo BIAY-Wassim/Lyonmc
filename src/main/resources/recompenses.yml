@@ -20,7 +20,8 @@ achievement-coins:
 
 # ───────────────────────── Grades (automatiques) ─────────────────────────
 # Le grade se calcule tout seul selon le pourcentage de succès obtenus.
-# Personne ne le choisit : il s'affiche dans le chat devant le pseudo.
+# Il monte tout seul et s'affiche dans le chat devant le pseudo.
+# Une fois Légende, le joueur peut choisir le grade affiché (/titres), sauf le premier (Novice).
 grades:
   novice:
     display: "<gray>Novice"
