@@ -10,6 +10,43 @@ worlds: [hub]
 # Ramène au spawn du monde les joueurs qui tombent dans le vide du hub
 void-rescue: true
 
+# ───────────────────────── Joueurs au hub ─────────────────────────
+# Au hub, l'inventaire de survie est mis de côté (jamais supprimé, plugins/HUB/inventaires)
+# et rendu en quittant le hub. Les joueurs sont en aventure et reçoivent ces objets.
+# action : menu (menu du hub), jouer (choix du monde), survie, site, ou commande:<commande>
+case-en-main: 0
+objets:
+  jouer:
+    case: 0
+    objet: COMPASS
+    nom: "<green><bold>Jouer</bold> <gray>(clic droit)"
+    description: ["<gray>Survie, monde ressources, homes..."]
+    action: jouer
+  profil:
+    case: 2
+    objet: PLAYER_HEAD
+    nom: "<white><bold>Mon profil</bold> <gray>(clic droit)"
+    description: ["<gray>Tes succès, ton grade, tes stats"]
+    action: "commande:succes"
+  menu:
+    case: 4
+    objet: NETHER_STAR
+    nom: "<#e8c872><bold>Menu du hub</bold> <gray>(clic droit)"
+    description: ["<gray>Classements, saison, missions, boutique..."]
+    action: menu
+  cosmetiques:
+    case: 6
+    objet: BLAZE_POWDER
+    nom: "<#ffb35c><bold>Cosmétiques</bold> <gray>(clic droit)"
+    description: ["<gray>Couleur du pseudo et traînées"]
+    action: "commande:cosmetiques"
+  classements:
+    case: 8
+    objet: GOLD_INGOT
+    nom: "<gold><bold>Classements</bold> <gray>(clic droit)"
+    description: ["<gray>Les meilleurs joueurs du serveur"]
+    action: "commande:classement"
+
 # Classements écrits par LyonAchievements (export du site), relatif au dossier du serveur
 classements: "siteweb/data/classements.json"
 # Relecture des classements (secondes)

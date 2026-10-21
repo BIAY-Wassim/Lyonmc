@@ -650,7 +650,21 @@
       hdv: `<p>Prends un objet en main et tape <code class="cmd">/hdv vendre &lt;prix&gt;</code>. Tu peux avoir ${st.hdvMax} objets en vente en même temps. Une taxe de ${String(st.hdvTax).replace(/\.0$/, "")} % est prélevée sur chaque vente. Les objets non vendus se récupèrent avec <code class="cmd">/hdv recuperer</code>.</p>`,
       teleport: `<p>À chaque connexion, tu arrives au <strong>hub</strong>. Tu y trouves les statistiques du serveur, les classements en direct et le podium des meilleurs joueurs. <code class="cmd">/back</code> te ramène là où tu t'étais déconnecté, et <code class="cmd">/hub</code> te ramène au hub à tout moment.</p>
         <p>Tu as ${st.homesBase} homes au départ. Les paliers et la boutique en donnent d'autres. Toutes les téléportations ont un court délai : ne bouge pas pendant le compte à rebours. <code class="cmd">/rtp</code> t'envoie dans un endroit sûr au hasard, une fois toutes les ${Math.round((st.rtpCooldown || 600) / 60)} minutes.</p>`,
-      ressources: `<p>Le monde ressources est fait pour miner sans abîmer le monde principal. Il est remis à neuf le 1er de chaque mois : n'y construis rien d'important. Accès avec <code class="cmd">/ressources</code>.</p>`,
+      ressources: (() => {
+        const rb = st.resourceBonus || {};
+        const ORE = { coal: "Charbon", copper: "Cuivre", quartz: "Quartz", iron: "Fer", redstone: "Redstone", lapis: "Lapis-lazuli", gold: "Or", diamond: "Diamant", emerald: "Émeraude", ancient_debris: "Débris antiques" };
+        const ICON = { coal: "coal", copper: "raw_copper", quartz: "quartz", iron: "raw_iron", redstone: "redstone", lapis: "lapis_lazuli", gold: "raw_gold", diamond: "diamond", emerald: "emerald", ancient_debris: "ancient_debris" };
+        const coins = Object.entries(rb.coins || {});
+        return `<p>Le monde ressources est fait pour miner sans abîmer le monde principal, et c'est là que miner rapporte le plus. Il est remis à neuf le 1er de chaque mois : n'y construis rien d'important. Accès avec <code class="cmd">/ressources</code>.</p>
+        <ul class="perks">
+          <li class="card"><strong>Plus de minerais</strong><span class="muted small">${rb.extraVeins || 0} filons en plus dans chaque chunk</span></li>
+          ${rb.haste ? `<li class="card"><strong>Minage plus rapide</strong><span class="muted small">Célérité ${rb.haste === 1 ? "I" : rb.haste} tant que tu y es</span></li>` : ""}
+          <li class="card"><strong>Minerais doublés</strong><span class="muted small">${String(rb.doubleChance ?? 0).replace(/\.0$/, "")} % de chance à chaque minerai</span></li>
+          <li class="card"><strong>Trésors cachés</strong><span class="muted small">Parfois des pièces ou des objets dans la pierre</span></li>
+        </ul>
+        ${coins.length ? `<h3>Pièces gagnées par minerai</h3>
+        <div class="titles-grid">${coins.map(([k, v]) => `<div class="card">${ico(ICON[k] || "stone", "sm")}<b>${esc(ORE[k] || k)}</b><small>${num(v)} pièce${v > 1 ? "s" : ""}</small></div>`).join("")}</div>` : ""}`;
+      })(),
       succes: `<p>${totalAdv} succès au total, répartis en ${(g.categories || []).length} catégories. Les succès secrets restent cachés tant que personne ne les a obtenus. Le pourcentage indique la part des joueurs qui l'ont.</p>
         ${(g.categories || []).map((c) => `<div class="cat-block"><h3>${img(icon(catIcon[c.id] || "book"))}${esc(catName(c))} <span class="muted small">${c.advancements.length} succès</span></h3>
           <div class="adv-list">${c.advancements.map((a) => { const secret = a.hidden && !a.rarity; return `<div class="card adv ${a.frame}">${frame(secret ? { ...a, icon: "book" } : a, secret ? "locked" : "")}

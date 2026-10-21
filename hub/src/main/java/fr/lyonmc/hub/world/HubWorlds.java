@@ -78,7 +78,7 @@ public final class HubWorlds implements Listener {
         return isHub(w) && w.getBlockAt(0, 64, 0).getType() == Material.SMOOTH_STONE;
     }
 
-    private boolean isHub(World w) {
+    public boolean isHub(World w) {
         return w != null && names().contains(w.getName());
     }
 
@@ -86,6 +86,12 @@ public final class HubWorlds implements Listener {
         Location spawn = p.getWorld().getSpawnLocation().add(0.5, 0, 0.5);
         p.setFallDistance(0);
         p.teleportAsync(spawn);
+    }
+
+    /** Aucun succès Minecraft ne s'obtient au hub (les succès LyonMC restent possibles). */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onCriterion(com.destroystokyo.paper.event.player.PlayerAdvancementCriterionGrantEvent e) {
+        if (isHub(e.getPlayer().getWorld()) && e.getAdvancement().getKey().getNamespace().equals("minecraft")) e.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true)

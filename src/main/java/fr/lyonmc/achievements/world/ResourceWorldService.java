@@ -72,6 +72,8 @@ public final class ResourceWorldService {
             return;
         }
         w.setGameRule(GameRule.SPAWN_CHUNK_RADIUS, 0);
+        // Plus de minerais dans chaque nouveau chunk (le monde est recréé chaque mois)
+        if (plugin.resourceBonus() != null) w.getPopulators().add(plugin.resourceBonus().populator());
         int radius = cfg().getInt("border-radius", 3000);
         w.getWorldBorder().setCenter(w.getSpawnLocation());
         w.getWorldBorder().setSize(radius * 2.0);
