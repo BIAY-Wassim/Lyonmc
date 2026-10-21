@@ -62,6 +62,8 @@ hub:
   teleport-on-join: true
   # Rayon (en blocs) de la zone protégée autour du spawn
   radius: 48
+  # Mondes protégés en entier (le monde « hub » créé avec /lyonhub monde)
+  worlds: [hub]
   # Les admins (lyonmc.admin) ne sont pas bloqués
   protect:
     build: true        # casser, poser, seaux, cultures, cadres, porte-armures

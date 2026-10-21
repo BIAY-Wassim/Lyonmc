@@ -63,9 +63,13 @@ public final class HubService implements Listener {
     private Location spawn() {
         String raw = plugin.configs().state().getString("spawn");
         if (raw == null) return null;
-        if (!raw.equals(cachedRaw) || cachedSpawn == null || cachedSpawn.getWorld() == null) {
+        if (!raw.equals(cachedRaw) || cachedSpawn == null || !cachedSpawn.isWorldLoaded()) {
+            // Le monde du hub peut être chargé un peu après (plugin LyonHub) : on ne garde que le vrai spawn
+            fr.lyonmc.achievements.core.StoredLocation s = fr.lyonmc.achievements.core.StoredLocation.parse(raw);
+            Location l = s == null ? null : s.toLocation();
+            if (l == null || l.getWorld() == null) return null;
             cachedRaw = raw;
-            cachedSpawn = plugin.teleportCommands().spawn();
+            cachedSpawn = l;
         }
         return cachedSpawn;
     }
@@ -84,7 +88,9 @@ public final class HubService implements Listener {
 
     /** Le point est-il dans la zone protégée du hub ? (cylindre autour du spawn) */
     public boolean inHub(Location l) {
-        if (l == null || !enabled()) return false;
+        if (l == null || l.getWorld() == null || !enabled()) return false;
+        // Monde entièrement réservé au hub (ex. : le monde « hub » créé par LyonHub)
+        if (plugin.getConfig().getStringList("hub.worlds").contains(l.getWorld().getName())) return true;
         Location spawn = spawn();
         if (spawn == null || spawn.getWorld() == null || !spawn.getWorld().equals(l.getWorld())) return false;
         double r = plugin.getConfig().getDouble("hub.radius", 48);

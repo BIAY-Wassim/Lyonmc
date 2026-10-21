@@ -78,12 +78,7 @@ public final class RewardMenus {
         info.add(Items.EMPTY);
         info.add(Component.text("Actuel  ", Text.GRAY).append(p.title == null ? Component.text("aucun", Text.DARK) : rewards().titleRaw(p)));
         info.add(Items.EMPTY);
-        GradeService.Grade grade = plugin.grades().of(player.getUniqueId());
-        GradeService.Grade next = plugin.grades().next(grade);
-        info.add(Component.text("Grade  ", Text.GRAY).append(plugin.text().parse(grade.display())).decoration(TextDecoration.ITALIC, false));
-        info.add(Items.dark("Automatique, selon tes succès."));
-        if (next != null) info.add(Items.dark("Prochain : " + net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText()
-                .serialize(plugin.text().parse(next.display())) + " à " + (int) next.percent() + " %"));
+        info.add(Component.text("Grade  ", Text.GRAY).append(plugin.grades().display(player.getUniqueId())).decoration(TextDecoration.ITALIC, false));
         inv.setItem(4, Items.item(Material.NAME_TAG, Component.text("Titres", Text.WHITE).decorate(TextDecoration.BOLD), info, false));
 
         int start = (current - 1) * GRID.length;
@@ -120,12 +115,78 @@ public final class RewardMenus {
             }
         }
 
+        inv.setItem(47, gradeButton(player));
+        holder.action(47, this::openGrades);
         inv.setItem(49, Items.item(Material.BARRIER, Component.text("Retirer le titre", Text.WHITE), List.of(), false));
         holder.action(49, pl -> {
             rewards().selectTitle(plugin.profiles().get(pl), null);
             openTitles(pl, current);
         });
         nav(holder, inv, current, pages, this::openTitles);
+        Items.fill(inv);
+        player.openInventory(inv);
+    }
+
+    // ───────────────────────────── Grades ─────────────────────────────
+
+    private static String plain(Component c) {
+        return net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(c);
+    }
+
+    private ItemStack gradeButton(Player player) {
+        GradeService gs = plugin.grades();
+        GradeService.Grade natural = gs.of(player.getUniqueId());
+        GradeService.Grade next = gs.next(natural);
+        List<Component> lore = new ArrayList<>();
+        lore.add(Component.text("Affiché  ", Text.GRAY).append(gs.display(player.getUniqueId())).decoration(TextDecoration.ITALIC, false));
+        lore.add(Items.dark(String.format(java.util.Locale.FRANCE, "%.1f %% des succès", gs.percent(player.getUniqueId()))));
+        lore.add(Items.EMPTY);
+        if (gs.isTop(natural)) {
+            lore.add(Items.line("Tu es Légende : choisis le grade"));
+            lore.add(Items.line("que tu veux afficher."));
+            lore.add(Items.action("Cliquer pour choisir", accent()));
+        } else {
+            lore.add(Items.line("Ton grade monte tout seul avec"));
+            lore.add(Items.line("tes succès."));
+            if (next != null) lore.add(Items.dark("Prochain : " + plain(plugin.text().parse(next.display())) + " à " + (int) next.percent() + " %"));
+            lore.add(Items.dark("Les Légendes choisissent leur grade."));
+        }
+        return Items.item(Material.EXPERIENCE_BOTTLE, Component.text("Grade", Text.WHITE).decorate(TextDecoration.BOLD), lore, gs.isTop(natural));
+    }
+
+    public void openGrades(Player player) {
+        GradeService gs = plugin.grades();
+        boolean legend = gs.isTop(gs.of(player.getUniqueId()));
+        GradeService.Grade shown = gs.shown(player.getUniqueId());
+        MenuHolder holder = new MenuHolder();
+        Inventory inv = Bukkit.createInventory(holder, 27, Component.text("Grade affiché"));
+        holder.inventory(inv);
+        List<GradeService.Grade> list = gs.choosable();
+        int start = 13 - list.size() / 2;
+        for (int i = 0; i < list.size() && i < 7; i++) {
+            GradeService.Grade g = list.get(i);
+            boolean current = g == shown;
+            List<Component> lore = new ArrayList<>();
+            lore.add(Items.dark("Dès " + (int) g.percent() + " % des succès"));
+            lore.add(Items.EMPTY);
+            if (!legend) lore.add(Items.dark("✘ Réservé aux Légendes"));
+            else if (current) lore.add(Component.text("✔ Affiché", accent()));
+            else lore.add(Items.action("Cliquer pour l'afficher", accent()));
+            int slot = start + i;
+            inv.setItem(slot, Items.item(legend ? Material.NAME_TAG : Material.GRAY_DYE, plugin.text().parse(g.display()), lore, current && legend));
+            holder.action(slot, pl -> {
+                if (!gs.choose(pl, g.id())) {
+                    pl.sendMessage(plugin.prefixed("<gray>Atteins le grade ").append(plugin.text().parse(list.get(list.size() - 1).display()))
+                            .append(plugin.text().parse("<gray> pour choisir ton grade.")));
+                    pl.playSound(pl.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.5f, 1f);
+                    return;
+                }
+                pl.sendMessage(plugin.prefixed("<gray>Grade affiché : ").append(plugin.text().parse(g.display())));
+                openGrades(pl);
+            });
+        }
+        inv.setItem(18, Items.item(Material.ARROW, Component.text("Retour aux titres", Text.WHITE), List.of(), false));
+        holder.action(18, pl -> openTitles(pl, 1));
         Items.fill(inv);
         player.openInventory(inv);
     }

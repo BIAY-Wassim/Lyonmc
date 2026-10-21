@@ -284,7 +284,7 @@ public final class WebExportService implements Listener {
         Profile p = plugin.profiles().get(uuid);
         Component title = p == null ? Component.empty() : plugin.rewards().titleRaw(p);
         if (!title.equals(Component.empty())) o.put("title", WebText.html(title));
-        fr.lyonmc.achievements.rewards.GradeService.Grade g = plugin.grades().of(uuid);
+        fr.lyonmc.achievements.rewards.GradeService.Grade g = plugin.grades().shown(uuid);
         o.put("grade", WebText.html(plugin.text().parse(g.display())));
         o.put("gradeId", g.id());
         Team t = plugin.teams().teamOf(uuid);

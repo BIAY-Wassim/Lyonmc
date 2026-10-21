@@ -35,7 +35,7 @@ public final class GradeService {
             if (uuid == null || grades.isEmpty()) return;
             Grade g = of(uuid);
             Grade n = next(g);
-            b.resolver(Placeholder.component("grade", plugin.text().parse(g.display())));
+            b.resolver(Placeholder.component("grade", plugin.text().parse(shown(uuid).display())));
             b.resolver(Placeholder.component("grade_next", n == null ? Component.text("-") : plugin.text().parse(n.display())));
             b.resolver(Placeholder.unparsed("grade_next_percent", n == null ? "100" : fmt(n.percent())));
         });
@@ -95,8 +95,43 @@ public final class GradeService {
         return plugin.text().parse(fmt, Placeholder.component("grade", display(uuid)));
     }
 
+    /** Grade affiché : le grade automatique, ou celui choisi par une Légende (jamais Novice). */
+    public Grade shown(UUID uuid) {
+        Grade natural = of(uuid);
+        if (!isTop(natural)) return natural;
+        Profile p = plugin.profiles().get(uuid);
+        Grade chosen = p == null ? null : byId(p.gradeChoice);
+        return chosen != null && canChoose(chosen) ? chosen : natural;
+    }
+
+    /** Plus haut grade (Légende). */
+    public boolean isTop(Grade g) {
+        return !grades.isEmpty() && g == grades.get(grades.size() - 1);
+    }
+
+    /** Grades qu'une Légende peut afficher : tous sauf le premier (Novice). */
+    public boolean canChoose(Grade g) {
+        return grades.indexOf(g) > 0;
+    }
+
+    public List<Grade> choosable() {
+        return grades.size() > 1 ? grades.subList(1, grades.size()) : List.of();
+    }
+
+    /** Choix du grade affiché (null = automatique). Renvoie false si le joueur n'est pas Légende. */
+    public boolean choose(Player player, String id) {
+        if (!isTop(of(player.getUniqueId()))) return false;
+        Grade g = byId(id);
+        if (id != null && (g == null || !canChoose(g))) return false;
+        Profile p = plugin.profiles().get(player);
+        p.gradeChoice = g == null || isTop(g) ? null : g.id();
+        p.dirty();
+        if (plugin.chat() != null) plugin.chat().refresh(player);
+        return true;
+    }
+
     public Component display(UUID uuid) {
-        return plugin.text().parse(of(uuid).display());
+        return plugin.text().parse(shown(uuid).display());
     }
 
     /** Grade suivant (ou null au plus haut). */

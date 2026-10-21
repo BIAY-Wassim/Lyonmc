@@ -1,0 +1,20 @@
+name: LyonHub
+version: '${version}'
+main: fr.lyonmc.hub.LyonHub
+api-version: '1.21'
+author: wassdead
+description: Hub de LyonMC — monde du hub et podium de PNJ avec les vrais skins des joueurs
+website: https://lyonmc.fr
+# Le monde du hub doit exister avant que LyonAchievements place le spawn et les hologrammes
+loadbefore: [LyonAchievements]
+
+commands:
+  lyonhub:
+    description: Gestion du hub (monde, PNJ du podium)
+    aliases: [lhub]
+    permission: lyonhub.admin
+
+permissions:
+  lyonhub.admin:
+    description: Gérer le hub et les PNJ
+    default: op
