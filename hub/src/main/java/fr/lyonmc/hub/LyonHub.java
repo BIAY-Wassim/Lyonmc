@@ -33,6 +33,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        addMissingSections();
         worlds = new HubWorlds(this);
         paster = new fr.lyonmc.hub.world.SchematicPaster(this);
         paster.folder();
@@ -65,6 +66,21 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
             npcs.despawnAll();
         }
         if (skins != null) skins.save();
+    }
+
+    /** Ajoute au config.yml du serveur les nouvelles parties (ex. : objets du hub) sans toucher au reste. */
+    private void addMissingSections() {
+        var cfg = getConfig();
+        var defaults = cfg.getDefaults();
+        if (defaults == null) return;
+        boolean changed = false;
+        for (String key : defaults.getKeys(false)) {
+            if (!cfg.isSet(key)) {
+                cfg.set(key, defaults.get(key));
+                changed = true;
+            }
+        }
+        if (changed) saveConfig();
     }
 
     private void msg(CommandSender to, String mini) {

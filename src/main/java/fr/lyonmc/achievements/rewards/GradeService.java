@@ -47,7 +47,7 @@ public final class GradeService {
 
     public void load() {
         grades.clear();
-        ConfigurationSection s = plugin.configs().rewards().getConfigurationSection("grades");
+        ConfigurationSection s = fr.lyonmc.achievements.core.Configs.section(plugin.configs().rewards(), "grades");
         if (s != null) {
             for (String id : s.getKeys(false)) {
                 ConfigurationSection g = s.getConfigurationSection(id);

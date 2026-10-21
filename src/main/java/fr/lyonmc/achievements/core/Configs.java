@@ -16,6 +16,16 @@ import java.util.logging.Level;
  */
 public final class Configs {
 
+    /**
+     * Section d'un fichier de config, en prenant celle du .jar si le fichier du serveur ne l'a pas encore
+     * (Bukkit renverrait sinon une section vide, sans les valeurs par défaut).
+     */
+    public static org.bukkit.configuration.ConfigurationSection section(org.bukkit.configuration.Configuration root, String path) {
+        if (root.isSet(path)) return root.getConfigurationSection(path);
+        org.bukkit.configuration.Configuration defaults = root.getDefaults();
+        return defaults == null ? null : defaults.getConfigurationSection(path);
+    }
+
     private final JavaPlugin plugin;
     private YamlConfiguration missions;
     private YamlConfiguration rewards;
