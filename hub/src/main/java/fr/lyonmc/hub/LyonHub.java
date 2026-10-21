@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-/** LyonHub : le monde du hub et les PNJ du podium avec les vrais skins des joueurs. */
+/** HUB (par wassdead) : le monde du hub et les PNJ du podium avec les vrais skins des joueurs. */
 public final class LyonHub extends JavaPlugin implements TabExecutor {
 
     private static final MiniMessage MM = MiniMessage.miniMessage();
@@ -48,7 +48,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
             cmd.setExecutor(this);
             cmd.setTabCompleter(this);
         }
-        getLogger().info("LyonHub activé : " + npcs.all().size() + " PNJ.");
+        getLogger().info("HUB activé : " + npcs.all().size() + " PNJ.");
     }
 
     @Override
@@ -157,7 +157,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                 if (args.length < 2) {
                     List<String> files = paster.available();
                     msg(sender, "<gray>Usage : <white>/lyonhub coller <fichier></white>");
-                    msg(sender, "<gray>Fichiers dans plugins/LyonHub/schematics : <white>" + (files.isEmpty() ? "aucun" : String.join(", ", files)));
+                    msg(sender, "<gray>Fichiers dans plugins/HUB/schematics : <white>" + (files.isEmpty() ? "aucun" : String.join(", ", files)));
                     return true;
                 }
                 if (paster.busy()) {
@@ -186,10 +186,10 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                 reloadConfig();
                 npcs.load();
                 npcs.start();
-                msg(sender, "<gray>LyonHub rechargé.");
+                msg(sender, "<gray>HUB rechargé.");
             }
             default -> {
-                msg(sender, "<white><bold>LyonHub</bold></white>");
+                msg(sender, "<white><bold>HUB</bold></white> <dark_gray>par wassdead");
                 for (String line : List.of(
                         "<white>/lyonhub monde [nom]</white> <dark_gray>créer / aller dans le monde vide du hub",
                         "<white>/lyonhub podium <classement> <place> [id]</white> <dark_gray>PNJ du podium (vrai skin du joueur)",

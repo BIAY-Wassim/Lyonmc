@@ -48,11 +48,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: current
-      - name: Compiler LyonHub
+      - name: Compiler HUB
         run: |
           set -o pipefail
           gradle -p hub build --no-daemon --console=plain 2>&1 | tee hub-build.log
-      - name: Erreurs de compilation LyonHub
+      - name: Erreurs de compilation HUB
         if: failure()
         run: |
           grep -E "\.java:[0-9]+: error:" -A2 hub-build.log | sed -E 's#^.*/src/main/java/##' | grep -vE "^--$" > errors.txt || true
@@ -61,5 +61,5 @@ jobs:
           grep -A6 "What went wrong" hub-build.log | head -8 | while IFS= read -r l; do echo "::notice::$l"; done
       - uses: actions/upload-artifact@v4
         with:
-          name: LyonHub
-          path: hub/build/libs/LyonHub-*.jar
+          name: HUB
+          path: hub/build/libs/HUB-*.jar
