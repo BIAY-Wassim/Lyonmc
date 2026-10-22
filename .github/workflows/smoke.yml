@@ -83,6 +83,8 @@ jobs:
             await cmd('salut tout le monde')
             await cmd('/menu'); await click(22); await click(10); await close()
             await cmd('/menu'); await click(19); await close()
+            await cmd('/menu'); await click(47)
+            await cmd('/menu'); await click(34); await click(0, 3000); await close()
             await cmd('/succes'); await cmd('/succes menu'); await click(19); await close()
             await cmd('/classement'); await close()
             await cmd('/titres'); await click(10); await close()
