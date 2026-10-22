@@ -61,74 +61,90 @@ public final class HubMenu {
         for (Profile.MissionSlot m : p.daily) if (m.done) done++;
         boolean daily = plugin.daily().canClaim(p);
 
+        // ─── Rangée 1 : progresser ───
+        section(inv, 18, Material.YELLOW_STAINED_GLASS_PANE, "<#ffd86b>Progresser", "Missions, succès, récompenses");
         button(holder, inv, 19, Material.WRITABLE_BOOK, "Missions", List.of(
-                Items.line("Missions du jour et de la semaine"),
+                Items.line("3 missions par jour, 3 par semaine"),
                 Items.kv("Aujourd'hui", done + " / " + p.daily.size()),
-                Items.kv("Série", plugin.missions().activeStreak(p) + " jour(s)")), done < p.daily.size(),
+                Items.kv("Série", plugin.missions().activeStreak(p) + " jour(s)"),
+                Items.dark("Commande : /missions")), done < p.daily.size(),
                 pl -> plugin.missionMenu().open(pl));
         button(holder, inv, 20, Material.KNOWLEDGE_BOOK, "Succès", List.of(
                 Items.line("Ta progression et ce qu'il te reste"),
-                Items.kv("Obtenus", s.count() + " / " + plugin.registry().total())), false,
+                Items.kv("Obtenus", s.count() + " / " + plugin.registry().total()),
+                Items.dark("Commande : /succes")), false,
                 pl -> plugin.achievementsMenu().open(pl));
-        button(holder, inv, 21, Material.GOLD_INGOT, "Parcours de récompenses", List.of(
-                Items.line("Les paliers à débloquer"),
-                Items.kv("Débloqués", p.claimed.size() + " / " + plugin.rewards().paliers().size())), false,
-                pl -> plugin.rewardMenus().openPath(pl, 1));
-        button(holder, inv, 22, daily ? Material.CHEST : Material.BARREL, "Récompense du jour", List.of(
-                Items.line(daily ? "Disponible !" : "Déjà récupérée aujourd'hui"),
-                Items.kv("Série", plugin.daily().currentStreak(p) + " jour(s)")), daily,
+        button(holder, inv, 21, daily ? Material.CHEST : Material.BARREL, "Récompense du jour", List.of(
+                Items.line(daily ? "Disponible : viens la chercher !" : "Déjà récupérée aujourd'hui"),
+                Items.kv("Série", plugin.daily().currentStreak(p) + " jour(s)"),
+                Items.dark("Commande : /recompense")), daily,
                 pl -> plugin.rewardMenus().openDaily(pl));
+        button(holder, inv, 22, Material.GOLD_INGOT, "Parcours de récompenses", List.of(
+                Items.line("Des paliers qui se débloquent tout seuls"),
+                Items.kv("Débloqués", p.claimed.size() + " / " + plugin.rewards().paliers().size()),
+                Items.dark("Commande : /parcours")), false,
+                pl -> plugin.rewardMenus().openPath(pl, 1));
         button(holder, inv, 23, Material.NETHER_STAR, plugin.seasons().name(), List.of(
-                Items.line("Classement du mois"),
+                Items.line("Le classement du mois"),
                 Items.kv("Fin dans", plugin.seasons().timeLeft()),
-                plugin.seasons().isWeekend() ? Component.text("✦ Week-end : points bonus !", accent) : Items.EMPTY),
+                plugin.seasons().isWeekend() ? Component.text("✦ Week-end : points bonus !", accent) : Items.dark("Commande : /saison")),
                 plugin.seasons().isWeekend(), pl -> plugin.seasonMenu().open(pl));
-        button(holder, inv, 24, Material.DIAMOND, "Classement des succès", List.of(
-                Items.line("Le podium avec les têtes des joueurs")), false,
+        button(holder, inv, 24, Material.DIAMOND, "Classements", List.of(
+                Items.line("Le podium des meilleurs joueurs"),
+                Items.dark("Commande : /classement")), false,
                 pl -> plugin.achievementsMenu().openTop(pl));
-        button(holder, inv, 25, Material.WHITE_BANNER, "Équipe", List.of(
-                Items.line(team == null ? "Crée ou rejoins une équipe" : "Ton équipe : " + team.name)), false,
-                pl -> plugin.teamCommand().openMenu(pl));
-
-        button(holder, inv, 28, Material.NAME_TAG, "Titres", List.of(
-                Items.line("Choisis le titre devant ton pseudo"),
-                Component.text("Grade : ", Text.GRAY).append(plugin.grades().display(p.uuid())).append(Component.text(" (automatique)", Text.DARK)).decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false),
-                Items.kv("Débloqués", plugin.rewards().unlockedTitles(p) + " / " + plugin.rewards().titles().size())), false,
-                pl -> plugin.rewardMenus().openTitles(pl, 1));
-        button(holder, inv, 29, Material.BLAZE_POWDER, "Cosmétiques", List.of(
-                Items.line("Couleur du pseudo et traînées")), false,
-                pl -> plugin.rewardMenus().openCosmetics(pl));
-        button(holder, inv, 30, Material.EMERALD, "Boutique", List.of(
-                Items.line("Titres, cosmétiques, homes"),
-                Items.kv("Solde", plugin.economy().format(p.coins))), false,
-                pl -> plugin.rewardMenus().openShop(pl, 1));
-        button(holder, inv, 31, Material.GOLD_BLOCK, "Hôtel des ventes", List.of(
-                Items.line("Achète et vends entre joueurs"),
-                Items.kv("Objets en vente", String.valueOf(plugin.auctions().active().size()))), false,
-                pl -> plugin.auctionCommand().open(pl, 1, false));
-        button(holder, inv, 32, Material.RED_BED, "Homes", List.of(
-                Items.line("Tes points de téléportation"),
-                Items.kv("Emplacements", p.homes.size() + " / " + plugin.rewards().homesLimit(p))), false,
-                pl -> plugin.teleportCommands().openHomes(pl));
-        button(holder, inv, 33, Material.WITHER_SKELETON_SKULL, "Boss mondial", List.of(
+        button(holder, inv, 25, Material.WITHER_SKELETON_SKULL, "Boss mondial", List.of(
                 Items.line(plugin.boss().active() ? "Le boss est en cours de combat !" : "Prochaine apparition :"),
-                Items.line(plugin.boss().active() ? "Clique pour rejoindre l'arène" : plugin.boss().nextText())),
+                Items.line(plugin.boss().active() ? "Clique pour rejoindre l'arène" : plugin.boss().nextText()),
+                Items.dark("Commande : /boss")),
                 plugin.boss().active(), pl -> {
                     pl.closeInventory();
                     pl.performCommand("boss");
                 });
-        button(holder, inv, 34, Material.IRON_PICKAXE, "Monde ressources", List.of(
-                Items.line("Un monde à miner, réinitialisé"),
-                Items.line("chaque mois"),
-                Items.dark("/ressources")), false, pl -> {
-                    pl.closeInventory();
-                    plugin.resources().teleport(pl);
-                });
 
-        button(holder, inv, 47, Material.FILLED_MAP, "Dynmap", List.of(Items.line("La carte du serveur en direct"),
-                Items.line("sur lyonmc.fr")), false, pl -> {
+        // ─── Rangée 2 : se déplacer ───
+        travelRow(holder, inv, player, p);
+
+        // ─── Rangée 3 : personnaliser et échanger ───
+        section(inv, 36, Material.PURPLE_STAINED_GLASS_PANE, "<#c79bff>Style et échanges", "Grade, titres, cosmétiques, boutique");
+        button(holder, inv, 37, Material.NAME_TAG, "Titres et grade", List.of(
+                Component.text("Grade : ", Text.GRAY).append(plugin.grades().display(p.uuid())).decoration(TextDecoration.ITALIC, false),
+                Items.line("Le titre à côté de ton pseudo"),
+                Items.kv("Titres débloqués", plugin.rewards().unlockedTitles(p) + " / " + plugin.rewards().titles().size()),
+                Items.dark("Commande : /titres")), false,
+                pl -> plugin.rewardMenus().openTitles(pl, 1));
+        button(holder, inv, 38, Material.BLAZE_POWDER, "Cosmétiques", List.of(
+                Items.line("Couleur du pseudo et traînées"),
+                Items.dark("Commande : /cosmetiques")), false,
+                pl -> plugin.rewardMenus().openCosmetics(pl));
+        button(holder, inv, 39, Material.EMERALD, "Boutique", List.of(
+                Items.line("Titres, cosmétiques, homes en plus"),
+                Items.kv("Solde", plugin.economy().format(p.coins)),
+                Items.dark("Commande : /boutique")), false,
+                pl -> plugin.rewardMenus().openShop(pl, 1));
+        button(holder, inv, 40, Material.GOLD_BLOCK, "Hôtel des ventes", List.of(
+                Items.line("Achète et vends entre joueurs"),
+                Items.kv("Objets en vente", String.valueOf(plugin.auctions().active().size())),
+                Items.dark("Commande : /hdv")), false,
+                pl -> plugin.auctionCommand().open(pl, 1, false));
+        button(holder, inv, 41, Material.WHITE_BANNER, "Équipe", List.of(
+                Items.line(team == null ? "Crée ou rejoins une équipe" : "Ton équipe : " + team.name),
+                Items.dark("Commande : /equipe")), false,
+                pl -> plugin.teamCommand().openMenu(pl));
+        button(holder, inv, 42, Material.FILLED_MAP, "Carte et site", List.of(
+                Items.line("La carte du serveur en direct"),
+                Items.line("et les classements sur lyonmc.fr"),
+                Items.dark("Commande : /carte")), false, pl -> {
                     pl.closeInventory();
                     pl.performCommand("carte");
+                });
+
+        // ─── Bas ───
+        button(holder, inv, 47, Material.BOOK, "Toutes les commandes", List.of(
+                Items.line("La liste des commandes, cliquables,"),
+                Items.line("dans le chat")), false, pl -> {
+                    pl.closeInventory();
+                    sendCommands(pl);
                 });
         button(holder, inv, 49, Material.BARRIER, "Fermer", List.of(), false, Player::closeInventory);
         PlayerStats stats = plugin.stats().get(player.getUniqueId());
@@ -140,6 +156,138 @@ public final class HubMenu {
                 });
         Items.fill(inv);
         player.openInventory(inv);
+    }
+
+    // ───────────────────────────── Se déplacer ─────────────────────────────
+
+    private static boolean hasCommand(String name) {
+        return Bukkit.getPluginCommand(name) != null;
+    }
+
+    private static String where(org.bukkit.Location l) {
+        return l == null || l.getWorld() == null ? "aucune" : l.getWorld().getName() + " " + l.getBlockX() + " " + l.getBlockY() + " " + l.getBlockZ();
+    }
+
+    private void travelRow(MenuHolder holder, Inventory inv, Player player, Profile p) {
+        section(inv, 27, Material.LIGHT_BLUE_STAINED_GLASS_PANE, "<#9fd8ff>Se déplacer", "Hub, survie, mine, homes...");
+        boolean inHub = plugin.spawnHub() != null && plugin.spawnHub().inHub(player.getLocation());
+        boolean inRes = plugin.resources().world() != null && player.getWorld().equals(plugin.resources().world());
+
+        button(holder, inv, 28, Material.LODESTONE, "Hub", List.of(
+                Items.line("Le spawn : stats, podium, menus"),
+                inHub ? Component.text("✔ Tu y es", plugin.text().accent()) : Items.dark("Commande : /hub")), inHub, pl -> {
+                    pl.closeInventory();
+                    pl.performCommand("spawn");
+                });
+        if (hasCommand("survie")) {
+            button(holder, inv, 29, Material.GRASS_BLOCK, "Retour en survie", List.of(
+                    Items.line("Là où tu étais dans le monde survie,"),
+                    Items.line("même après le hub ou la mine"),
+                    Items.dark("Commande : /survie")), inHub || inRes, pl -> {
+                        pl.closeInventory();
+                        pl.performCommand("survie");
+                    });
+        } else {
+            button(holder, inv, 29, Material.GRASS_BLOCK, "Aventure au hasard", List.of(
+                    Items.line("Un endroit sûr au hasard du monde survie"),
+                    Items.dark("Commande : /rtp")), false, pl -> {
+                        pl.closeInventory();
+                        pl.performCommand("rtp");
+                    });
+        }
+        button(holder, inv, 30, Material.DIAMOND_PICKAXE, "La mine (monde ressources)", List.of(
+                Items.line("Le monde où miner rapporte le plus :"),
+                Items.line("plus de minerais, minage rapide,"),
+                Items.line("pièces et trésors. Remis à neuf"),
+                Items.line("chaque mois."),
+                inRes ? Component.text("✔ Tu y es", plugin.text().accent()) : Items.dark("Commande : /mine")), inRes, pl -> {
+                    pl.closeInventory();
+                    plugin.resources().teleport(pl);
+                });
+        button(holder, inv, 31, Material.RED_BED, "Homes", List.of(
+                Items.line("Tes maisons : clique pour y aller"),
+                Items.kv("Emplacements", p.homes.size() + " / " + plugin.rewards().homesLimit(p)),
+                Items.dark("Commandes : /home, /sethome <nom>")), false,
+                pl -> plugin.teleportCommands().openHomes(pl));
+        org.bukkit.Location back = plugin.teleporter().back(player.getUniqueId());
+        button(holder, inv, 32, Material.RECOVERY_COMPASS, "Position précédente", List.of(
+                Items.line("Revenir là où tu étais juste avant"),
+                Items.line("(dernière téléportation ou mort)"),
+                Items.kv("Position", where(back)),
+                Items.dark("Commande : /back")), false, pl -> {
+                    pl.closeInventory();
+                    pl.performCommand("back");
+                });
+        button(holder, inv, 33, Material.ENDER_PEARL, "Aventure au hasard", List.of(
+                Items.line("Un endroit sûr au hasard du monde survie"),
+                Items.line("(une fois toutes les " + Math.max(1, plugin.getConfig().getLong("teleport.rtp.cooldown-seconds", 600) / 60) + " minutes)"),
+                Items.dark("Commande : /rtp")), false, pl -> {
+                    pl.closeInventory();
+                    pl.performCommand("rtp");
+                });
+        button(holder, inv, 34, Material.LEAD, "Rejoindre un joueur", List.of(
+                Items.line("Choisis un joueur connecté :"),
+                Items.line("il devra accepter ta demande"),
+                Items.dark("Commandes : /tpa <joueur>, /tpaccept")), false, this::openPlayers);
+    }
+
+    /** Liste des joueurs connectés pour envoyer une demande de téléportation. */
+    private void openPlayers(Player player) {
+        MenuHolder holder = new MenuHolder();
+        Inventory inv = Bukkit.createInventory(holder, 54, Component.text("Rejoindre un joueur"));
+        holder.inventory(inv);
+        int slot = 0;
+        for (Player other : Bukkit.getOnlinePlayers()) {
+            if (other.equals(player) || slot >= 45) continue;
+            ItemStack head = plugin.heads().head(other.getUniqueId(), other.getName());
+            inv.setItem(slot, Items.decorate(head, plugin.rewards().coloredName(other.getUniqueId(), other.getName(), Text.WHITE)
+                    .decorate(TextDecoration.BOLD), List.of(Items.line("Lui demander de te téléporter"),
+                    Items.EMPTY, Items.action("Cliquer pour envoyer la demande", plugin.text().accent())), false));
+            String name = other.getName();
+            holder.action(slot, pl -> {
+                pl.closeInventory();
+                pl.performCommand("tpa " + name);
+            });
+            slot++;
+        }
+        if (slot == 0) {
+            inv.setItem(22, Items.item(Material.GRAY_DYE, Component.text("Personne d'autre n'est connecté", Text.GRAY), List.of(), false));
+        }
+        inv.setItem(49, Items.item(Material.ARROW, Component.text("Retour au menu", Text.WHITE), List.of(), false));
+        holder.action(49, this::open);
+        Items.fill(inv);
+        player.openInventory(inv);
+    }
+
+    /** Toutes les commandes, regroupées et cliquables, dans le chat. */
+    private void sendCommands(Player p) {
+        String[][] groups = {
+                {"Se déplacer", "hub|Le hub (spawn)", hasCommand("survie") ? "survie|Retour en survie" : "rtp|Aventure au hasard",
+                        "mine|La mine (monde ressources)", "home|Tes homes", "sethome maison|Poser un home ici", "back|Position précédente",
+                        "rtp|Aventure au hasard", "tpa |Rejoindre un joueur"},
+                {"Progresser", "missions|Missions du jour", "succes|Tes succès", "recompense|Récompense du jour", "parcours|Paliers",
+                        "saison|Saison du mois", "classement|Classements", "boss|Boss mondial"},
+                {"Style et échanges", "titres|Titres et grade", "cosmetiques|Cosmétiques", "boutique|Boutique", "hdv|Hôtel des ventes",
+                        "equipe|Équipe", "money|Ton solde", "pay |Donner des pièces"},
+        };
+        p.sendMessage(Component.empty());
+        p.sendMessage(plugin.text().parse("  <accent>✦</accent> <white><bold>Commandes de LyonMC</bold></white> <dark_gray>(clique pour lancer)"));
+        for (String[] g : groups) {
+            p.sendMessage(plugin.text().parse("  <accent>" + g[0]));
+            for (int i = 1; i < g.length; i++) {
+                String[] c = g[i].split("\\|");
+                String cmd = "/" + c[0];
+                String click = c[0].endsWith(" ") ? "suggest_command" : "run_command";
+                p.sendMessage(plugin.text().parse("    <click:" + click + ":'" + cmd + "'><hover:show_text:'<gray>" + c[1] + "'><white>"
+                        + cmd.trim() + "</white></hover></click> <dark_gray>" + c[1]));
+            }
+        }
+        p.sendMessage(Component.empty());
+    }
+
+    private void section(Inventory inv, int slot, Material pane, String title, String sub) {
+        inv.setItem(slot, Items.item(pane, plugin.text().parse("<bold>" + title).decoration(TextDecoration.ITALIC, false),
+                List.of(Items.line(sub)), false));
     }
 
     private void button(MenuHolder holder, Inventory inv, int slot, Material icon, String name, List<Component> lore,
