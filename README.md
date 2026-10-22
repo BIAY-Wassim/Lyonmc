@@ -1,6 +1,6 @@
 Plugins du serveur LyonMC (par wassdead), pour Purpur / Paper 1.21.8.
 
-- **LyonAchievements-6.5.1.jar** : succès, grades automatiques (une Légende choisit le grade affiché), hub au spawn, hologrammes, économie, missions, saisons…
+- **LyonAchievements-6.6.0.jar** : succès, grades automatiques (une Légende choisit le grade affiché), hub au spawn, hologrammes, économie, missions, saisons…
 - **HUB-1.4.0.jar** : le monde du hub, le podium de PNJ avec les vrais skins des joueurs, `/lyonhub coller` pour poser une construction.
 - **lyonmc-site.zip** : le site lyonmc.fr.
 
