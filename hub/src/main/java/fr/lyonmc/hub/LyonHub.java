@@ -208,6 +208,15 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                 msg(sender, "<gray>Collage lancé, le serveur continue de tourner pendant ce temps…");
                 paster.paste(p, s, worlds.hasStartPlatform(p.getWorld()));
             }
+            case "depart" -> {
+                if (p == null) return true;
+                if (worlds.isHub(p.getWorld())) {
+                    msg(sender, "<gray>Le point de départ doit être dans le monde survie (pas au hub).");
+                    return true;
+                }
+                players.positions().setDepart(p.getLocation());
+                msg(sender, "<gray>Point de départ des nouveaux défini ici. Leur première fois en survie, ils arriveront à cet endroit.");
+            }
             case "construire", "build" -> {
                 if (p != null) players.toggleBuild(p);
             }
@@ -229,6 +238,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                         "<white>/lyonhub suppr <id></white> <dark_gray>supprimer un PNJ",
                         "<white>/lyonhub coller <fichier></white> <dark_gray>coller une construction (.schem) autour de toi",
                         "<white>/lyonhub construire</white> <dark_gray>mode construction au hub (créatif)",
+                        "<white>/lyonhub depart</white> <dark_gray>point d'arrivée des nouveaux en survie (village de départ)",
                         "<white>/lyonhub liste</white> <dark_gray>· <white>/lyonhub reload")) {
                     sender.sendMessage(MM.deserialize("  " + line));
                 }
@@ -249,7 +259,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
-            out.addAll(List.of("monde", "construire", "coller", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste", "reload"));
+            out.addAll(List.of("monde", "construire", "depart", "coller", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste", "reload"));
         } else if (args.length == 2) {
             switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "podium" -> Rankings.BOARDS.forEach(b -> out.add(b.id()));

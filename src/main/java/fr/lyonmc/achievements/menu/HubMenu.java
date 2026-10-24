@@ -61,6 +61,9 @@ public final class HubMenu {
         for (Profile.MissionSlot m : p.daily) if (m.done) done++;
         boolean daily = plugin.daily().canClaim(p);
 
+        // ─── Rangée 0 : communauté (plugin COMMUNAUTE) ───
+        communityRow(holder, inv);
+
         // ─── Rangée 1 : progresser ───
         section(inv, 18, Material.YELLOW_STAINED_GLASS_PANE, "<#ffd86b>Progresser", "Missions, succès, récompenses");
         button(holder, inv, 19, Material.WRITABLE_BOOK, "Missions", List.of(
@@ -156,6 +159,61 @@ public final class HubMenu {
                 });
         Items.fill(inv);
         player.openInventory(inv);
+    }
+
+    // ───────────────────────────── Communauté ─────────────────────────────
+
+    private void communityRow(MenuHolder holder, Inventory inv) {
+        if (!hasCommand("vote") && !hasCommand("premierspas") && !hasCommand("parrain") && !hasCommand("objectif")) return;
+        section(inv, 9, Material.LIME_STAINED_GLASS_PANE, "<#9be37c>Communauté", "Voter, parrainer, jouer ensemble");
+        int slot = 11;
+        if (hasCommand("vote")) {
+            button(holder, inv, slot++, Material.GOLDEN_APPLE, "Voter pour LyonMC", List.of(
+                    Items.line("Une récompense à chaque vote,"),
+                    Items.line("et le serveur monte dans les classements"),
+                    Items.dark("Commande : /vote")), true, pl -> {
+                        pl.closeInventory();
+                        pl.performCommand("vote");
+                    });
+        }
+        if (hasCommand("premierspas")) {
+            button(holder, inv, slot++, Material.MAP, "Premiers pas", List.of(
+                    Items.line("Les étapes pour bien commencer"),
+                    Items.line("(avec des récompenses)"),
+                    Items.dark("Commande : /premierspas")), false, pl -> {
+                        pl.closeInventory();
+                        pl.performCommand("premierspas");
+                    });
+        }
+        if (hasCommand("parrain")) {
+            button(holder, inv, slot++, Material.TOTEM_OF_UNDYING, "Parrainage", List.of(
+                    Items.line("Invite tes amis : vous êtes"),
+                    Items.line("récompensés tous les deux"),
+                    Items.dark("Commande : /parrain")), false, pl -> {
+                        pl.closeInventory();
+                        pl.performCommand("parrain");
+                    });
+        }
+        if (hasCommand("objectif")) {
+            button(holder, inv, slot++, Material.BEACON, "Objectif de la semaine", List.of(
+                    Items.line("Un défi pour tout le serveur,"),
+                    Items.line("une récompense pour tous"),
+                    Items.dark("Commande : /objectif")), false, pl -> {
+                        pl.closeInventory();
+                        pl.performCommand("objectif");
+                    });
+        }
+        var boost = plugin.boosts().current();
+        if (boost != null) {
+            inv.setItem(slot, Items.item(Material.EXPERIENCE_BOTTLE, plugin.text().parse("<#ffd86b><bold>Bonus en cours !")
+                    .decoration(TextDecoration.ITALIC, false), List.of(
+                    Items.line("Pièces x" + fmt(boost.coins()) + ", points de saison x" + fmt(boost.season())),
+                    Items.kv("Fin dans", Math.max(1, (boost.until() - System.currentTimeMillis()) / 60000) + " min")), true));
+        }
+    }
+
+    private static String fmt(double d) {
+        return d == Math.floor(d) ? String.valueOf((long) d) : String.valueOf(d);
     }
 
     // ───────────────────────────── Se déplacer ─────────────────────────────
@@ -261,15 +319,22 @@ public final class HubMenu {
 
     /** Toutes les commandes, regroupées et cliquables, dans le chat. */
     private void sendCommands(Player p) {
-        String[][] groups = {
-                {"Se déplacer", "hub|Le hub (spawn)", hasCommand("survie") ? "survie|Retour en survie" : "rtp|Aventure au hasard",
-                        "mine|La mine (monde ressources)", "home|Tes homes", "sethome maison|Poser un home ici", "back|Position précédente",
-                        "rtp|Aventure au hasard", "tpa |Rejoindre un joueur"},
-                {"Progresser", "missions|Missions du jour", "succes|Tes succès", "recompense|Récompense du jour", "parcours|Paliers",
-                        "saison|Saison du mois", "classement|Classements", "boss|Boss mondial"},
-                {"Style et échanges", "titres|Titres et grade", "cosmetiques|Cosmétiques", "boutique|Boutique", "hdv|Hôtel des ventes",
-                        "equipe|Équipe", "money|Ton solde", "pay |Donner des pièces"},
-        };
+        List<String[]> groups = new ArrayList<>();
+        groups.add(new String[]{"Se déplacer", "hub|Le hub (spawn)", hasCommand("survie") ? "survie|Retour en survie" : "rtp|Aventure au hasard",
+                "mine|La mine (monde ressources)", "home|Tes homes", "sethome maison|Poser un home ici", "back|Position précédente",
+                "rtp|Aventure au hasard", "tpa |Rejoindre un joueur"});
+        groups.add(new String[]{"Progresser", "missions|Missions du jour", "succes|Tes succès", "recompense|Récompense du jour", "parcours|Paliers",
+                "saison|Saison du mois", "classement|Classements", "boss|Boss mondial"});
+        List<String> community = new ArrayList<>();
+        community.add("Communauté");
+        if (hasCommand("vote")) community.add("vote|Voter pour le serveur");
+        if (hasCommand("premierspas")) community.add("premierspas|Premiers pas");
+        if (hasCommand("parrain")) community.add("parrain|Parrainage");
+        if (hasCommand("objectif")) community.add("objectif|Objectif de la semaine");
+        if (hasCommand("bienvenue")) community.add("bienvenue|Souhaiter la bienvenue au dernier arrivé");
+        if (community.size() > 1) groups.add(community.toArray(new String[0]));
+        groups.add(new String[]{"Style et échanges", "titres|Titres et grade", "cosmetiques|Cosmétiques", "boutique|Boutique", "hdv|Hôtel des ventes",
+                "equipe|Équipe", "money|Ton solde", "pay |Donner des pièces"});
         p.sendMessage(Component.empty());
         p.sendMessage(plugin.text().parse("  <accent>✦</accent> <white><bold>Commandes de LyonMC</bold></white> <dark_gray>(clique pour lancer)"));
         for (String[] g : groups) {

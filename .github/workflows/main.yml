@@ -63,3 +63,32 @@ jobs:
         with:
           name: HUB
           path: hub/build/libs/HUB-*.jar
+
+  communaute:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: current
+      - name: Compiler COMMUNAUTE
+        run: |
+          set -o pipefail
+          mvn -B -q package -DskipTests
+          gradle -p communaute build --no-daemon --console=plain 2>&1 | tee communaute-build.log
+      - name: Erreurs de compilation COMMUNAUTE
+        if: failure()
+        run: |
+          grep -E "\.java:[0-9]+: error:" -A2 communaute-build.log | sed -E 's#^.*/src/main/java/##' | grep -vE "^--$" > errors.txt || true
+          sed -n '1,10p' errors.txt | while IFS= read -r l; do echo "::error::$l"; done
+          sed -n '11,20p' errors.txt | while IFS= read -r l; do echo "::warning::$l"; done
+          grep -A6 "What went wrong" communaute-build.log | head -8 | while IFS= read -r l; do echo "::notice::$l"; done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: COMMUNAUTE
+          path: communaute/build/libs/COMMUNAUTE-*.jar

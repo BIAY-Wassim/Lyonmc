@@ -1,0 +1,178 @@
+# ─────────────────────────────────────────────────────────────
+#   COMMUNAUTE · LyonMC (par wassdead)
+#   Accueil des nouveaux, votes, parrainage et fidélité.
+#
+#   Les récompenses s'écrivent comme les lots de LyonAchievements :
+#   coins, season-points, title, color, trail, homes, xp-levels,
+#   items: ["DIAMOND:2"], commands: ["give %player% apple 1"]
+#   Après modification : /communaute reload
+# ─────────────────────────────────────────────────────────────
+
+anti-triche:
+  # Autoriser parrainage et bienvenue entre deux comptes de la même connexion internet.
+  # À laisser sur false : sinon un joueur pourrait se parrainer avec un deuxième compte.
+  meme-ip-autorise: false
+
+# ───────────────────────── Accueil des nouveaux ─────────────────────────
+accueil:
+  enabled: true
+  # Les joueurs qui ont déjà plus de ce temps de jeu à l'installation du plugin ne font pas les premiers pas
+  deja-joueur-heures: 3
+  # Étapes affichées en haut de l'écran, dans cet ordre (le joueur peut aussi les faire dans le désordre).
+  # Étapes reconnues : survie, recompense, home, protection (seulement si GriefPrevention est installé),
+  # mission, mine, chat, succes
+  etapes:
+    survie:
+      texte: "Rejoins la survie : clic droit avec la boussole"
+      recompense: { coins: 50, items: ["STONE_SWORD:1", "STONE_PICKAXE:1", "STONE_AXE:1", "STONE_SHOVEL:1", "BREAD:16", "TORCH:16", "WHITE_BED:1", "OAK_LOG:16"] }
+    recompense:
+      texte: "Récupère ta récompense du jour : /recompense"
+      recompense: { coins: 50 }
+    home:
+      texte: "Pose ton home près de ta maison : /sethome maison"
+      recompense: { coins: 75 }
+    protection:
+      texte: "Protège ta base : clic droit avec la pelle en or sur deux coins opposés"
+      recompense: { coins: 100 }
+    mission:
+      texte: "Termine une mission du jour : /missions"
+      recompense: { coins: 100 }
+    mine:
+      texte: "Va miner à la mine, ça rapporte des pièces : /mine"
+      recompense: { coins: 75 }
+    chat:
+      texte: "Dis bonjour aux autres joueurs dans le chat"
+      recompense: { coins: 25 }
+    succes:
+      texte: "Obtiens 10 succès (/succes pour voir ta progression)"
+      objectif: 10
+      recompense: { coins: 150, season-points: 50 }
+  fin:
+    recompense: { coins: 500, title: lyonnais }
+    annonce: "<#e8c872>✦</#e8c872> <white><player></white> <gray>a terminé ses premiers pas : bienvenue chez les Lyonnais !"
+  # Annonce quand un tout nouveau joueur arrive (avec le bouton pour lui souhaiter la bienvenue)
+  bienvenue:
+    enabled: true
+    # Pendant combien de minutes on peut lui souhaiter la bienvenue
+    minutes: 5
+    # Récompense de celui qui souhaite la bienvenue (une fois par nouveau joueur)
+    recompense: { coins: 25 }
+  # Livre donné avec le kit de départ
+  livre:
+    titre: "Guide de LyonMC"
+    pages:
+      - "<bold>Bienvenue sur LyonMC !</bold>\n\nUn serveur survie entre Lyonnais, avec des succès, des missions, des saisons et un boss.\n\nCe guide t'explique l'essentiel.\n\n<dark_gray>Tourne la page →"
+      - "<bold>Les commandes</bold>\n\n/menu : tout le serveur\n/missions : missions du jour\n/recompense : cadeau du jour\n/sethome maison : ton home\n/home : y retourner\n/hub : le hub\n/survie : revenir en survie"
+      - "<bold>La mine</bold>\n\n/mine t'envoie dans le monde ressources : plus de minerais, minage plus rapide, minerais parfois doublés, des pièces pour chaque minerai et des trésors cachés.\n\nNe construis pas là-bas : il est remis à neuf chaque mois."
+      - "<bold>Protéger ta base</bold>\n\nPose ta maison loin du spawn, puis protège-la (si le serveur a GriefPrevention : clic droit avec une pelle en or sur deux coins opposés).\n\nPersonne ne pourra rien y casser."
+      - "<bold>Les pièces</bold>\n\nTu gagnes des pièces avec les succès, les missions, la mine, les votes et le boss.\n\n/boutique : titres, couleurs, homes\n/hdv : acheter et vendre entre joueurs"
+      - "<bold>Monter de grade</bold>\n\nTon grade monte tout seul avec tes succès : Novice, Aventurier, Explorateur, Vétéran, Maître, Grand Maître, Légende.\n\nChaque mois, la saison récompense les meilleurs."
+      - "<bold>Jouer ensemble</bold>\n\n/vote : une récompense à chaque vote\n/parrain : invite tes amis\n/equipe : crée ton équipe\n/objectif : le défi de la semaine\n\nLe site : lyonmc.fr\n\n<dark_gray>Bon jeu !"
+
+# ───────────────────────── Votes ─────────────────────────
+# Il faut installer NuVotifier et inscrire le serveur sur les sites de vote.
+votes:
+  enabled: true
+  # Les sites où tu as inscrit le serveur : nom affiché + lien de la page de vote
+  sites: []
+  #  - { nom: "serveur-prive.net", lien: "https://serveur-prive.net/minecraft/lyonmc/vote" }
+  #  - { nom: "serveurs-minecraft.org", lien: "https://www.serveurs-minecraft.org/vote.php?id=00000" }
+  recompense: { coins: 150, season-points: 15 }
+  annonce: "<#9be37c>✦</#9be37c> <white><player></white> <gray>a voté pour le serveur<dark_gray> (<site>)</dark_gray>. <click:run_command:'/vote'><hover:show_text:'<gray>Voter toi aussi'><#9be37c><u>/vote</u></#9be37c></hover></click>"
+  # Série : voter plusieurs jours d'affilée
+  serie:
+    jours: 7
+    recompense: { coins: 500, season-points: 50 }
+  # Rappel aux joueurs qui n'ont pas voté depuis ce nombre d'heures
+  rappel-heures: 24
+  # Tous les X votes du serveur : cadeau pour tous les joueurs connectés et bonus pour tout le monde
+  vote-party:
+    votes: 50
+    recompense: { coins: 200, season-points: 20 }
+    bonus-minutes: 30
+  # Meilleurs voteurs du mois (récompensés le 1er du mois suivant)
+  top-mois:
+    "1": { coins: 5000, title: voteur }
+    "2": { coins: 3000 }
+    "3": { coins: 1500 }
+
+# ───────────────────────── Parrainage ─────────────────────────
+parrainage:
+  enabled: true
+  # Un nouveau peut choisir son parrain pendant ses X premières heures de jeu
+  delai-heures: 5
+  # Temps de jeu réel (hors AFK, hors hub) que le filleul doit atteindre pour que les deux soient récompensés
+  heures-requises: 2
+  recompense-parrain: { coins: 1000, season-points: 100 }
+  recompense-filleul: { coins: 500 }
+  ambassadeur:
+    filleuls: 3
+    recompense: { coins: 2000, title: ambassadeur }
+
+# ───────────────────────── Fidélité ─────────────────────────
+afk:
+  enabled: true
+  # Sans bouger la souris, parler ou agir pendant ce temps : AFK (le temps de jeu ne compte plus)
+  minutes: 5
+
+temps-de-jeu:
+  enabled: true
+  # Toutes les X minutes de jeu actif (hors AFK, hors hub)
+  minutes: 30
+  recompense: { coins: 60 }
+
+retour:
+  enabled: true
+  # Absent depuis au moins X jours : cadeau de retour
+  jours: 7
+  recompense: { coins: 500, season-points: 50 }
+  annonce: "<#e8c872>✦</#e8c872> <white><player></white> <gray>est de retour après <white><jours></white> jours d'absence !"
+
+# Objectif communautaire : un nouveau chaque lundi, à tour de rôle.
+# Types : MINE (blocs cassés à la mine), MOBS (monstres tués), FISH (poissons pêchés),
+#         HARVEST (cultures récoltées), VOTES (votes)
+objectifs:
+  enabled: true
+  liste:
+    mine:
+      nom: "Miner 20 000 blocs à la mine"
+      type: MINE
+      cible: 20000
+      # Participation minimum pour être récompensé
+      contribution-min: 150
+      recompense: { coins: 400, season-points: 60 }
+    monstres:
+      nom: "Vaincre 2 000 monstres"
+      type: MOBS
+      cible: 2000
+      contribution-min: 20
+      recompense: { coins: 400, season-points: 60 }
+    peche:
+      nom: "Pêcher 500 poissons"
+      type: FISH
+      cible: 500
+      contribution-min: 8
+      recompense: { coins: 400, season-points: 60 }
+    recoltes:
+      nom: "Récolter 5 000 cultures"
+      type: HARVEST
+      cible: 5000
+      contribution-min: 60
+      recompense: { coins: 400, season-points: 60 }
+    votes:
+      nom: "Voter 300 fois pour le serveur"
+      type: VOTES
+      cible: 300
+      contribution-min: 3
+      recompense: { coins: 500, season-points: 60 }
+
+# Heures bonus : pièces et points de saison multipliés, à horaires fixes (heure de Paris).
+# Jours en anglais : MONDAY TUESDAY WEDNESDAY THURSDAY FRIDAY SATURDAY SUNDAY
+heures-bonus:
+  enabled: true
+  pieces: 2.0
+  saison: 2.0
+  horaires:
+    - "FRIDAY 20:00-22:00"
+  # Annonce sur Discord (webhook de LyonAchievements) au début de l'heure bonus
+  discord: true

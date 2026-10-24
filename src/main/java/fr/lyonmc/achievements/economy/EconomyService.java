@@ -68,7 +68,9 @@ public final class EconomyService {
         return p.coins;
     }
 
+    /** Pièces gagnées en jouant (succès, missions, minerais, lots...) : les bonus temporaires s'appliquent. */
     public long deposit(Player player, long amount) {
+        if (amount > 0) amount = Math.round(amount * plugin.boosts().coins());
         return deposit(player.getUniqueId(), player.getName(), amount, true);
     }
 

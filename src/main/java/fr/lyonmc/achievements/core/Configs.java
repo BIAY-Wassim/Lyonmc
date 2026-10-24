@@ -26,6 +26,36 @@ public final class Configs {
         return defaults == null ? null : defaults.getConfigurationSection(path);
     }
 
+    /**
+     * Ajoute (en mémoire, sans toucher au fichier) les éléments du .jar absents d'une section du serveur :
+     * sinon un nouveau titre ou une nouvelle mission n'apparaîtrait jamais sur un serveur déjà installé.
+     */
+    static void mergeChildren(YamlConfiguration yaml, String... paths) {
+        org.bukkit.configuration.Configuration def = yaml.getDefaults();
+        if (def == null) return;
+        for (String path : paths) {
+            if (!yaml.isSet(path)) continue; // la section entière vient déjà du .jar
+            org.bukkit.configuration.ConfigurationSection mine = yaml.getConfigurationSection(path);
+            org.bukkit.configuration.ConfigurationSection theirs = def.getConfigurationSection(path);
+            if (mine == null || theirs == null) continue;
+            java.util.Set<String> have = mine.getKeys(false);
+            for (String k : theirs.getKeys(false)) {
+                if (have.contains(k)) continue;
+                Object v = theirs.get(k);
+                if (v instanceof org.bukkit.configuration.ConfigurationSection s) copy(s, mine.createSection(k));
+                else mine.set(k, v);
+            }
+        }
+    }
+
+    private static void copy(org.bukkit.configuration.ConfigurationSection from, org.bukkit.configuration.ConfigurationSection to) {
+        for (String k : from.getKeys(false)) {
+            Object v = from.get(k);
+            if (v instanceof org.bukkit.configuration.ConfigurationSection s) copy(s, to.createSection(k));
+            else to.set(k, v);
+        }
+    }
+
     private final JavaPlugin plugin;
     private YamlConfiguration missions;
     private YamlConfiguration rewards;
@@ -41,6 +71,9 @@ public final class Configs {
     public void load() {
         missions = loadOrCreate("missions.yml");
         rewards = loadOrCreate("recompenses.yml");
+        // Les nouveautés des mises à jour (titres, couleurs, paliers, missions...) s'ajoutent aux anciens fichiers
+        mergeChildren(rewards, "titles", "colors", "trails", "paliers", "grades");
+        mergeChildren(missions, "daily.easy", "daily.medium", "daily.hard", "weekly");
         events = loadOrCreate("evenements.yml");
         state = stateFile.exists() ? YamlConfiguration.loadConfiguration(stateFile) : new YamlConfiguration();
     }
