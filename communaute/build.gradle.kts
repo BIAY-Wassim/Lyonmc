@@ -33,5 +33,7 @@ tasks {
     }
     jar {
         archiveFileName = "COMMUNAUTE-${project.version}.jar"
+        // Pas de code interne de Minecraft : Paper n'a pas besoin de remapper le plugin
+        manifest { attributes("paperweight-mappings-namespace" to "mojang") }
     }
 }

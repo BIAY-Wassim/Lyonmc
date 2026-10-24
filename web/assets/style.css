@@ -456,3 +456,7 @@ ul.perks li { display: flex; flex-direction: column; gap: 2px; padding: 12px 14p
 .toplist li .pos { width: 1.6em; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 .toplist li .muted { margin-left: auto; }
 .badge-live { color: var(--yellow); font-weight: 600; font-size: var(--step--1); }
+
+@media (max-width: 460px) {
+  .nav a { padding: 6px 6px; font-size: .86rem; }
+}
