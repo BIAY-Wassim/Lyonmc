@@ -29,6 +29,7 @@ jobs:
         run: |
           mvn -B -q package
           gradle -p hub build --no-daemon --console=plain -q
+          gradle -p communaute build --no-daemon --console=plain -q
       - name: Préparer le serveur de test
         run: |
           mkdir -p srv/plugins
@@ -44,6 +45,9 @@ jobs:
           done
           cp target/LyonAchievements-*.jar srv/plugins/
           cp hub/build/libs/HUB-*.jar srv/plugins/
+          cp communaute/build/libs/COMMUNAUTE-*.jar srv/plugins/
+          mkdir -p srv/plugins/COMMUNAUTE
+          printf 'anti-triche:\n  meme-ip-autorise: true\nparrainage:\n  heures-requises: 0.01\nvotes:\n  sites:\n    - { nom: "site-test", lien: "https://example.org/vote" }\n  vote-party:\n    votes: 2\n' > srv/plugins/COMMUNAUTE/config.yml
           python3 hub/test/old_configs.py . srv
           pip install -q nbtlib numpy
           mkdir -p srv/plugins/HUB/schematics
@@ -70,6 +74,7 @@ jobs:
           let gradeSignal = false
           bot.on('messagestr', m => { if (m.trim()) log('CHAT', m); if (m.includes('test-chat-grade')) gradeSignal = true })
           bot.on('kicked', r => log('KICKED', JSON.stringify(r)))
+          bot.on('bossBarCreated', b => log('BOSSBAR', b.title ? b.title.toString() : ''))
           bot.on('error', e => log('BOTERR', e.message))
           bot.on('windowOpen', w => log('WINDOW', w.title ? JSON.stringify(w.title).slice(0, 100) : ''))
           async function cmd(c, wait = 2500) { log('CMD', c); bot.chat(c); await sleep(wait) }
@@ -83,6 +88,7 @@ jobs:
             await cmd('salut tout le monde')
             await cmd('/menu'); await click(22); await click(10); await close()
             await cmd('/menu'); await click(19); await close()
+            await cmd('/premierspas'); await cmd('/vote'); await cmd('/objectif'); await cmd('/bienvenue'); await cmd('/parrain')
             await cmd('/menu'); await click(47)
             await cmd('/menu'); await click(34); await click(0, 3000); await close()
             await cmd('/succes'); await cmd('/succes menu'); await click(19); await close()
@@ -162,7 +168,9 @@ jobs:
             log('done')
           }
           async function acheteur() {
-            await sleep(60000)
+            await cmd('/parrain Testeur', 3000)
+            await cmd('bonjour tout le monde', 2000)
+            await sleep(55000)
             for (let i = 0; i < 25; i++) {
               await cmd('/hdv', 2000)
               const it = bot.currentWindow && bot.currentWindow.slots[0]
@@ -195,7 +203,7 @@ jobs:
             (cd ../bot && timeout 660 node bot.js Testeur > ../bot.log 2>&1 &)
             (cd ../bot && timeout 660 node bot.js Acheteur > ../bot2.log 2>&1 &)
             sleep 12
-            for c in "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob"; do echo "$c"; sleep 1; done
+            for c in "communaute vote Acheteur site-test" "communaute vote Acheteur site-test" "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob"; do echo "$c"; sleep 1; done
             sleep 340
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
@@ -222,15 +230,15 @@ jobs:
           mkdir -p /tmp/logs && cp bot.log bot2.log /tmp/logs/ 2>/dev/null || true
           cp srv/logs/latest.log /tmp/logs/server.log 2>/dev/null || true
           mkdir -p /tmp/logs/data && cp srv/siteweb/data/*.json /tmp/logs/data/ 2>/dev/null || true
-          cp target/LyonAchievements-*.jar hub/build/libs/HUB-*.jar /tmp/logs/ 2>/dev/null || true
+          cp target/LyonAchievements-*.jar hub/build/libs/HUB-*.jar communaute/build/libs/COMMUNAUTE-*.jar /tmp/logs/ 2>/dev/null || true
           git config user.name "ci"
           git config user.email "ci@users.noreply.github.com"
           git checkout --orphan ci-logs
           git rm -rq --cached . || true
           cp /tmp/logs/*.log . 
           mkdir -p data && cp /tmp/logs/data/*.json data/ 2>/dev/null || true
-          cp /tmp/logs/LyonAchievements-*.jar /tmp/logs/HUB-*.jar . 2>/dev/null || true
+          cp /tmp/logs/LyonAchievements-*.jar /tmp/logs/HUB-*.jar /tmp/logs/COMMUNAUTE-*.jar . 2>/dev/null || true
           git add bot.log bot2.log server.log data || true
-          for f in LyonAchievements-*.jar HUB-*.jar; do if [ -f "$f" ]; then git add "$f"; fi; done
+          for f in LyonAchievements-*.jar HUB-*.jar COMMUNAUTE-*.jar; do if [ -f "$f" ]; then git add "$f"; fi; done
           git commit -qm "logs ${{ github.run_id }}"
           git push -qf origin HEAD:ci-logs

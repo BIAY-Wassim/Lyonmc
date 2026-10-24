@@ -444,3 +444,15 @@ ol.grades small { color: var(--ink-2); }
 /* Monde ressources : avantages */
 ul.perks { list-style: none; padding: 0; margin: 16px 0 24px; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 ul.perks li { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; }
+
+/* Page Voter */
+.vote-page { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; padding-block: 26px 40px; }
+.vote-page .card { padding: 18px 20px; }
+.vote-page .vote-main { grid-column: 1 / -1; }
+.vote-sites { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 10px; }
+.toplist { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.toplist li { display: flex; align-items: center; gap: 10px; }
+.toplist li img { width: 24px; height: 24px; image-rendering: pixelated; border-radius: 4px; }
+.toplist li .pos { width: 1.6em; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.toplist li .muted { margin-left: auto; }
+.badge-live { color: var(--yellow); font-weight: 600; font-size: var(--step--1); }

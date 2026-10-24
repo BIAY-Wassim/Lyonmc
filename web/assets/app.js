@@ -586,7 +586,7 @@
     ["Événements", [["/boss", "Prochain boss, ou rejoindre l'arène"]]],
   ];
   const SECTIONS = [
-    ["debuter", "Bien commencer"], ["menus", "Le menu principal"], ["commandes", "Commandes"], ["missions", "Missions"], ["pieces", "Pièces et boutique"],
+    ["debuter", "Bien commencer"], ["communaute", "Communauté et votes"], ["menus", "Le menu principal"], ["commandes", "Commandes"], ["missions", "Missions"], ["pieces", "Pièces et boutique"],
     ["parcours", "Parcours de récompenses"], ["titres", "Grades, titres et cosmétiques"], ["saisons", "Saisons"], ["boss", "Boss mondial"],
     ["equipes", "Équipes"], ["hdv", "Hôtel des ventes"], ["teleport", "Homes et téléportation"], ["ressources", "Monde ressources"], ["succes", "Tous les succès"],
   ];
@@ -606,7 +606,18 @@
     const totalAdv = (g.categories || []).reduce((n, c) => n + c.advancements.length, 0);
     const rewardsTable = (rows) => `<table class="cmds"><tbody>${rows.map(([l, b]) => `<tr><td><strong>${l}</strong></td><td>${bundle(b)}</td></tr>`).join("")}</tbody></table>`;
 
+    const cm = await data("communaute");
     const sec = {
+      communaute: cm ? `<p>Les nouveaux joueurs sont guidés par les <strong>premiers pas</strong>, affichés en haut de l'écran : rejoindre la survie, récupérer sa récompense, poser son home, faire une mission, aller à la mine... Chaque étape rapporte des pièces, et la dernière donne le titre <strong>Lyonnais</strong> (<code class="cmd">/premierspas</code>).</p>
+        <p>Quand un nouveau arrive, souhaite-lui la bienvenue avec <code class="cmd">/bienvenue</code> : tu gagnes quelques pièces et il se sent accueilli.</p>
+        <table class="cmds"><tbody>
+          <tr><td><code class="cmd">/vote</code></td><td>Voter pour le serveur : ${num(cm.votes?.reward || 0)} pièces par vote, vote party pour tous, meilleurs voteurs du mois récompensés (<a href="/voter" data-link>page Voter</a>)</td></tr>
+          <tr><td><code class="cmd">/parrain</code></td><td>Parrainage : ${num(cm.referral?.sponsorReward || 0)} pièces pour toi et ${num(cm.referral?.newcomerReward || 0)} pour ton ami quand il a joué ${String(cm.referral?.hours || 2).replace(".", ",")} h</td></tr>
+          <tr><td><code class="cmd">/objectif</code></td><td>L'objectif de la semaine : tout le serveur ensemble, une récompense pour chaque participant</td></tr>
+          <tr><td>Heures bonus</td><td>Pièces et points de saison x${String(cm.bonus?.coins || 2).replace(/\.0$/, "")} : ${(cm.bonus?.schedule || []).map(esc).join(", ") || "à venir"}</td></tr>
+        </tbody></table>
+        <p class="small muted">Le temps passé AFK (sans bouger la souris pendant 5 minutes) ne compte pas comme du temps de jeu. Toutes les 30 minutes de vrai jeu, tu reçois quelques pièces, et un cadeau t'attend si tu reviens après une longue absence.</p>`
+        : `<p>Bientôt : votes, parrainage et objectifs de la semaine.</p>`,
       debuter: `<p>Bienvenue sur LyonMC. Trois choses à faire en arrivant :</p>
         <ol class="steps" style="margin-top:18px">
           <li class="card"><strong>Récupère ta récompense</strong><p>Tape <code class="cmd">/recompense</code> chaque jour. Elle grossit jusqu'au 7e jour d'affilée.</p></li>
@@ -701,6 +712,55 @@
       <iframe class="map-frame" src="${esc(src)}" title="Carte Dynmap du serveur LyonMC" allow="fullscreen"></iframe>`;
   }
 
+  // ───────────── Voter et communauté ─────────────
+  async function voter() {
+    setTitle("Voter");
+    const c = await data("communaute");
+    if (!c) {
+      app.innerHTML = `<div class="page-head"><div class="wrap"><h1>Voter pour LyonMC</h1><p>Les votes arrivent bientôt. Reviens dans quelques jours !</p></div></div>`;
+      return;
+    }
+    const v = c.votes || {}, r = c.referral || {}, g = c.goal || {}, b = c.bonus || {};
+    const pct = (a, t) => Math.max(0, Math.min(100, t ? (a / t) * 100 : 0));
+    const sites = (v.sites || []).map((s) => `<a class="btn" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>`).join("")
+      || `<p class="muted">Les liens de vote arrivent bientôt.</p>`;
+    const list = (rows, val) => rows.length ? `<ol class="toplist">${rows.map((p, i) => `<li><span class="pos">${i + 1}</span>${img(face(p.uuid, 32))}<a href="/joueur/${encodeURIComponent(p.name)}" data-link>${esc(p.name)}</a><span class="muted">${val(p)}</span></li>`).join("")}</ol>` : `<p class="muted">Personne pour l'instant : sois le premier !</p>`;
+    const left = g.endsAt ? until(g.endsAt) : "";
+    app.innerHTML = `
+      <div class="page-head"><div class="wrap"><h1>Voter pour LyonMC</h1>
+        <p>Chaque vote fait monter le serveur dans les classements, ce qui amène de nouveaux joueurs. Et chaque vote te rapporte <strong>${num(v.reward || 0)} pièces</strong>${v.rewardSeason ? ` et ${num(v.rewardSeason)} points de saison` : ""}, même si tu n'es pas connecté.</p></div></div>
+      <div class="wrap vote-page">
+        <section class="card vote-main">
+          <div class="panel-h"><h3>Voter</h3><span class="muted">une fois par jour sur chaque site</span></div>
+          <div class="vote-sites">${sites}</div>
+          <p class="small muted">Tape ton pseudo exact sur le site de vote. En jeu, <code class="cmd">/vote</code> donne les mêmes liens.</p>
+          <div class="panel-h" style="margin-top:22px"><h3>Vote party</h3><span class="muted">${num(v.party || 0)} / ${num(v.partyTarget || 0)} votes</span></div>
+          <div class="progress" role="img" aria-label="${v.party || 0} votes sur ${v.partyTarget || 0}"><i style="width:${pct(v.party, v.partyTarget)}%"></i></div>
+          <p class="small muted">À chaque palier, tous les joueurs connectés reçoivent un cadeau et le serveur passe en bonus x2.</p>
+        </section>
+        <section class="card">
+          <div class="panel-h"><h3>Meilleurs voteurs du mois</h3>${v.topReward ? `<span class="muted">1er : ${num(v.topReward)} pièces</span>` : ""}</div>
+          ${list(v.top || [], (p) => `${num(p.votes)} vote${p.votes > 1 ? "s" : ""}`)}
+        </section>
+        <section class="card">
+          <div class="panel-h"><h3>Objectif de la semaine</h3>${left ? `<span class="muted">fin dans ${left}</span>` : ""}</div>
+          <p><strong>${esc(g.name || "")}</strong></p>
+          <div class="progress" role="img" aria-label="${g.progress || 0} sur ${g.target || 0}"><i style="width:${pct(g.progress, g.target)}%"></i></div>
+          <p class="small muted">${g.done ? "Atteint ! Tous les participants ont été récompensés." : `${num(g.progress || 0)} / ${num(g.target || 0)} : tout le serveur avance ensemble, chaque participant est récompensé.`}</p>
+        </section>
+        <section class="card">
+          <div class="panel-h"><h3>Parrainage</h3></div>
+          <p>Fais venir tes amis : à leur arrivée, ils tapent <code class="cmd">/parrain ton_pseudo</code>. Quand ils ont joué ${String(r.hours || 2).replace(".", ",")} h, tu gagnes <strong>${num(r.sponsorReward || 0)} pièces</strong> et eux <strong>${num(r.newcomerReward || 0)}</strong>. À 3 filleuls, tu deviens <strong>Ambassadeur</strong>.</p>
+          ${(r.top || []).length ? `<div class="panel-h" style="margin-top:16px"><h3>Meilleurs parrains</h3></div>${list(r.top, (p) => `${p.count} filleul${p.count > 1 ? "s" : ""}`)}` : ""}
+        </section>
+        <section class="card">
+          <div class="panel-h"><h3>Heures bonus</h3>${b.active ? `<span class="badge-live">en cours !</span>` : ""}</div>
+          <p>Pièces x${String(b.coins || 2).replace(/\.0$/, "")} et points de saison x${String(b.season || 2).replace(/\.0$/, "")} : ${(b.schedule || []).map(esc).join(", ") || "à venir"}.</p>
+          ${b.next && !b.active ? `<p class="small muted">Prochaine : dans ${until(b.next)}.</p>` : ""}
+        </section>
+      </div>`;
+  }
+
   // ───────────── Routage ─────────────
   async function render(scroll = true) {
     tipEl.hidden = true;
@@ -715,6 +775,7 @@
       else if (parts[0] === "joueur" && parts[1]) await player(parts[1], parts[2]);
       else if (parts[0] === "guide") await guide(location.hash.slice(1));
       else if (parts[0] === "carte") carte();
+      else if (parts[0] === "voter") await voter();
       else {
         setTitle("Page introuvable");
         app.innerHTML = `<div class="page-head"><div class="wrap"><h1>Page introuvable</h1><p>Cette page n'existe pas. <a href="/" data-link>Retour à l'accueil</a></p></div></div>`;

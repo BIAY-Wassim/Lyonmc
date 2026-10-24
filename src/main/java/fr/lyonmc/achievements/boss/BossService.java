@@ -363,6 +363,18 @@ public final class BossService implements Listener {
         for (Player p : around(48)) p.sendActionBar(msg);
     }
 
+    /** Rappel aux admins : sans arène, le boss n'apparaît jamais. */
+    @EventHandler
+    public void onAdminJoin(org.bukkit.event.player.PlayerJoinEvent event) {
+        Player p = event.getPlayer();
+        if (!p.hasPermission("lyonmc.admin") || !plugin.module("boss") || cfg() == null || !cfg().getBoolean("enabled", true) || arena() != null) return;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (p.isOnline() && arena() == null) {
+                plugin.msg(p, "<red>⚠</red> <gray>Le boss mondial n'a pas d'arène : il n'apparaîtra jamais. Va dans le monde survie et tape <white>/boss arene</white>.");
+            }
+        }, 100L);
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
         if (boss == null || !event.getEntity().equals(boss)) return;

@@ -49,6 +49,15 @@ grades:
 # Affichés entre crochets devant le pseudo, en plus du grade. Le joueur choisit avec /titres.
 # Un titre se débloque par un palier (plus bas), par une saison, ou s'achète (price).
 titles:
+  lyonnais:
+    display: "<#e8c872>Lyonnais"
+    description: "Terminer les premiers pas"
+  ambassadeur:
+    display: "<#7cd4ff>Ambassadeur"
+    description: "Parrainer 3 joueurs"
+  voteur:
+    display: "<#9be37c>Voteur assidu"
+    description: "1er voteur d'un mois"
   pionnier:
     display: "<#e6e6e6>Pionnier"
     description: "Terminer la catégorie Minecraft"

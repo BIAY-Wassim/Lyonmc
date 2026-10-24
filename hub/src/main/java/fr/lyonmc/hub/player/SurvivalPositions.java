@@ -71,6 +71,37 @@ public final class SurvivalPositions implements Listener, CommandExecutor {
         }
     }
 
+    /** Point de départ des nouveaux (village de départ), défini avec /lyonhub depart. */
+    public Location depart() {
+        String raw = plugin.getConfig().getString("depart");
+        if (raw == null) return null;
+        String[] s = raw.split(";");
+        try {
+            World w = Bukkit.getWorld(s[0]);
+            return w == null ? null : new Location(w, Double.parseDouble(s[1]), Double.parseDouble(s[2]), Double.parseDouble(s[3]),
+                    Float.parseFloat(s[4]), Float.parseFloat(s[5]));
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public void setDepart(Location l) {
+        plugin.getConfig().set("depart", l.getWorld().getName() + ";" + l.getX() + ";" + l.getY() + ";" + l.getZ() + ";" + l.getYaw() + ";" + l.getPitch());
+        plugin.saveConfig();
+    }
+
+    /** Première fois en survie : le village de départ s'il existe, sinon un endroit au hasard. */
+    public void firstStart(Player p) {
+        Location d = depart();
+        if (d != null) {
+            p.sendMessage(MM.deserialize("<gray>Direction le <white>village de départ</white> : les autres joueurs ne sont pas loin !"));
+            teleport(p, d);
+        } else {
+            p.sendMessage(MM.deserialize("<gray>Départ à un endroit au hasard du monde survie."));
+            p.performCommand("rtp");
+        }
+    }
+
     public Location get(Player p) {
         String k = p.getUniqueId().toString();
         World w = Bukkit.getWorld(data.getString(k + ".monde", ""));
@@ -124,8 +155,7 @@ public final class SurvivalPositions implements Listener, CommandExecutor {
         }
         Location target = get(p);
         if (target == null) {
-            p.sendMessage(MM.deserialize("<gray>Pas encore de position en survie : départ à un endroit au hasard."));
-            p.performCommand("rtp");
+            firstStart(p);
             return;
         }
         if (worlds.isHub(p.getWorld())) {

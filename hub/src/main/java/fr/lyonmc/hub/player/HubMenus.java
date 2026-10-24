@@ -71,8 +71,8 @@ public final class HubMenus implements Listener {
         }
         Location back = players.returnPoint(p);
         if (back == null) {
-            // Première partie : direction un endroit au hasard du monde survie
-            p.performCommand("rtp");
+            // Première partie : le village de départ (ou un endroit au hasard)
+            players.positions().firstStart(p);
             return;
         }
         p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 0.6f, 1.2f);
@@ -109,7 +109,7 @@ public final class HubMenus implements Listener {
         Location back = players.positions().get(p) != null ? players.positions().get(p) : players.returnPoint(p);
         button(h, 10, item(Material.GRASS_BLOCK, "<green><bold>Survie", List.of(
                 back == null ? "<gray>Ta première aventure : départ" : "<gray>Retourner là où tu étais",
-                back == null ? "<gray>à un endroit au hasard." : "<dark_gray>" + back.getWorld().getName() + " " + back.getBlockX() + " " + back.getBlockY() + " " + back.getBlockZ(),
+                back == null ? (players.positions().depart() != null ? "<gray>au village de départ." : "<gray>à un endroit au hasard.") : "<dark_gray>" + back.getWorld().getName() + " " + back.getBlockX() + " " + back.getBlockY() + " " + back.getBlockZ(),
                 "", "<#e8c872>➤ Cliquer pour jouer")), "survie");
         button(h, 12, item(Material.DIAMOND_PICKAXE, "<aqua><bold>Monde ressources", List.of(
                 "<gray>Le monde où miner rapporte le plus :",
@@ -154,6 +154,16 @@ public final class HubMenus implements Listener {
                 "<gray>Crée ou gère ton équipe.", "", "<#e8c872>➤ Cliquer")), "commande:equipe");
         button(h, 33, item(Material.FILLED_MAP, "<white><bold>Site et carte", List.of(
                 "<gray>lyonmc.fr : classements, profils,", "<gray>carte du monde en direct.", "", "<#e8c872>➤ Cliquer")), "site");
+        // Communauté (plugin COMMUNAUTE)
+        int slot = 38;
+        if (Bukkit.getPluginCommand("vote") != null) button(h, slot++, item(Material.GOLDEN_APPLE, "<#9be37c><bold>Voter pour LyonMC", List.of(
+                "<gray>Une récompense à chaque vote,", "<gray>et le serveur monte dans les classements.", "", "<#e8c872>➤ Cliquer")), "commande:vote");
+        if (Bukkit.getPluginCommand("premierspas") != null) button(h, slot++, item(Material.MAP, "<#e8c872><bold>Premiers pas", List.of(
+                "<gray>Les étapes pour bien commencer,", "<gray>avec des récompenses.", "", "<#e8c872>➤ Cliquer")), "commande:premierspas");
+        if (Bukkit.getPluginCommand("parrain") != null) button(h, slot++, item(Material.TOTEM_OF_UNDYING, "<#7cd4ff><bold>Parrainage", List.of(
+                "<gray>Invite tes amis : vous êtes", "<gray>récompensés tous les deux.", "", "<#e8c872>➤ Cliquer")), "commande:parrain");
+        if (Bukkit.getPluginCommand("objectif") != null) button(h, slot, item(Material.BEACON, "<#ffb35c><bold>Objectif de la semaine", List.of(
+                "<gray>Un défi pour tout le serveur,", "<gray>une récompense pour chaque participant.", "", "<#e8c872>➤ Cliquer")), "commande:objectif");
         fill(h.inventory);
         p.openInventory(h.inventory);
     }

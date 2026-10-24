@@ -1,0 +1,35 @@
+name: COMMUNAUTE
+version: '${version}'
+main: fr.lyonmc.communaute.Communaute
+api-version: '1.21'
+author: wassdead
+description: LyonMC — accueil des nouveaux, votes, parrainage et fidélité
+website: https://lyonmc.fr
+depend: [LyonAchievements]
+softdepend: [Votifier, GriefPrevention, HUB]
+
+commands:
+  vote:
+    description: Voter pour le serveur
+    aliases: [voter, votes]
+  premierspas:
+    description: Les premiers pas sur LyonMC
+    aliases: [tuto, tutoriel]
+  parrain:
+    description: Parrainage
+    aliases: [parrainage]
+  objectif:
+    description: Objectif communautaire de la semaine
+    aliases: [objectifs, defi]
+  bienvenue:
+    description: Souhaiter la bienvenue au dernier arrivé
+    aliases: [bvn]
+  communaute:
+    description: Administration de COMMUNAUTE
+    aliases: [comm]
+    permission: communaute.admin
+
+permissions:
+  communaute.admin:
+    description: Administrer COMMUNAUTE
+    default: op

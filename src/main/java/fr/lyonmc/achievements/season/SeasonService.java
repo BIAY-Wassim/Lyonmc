@@ -99,7 +99,8 @@ public final class SeasonService {
     }
 
     public double multiplier() {
-        return isWeekend() && cfg() != null ? Math.max(1, cfg().getDouble("weekend-multiplier", 2.0)) : 1.0;
+        double weekend = isWeekend() && cfg() != null ? Math.max(1, cfg().getDouble("weekend-multiplier", 2.0)) : 1.0;
+        return weekend * plugin.boosts().season();
     }
 
     private String multiplierText() {

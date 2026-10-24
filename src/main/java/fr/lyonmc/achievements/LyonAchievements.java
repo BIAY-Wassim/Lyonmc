@@ -67,6 +67,7 @@ public final class LyonAchievements extends JavaPlugin {
     private ProfileStore profiles;
     private BoardManager boards;
     private ChatListener chat;
+    private final fr.lyonmc.achievements.api.Boosts boosts = new fr.lyonmc.achievements.api.Boosts();
     private fr.lyonmc.achievements.world.ResourceBonusService resourceBonus;
     private fr.lyonmc.achievements.teleport.HubService spawnHub;
     private fr.lyonmc.achievements.rewards.GradeService grades;
@@ -358,6 +359,17 @@ public final class LyonAchievements extends JavaPlugin {
     public AchievementsMenu achievementsMenu() { return achievementsMenu; }
     public HubMenu hub() { return hub; }
     public ChatListener chat() { return chat; }
+    public fr.lyonmc.achievements.api.Boosts boosts() { return boosts; }
+
+    /** Le joueur est-il AFK ? (selon un autre plugin, ex. COMMUNAUTE) */
+    public boolean isAfk(java.util.UUID uuid) {
+        var reg = Bukkit.getServicesManager().getRegistration(fr.lyonmc.achievements.api.AfkProvider.class);
+        try {
+            return reg != null && reg.getProvider().isAfk(uuid);
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
     public fr.lyonmc.achievements.world.ResourceBonusService resourceBonus() { return resourceBonus; }
     public fr.lyonmc.achievements.teleport.HubService spawnHub() { return spawnHub; }
     public fr.lyonmc.achievements.rewards.GradeService grades() { return grades; }

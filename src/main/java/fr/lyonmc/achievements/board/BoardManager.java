@@ -241,6 +241,7 @@ public final class BoardManager {
                     Placeholder.component("team", plugin.teams().tagComponent(plugin.teams().teamOf(player.getUniqueId()))),
                     Placeholder.unparsed("rank", String.valueOf(rank)),
                     Placeholder.unparsed("done", String.valueOf(s == null ? 0 : s.count())));
+            if (plugin.isAfk(player.getUniqueId())) listName = listName.append(Component.text(" AFK", Text.DARK));
             if (!listName.equals(player.playerListName())) player.playerListName(listName);
         }
     }

@@ -296,6 +296,15 @@ public final class HologramService {
     // ───────────────────────────── Grand écran ─────────────────────────────
 
     private static final int SCREEN_PANELS = 4;
+
+    /** Panneaux en plus fournis par d'autres plugins (ex. : COMMUNAUTE). */
+    private List<fr.lyonmc.achievements.api.ScreenPanel> extraPanels() {
+        List<fr.lyonmc.achievements.api.ScreenPanel> out = new ArrayList<>();
+        for (var reg : Bukkit.getServicesManager().getRegistrations(fr.lyonmc.achievements.api.ScreenPanel.class)) {
+            if (out.size() < 2) out.add(reg.getProvider());
+        }
+        return out;
+    }
     /** Ligne barrée faite d'espaces : donne la même largeur à tous les panneaux. */
     private static final Component RULE = Component.text(" ".repeat(40), TextColor.color(0x3A4150))
             .decoration(net.kyori.adventure.text.format.TextDecoration.STRIKETHROUGH, true);
@@ -312,10 +321,11 @@ public final class HologramService {
         double step = 4.45 * s;
         double panelBottom = 1.0;
         double panelTop = panelBottom + 14 * 0.25 * s;
+        int count = SCREEN_PANELS + extraPanels().size();
         out.add(fixed(base.clone().add(0, panelTop + 0.15 * s, 0), yaw, 2.4f * s, h.id() + ":header",
                 TextDisplay.TextAlignment.CENTER, 0));
-        for (int i = 0; i < SCREEN_PANELS; i++) {
-            double off = (i - (SCREEN_PANELS - 1) / 2.0) * step;
+        for (int i = 0; i < count; i++) {
+            double off = (i - (count - 1) / 2.0) * step;
             out.add(fixed(base.clone().add(right.clone().multiply(off)).add(0, panelBottom, 0), yaw, s, h.id() + ":p" + i,
                     TextDisplay.TextAlignment.LEFT, 0xCC0E1219));
         }
@@ -424,6 +434,28 @@ public final class HologramService {
         }
         panels.add(d);
 
+        // Panneaux des autres plugins (communauté...)
+        for (var extra : extraPanels()) {
+            List<Component> e = new ArrayList<>();
+            try {
+                e.add(Component.text(" ").append(extra.title()).decorate(net.kyori.adventure.text.format.TextDecoration.BOLD));
+                e.add(RULE);
+                for (Component line : extra.lines()) e.add(Component.text(" ").append(line));
+            } catch (RuntimeException ex) {
+                continue;
+            }
+            panels.add(e);
+        }
+        // Un panneau a été ajouté ou retiré depuis la pose de l'écran : on le reconstruit
+        long shown = entities.stream().filter(en -> {
+            String t = en.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+            return t != null && t.matches(".*:p\\d+");
+        }).count();
+        if (shown != panels.size()) {
+            for (Entity en : entities) en.remove();
+            return;
+        }
+
         // Même hauteur pour tous (le texte part du bas)
         int max = 0;
         for (List<Component> p : panels) max = Math.max(max, p.size());
@@ -438,7 +470,7 @@ public final class HologramService {
             } else if (tag.endsWith(":footer")) {
                 td.text(Component.text("lyonmc.fr", accent).append(Component.text("   ·   la boussole pour jouer   ·   l'étoile pour le menu", Text.GRAY)));
             } else {
-                int i = tag.charAt(tag.length() - 1) - '0';
+                int i = Integer.parseInt(tag.substring(tag.lastIndexOf(":p") + 2));
                 if (i >= 0 && i < panels.size()) td.text(Component.join(net.kyori.adventure.text.JoinConfiguration.newlines(), panels.get(i)));
             }
         }
