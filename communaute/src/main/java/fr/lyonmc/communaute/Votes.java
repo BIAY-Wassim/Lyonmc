@@ -31,7 +31,8 @@ public final class Votes implements Listener {
     }
 
     private final Communaute plugin;
-    private long lastReminder;
+    /** Premier rappel général 2 h après le démarrage (chaque joueur a déjà le sien à sa connexion). */
+    private long lastReminder = System.currentTimeMillis();
 
     Votes(Communaute plugin) {
         this.plugin = plugin;
