@@ -151,6 +151,8 @@ public final class Parkour implements Listener, CommandExecutor {
         finish = Point.of(finishBlock);
         checkpoints.clear();
         for (Block b : steps) checkpoints.add(Point.of(b));
+        // Nouveau parcours : les anciens temps ne veulent plus rien dire
+        data.set("temps", null);
         if (boardAt != null) {
             removeBoards(boardAt.getWorld());
             data.set("classement", boardAt.getWorld().getName() + ";" + boardAt.getX() + ";" + boardAt.getY() + ";" + boardAt.getZ() + ";" + boardAt.getYaw());
