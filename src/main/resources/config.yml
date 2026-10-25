@@ -150,6 +150,15 @@ web:
     enabled: false
     adresse: "lyonmc.fr"
     port: 19132
+  # Pages « Mentions légales » et « Confidentialité » du site (laisser vide = « À compléter » affiché)
+  mentions-legales:
+    editeur: ""            # ton nom et prénom (ou le nom de l'association)
+    contact: ""            # adresse e-mail de contact
+    directeur: ""          # directeur de la publication (souvent toi)
+    hebergeur: ""          # nom de l'hébergeur du site (ex. : OVH SAS), ou ton nom si le site tourne chez toi
+    hebergeur-adresse: ""
+    hebergeur-telephone: ""
+    mise-a-jour: ""        # date de la dernière mise à jour de la page Confidentialité
 
 # Annonces sur Discord (laisser vide pour désactiver)
 # Discord : Paramètres du salon > Intégrations > Webhooks > Copier l'URL

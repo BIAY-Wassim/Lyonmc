@@ -128,6 +128,19 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
     }
 
     /** Ajoute au config.yml du serveur les nouvelles parties d'une mise à jour, sans toucher au reste. */
+    /** Recopie les commentaires du fichier du .jar pour une partie ajoutée (le fichier reste expliqué). */
+    private static void copyComments(org.bukkit.configuration.Configuration from, org.bukkit.configuration.Configuration to, String key) {
+        to.setComments(key, from.getComments(key));
+        to.setInlineComments(key, from.getInlineComments(key));
+        org.bukkit.configuration.ConfigurationSection sec = from.getConfigurationSection(key);
+        if (sec == null) return;
+        for (String sub : sec.getKeys(true)) {
+            String path = key + "." + sub;
+            to.setComments(path, from.getComments(path));
+            to.setInlineComments(path, from.getInlineComments(path));
+        }
+    }
+
     private void addMissingSections() {
         var cfg = getConfig();
         var defaults = cfg.getDefaults();
@@ -138,6 +151,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         for (String key : defaults.getKeys(false)) {
             if (!cfg.isSet(key)) {
                 cfg.set(key, defaults.get(key));
+                copyComments(defaults, cfg, key);
                 changed = true;
             }
         }
