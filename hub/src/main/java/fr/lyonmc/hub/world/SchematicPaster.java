@@ -140,7 +140,11 @@ public final class SchematicPaster {
      * sous les pieds du joueur. Les blocs d'air du fichier ne remplacent rien.
      */
     public void paste(Player player, Schem s, boolean removeStartPlatform) {
-        Location at = player.getLocation();
+        paste(player, s, player.getLocation(), removeStartPlatform, null);
+    }
+
+    /** Colle le schematic avec son point de référence en « at » ; « done » est lancé à la fin (sinon : message au joueur). */
+    public void paste(Player player, Schem s, Location at, boolean removeStartPlatform, Runnable done) {
         World world = at.getWorld();
         int baseX = at.getBlockX() + s.offsetX(), baseY = at.getBlockY() + s.offsetY(), baseZ = at.getBlockZ() + s.offsetZ();
         if (baseY < world.getMinHeight() || baseY + s.height() > world.getMaxHeight()) {
@@ -203,11 +207,15 @@ public final class SchematicPaster {
                     for (int[] c : chunks) world.removePluginChunkTicket(c[0], c[1], plugin);
                     running.cancel();
                     running = null;
+                    plugin.getLogger().info("Schematic " + s.name() + " collé : " + placed[0] + " blocs.");
+                    if (done != null) {
+                        done.run();
+                        return;
+                    }
                     if (player.isOnline()) {
                         player.sendMessage(Component.text("✦ Collage terminé : " + String.format(Locale.FRANCE, "%,d", placed[0])
                                 + " blocs. Mets-toi au point d'arrivée et tape /setspawn.", NamedTextColor.GREEN));
                     }
-                    plugin.getLogger().info("Schematic " + s.name() + " collé : " + placed[0] + " blocs.");
                     return;
                 }
             }
