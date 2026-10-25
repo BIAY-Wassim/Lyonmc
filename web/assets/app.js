@@ -969,18 +969,21 @@
   async function legal(kind) {
     const s = await data("serveur");
     const site = esc(s?.ip || "lyonmc.fr");
+    const L = s?.legal || {};
+    /** Valeur de config.yml (web.mentions-legales), ou « À compléter ». */
+    const v = (key, label) => (L[key] ? esc(L[key]) : TODO(label));
     if (kind === "mentions") {
       setTitle("Mentions légales");
       app.innerHTML = `
         <div class="page-head"><div class="wrap"><h1>Mentions légales</h1><p>Informations sur l'éditeur et l'hébergeur du site ${site}.</p></div></div>
         <div class="wrap prose-page">
           <h2>Éditeur du site</h2>
-          <p>Le site ${site} et le serveur Minecraft LyonMC sont édités par ${TODO("nom et prénom, ou nom de l'association")}.<br>
-          Contact : ${TODO("adresse e-mail de contact")}.<br>
-          Directeur de la publication : ${TODO("nom du responsable")}.</p>
+          <p>Le site ${site} et le serveur Minecraft LyonMC sont édités par ${v("editeur", "nom et prénom, ou nom de l'association")}.<br>
+          Contact : ${v("contact", "adresse e-mail de contact")}.<br>
+          Directeur de la publication : ${v("directeur", "nom du responsable")}.</p>
           <p class="small muted">Un particulier qui édite un site à titre non professionnel peut ne pas publier son nom et son adresse, à condition de les avoir communiqués à son hébergeur (article 6 de la loi pour la confiance dans l'économie numérique).</p>
           <h2>Hébergeur</h2>
-          <p>${TODO("nom de l'hébergeur")}, ${TODO("adresse postale de l'hébergeur")}, ${TODO("téléphone de l'hébergeur")}.</p>
+          <p>${v("hebergeur", "nom de l'hébergeur")}, ${v("hebergeur-adresse", "adresse postale de l'hébergeur")}, ${v("hebergeur-telephone", "téléphone de l'hébergeur")}.</p>
           <h2>Propriété intellectuelle</h2>
           <p>Minecraft est une marque de Mojang Synergies AB. LyonMC n'est pas un produit officiel Minecraft et n'est ni approuvé ni associé à Mojang ou Microsoft. Les textures et images issues du jeu appartiennent à leurs auteurs.</p>
           <p>Les polices Geologica et Tiny5 sont distribuées sous licence SIL Open Font License.</p>
@@ -998,8 +1001,8 @@
         <h2>Sur ce site</h2>
         <p>Le site ne dépose aucun cookie et n'utilise aucun outil de mesure d'audience. Pour afficher les skins, il charge des images depuis <strong>mc-heads.net</strong>, et l'icône du serveur depuis <strong>api.mcstatus.io</strong> : ces services reçoivent donc ton adresse IP, comme pour toute image chargée sur Internet. Les polices sont hébergées sur le site lui-même.</p>
         <h2>Durée et suppression</h2>
-        <p>Les données sont gardées tant que le serveur existe. Tu peux demander à les consulter ou à les faire supprimer (droits prévus par le RGPD) en écrivant à ${TODO("adresse e-mail de contact")}. Tu peux aussi saisir la CNIL (cnil.fr).</p>
-        <p class="small muted">Responsable du traitement : ${TODO("nom du responsable")}. Dernière mise à jour : ${TODO("date")}.</p>
+        <p>Les données sont gardées tant que le serveur existe. Tu peux demander à les consulter ou à les faire supprimer (droits prévus par le RGPD) en écrivant à ${v("contact", "adresse e-mail de contact")}. Tu peux aussi saisir la CNIL (cnil.fr).</p>
+        <p class="small muted">Responsable du traitement : ${v("editeur", "nom du responsable")}. Dernière mise à jour : ${v("mise-a-jour", "date")}.</p>
       </div>`;
   }
 
