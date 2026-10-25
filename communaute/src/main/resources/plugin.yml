@@ -62,6 +62,29 @@ commands:
     description: Les signalements en attente (staff)
     aliases: [reports]
     permission: communaute.staff
+  mute:
+    description: Réduire un joueur au silence (staff)
+    usage: /mute <joueur> [durée] [raison]
+    aliases: [silence]
+    permission: communaute.staff
+  unmute:
+    description: Rendre la parole à un joueur (staff)
+    permission: communaute.staff
+  avertir:
+    description: Avertir un joueur (staff)
+    usage: /avertir <joueur> <raison>
+    aliases: [warn]
+    permission: communaute.staff
+  tempban:
+    description: Exclure un joueur pour un temps (staff)
+    usage: /tempban <joueur> <durée> [raison]
+    aliases: [exclure]
+    permission: communaute.staff
+  sanctions:
+    description: Historique des sanctions d'un joueur (staff)
+    usage: /sanctions <joueur>
+    aliases: [historique]
+    permission: communaute.staff
   communaute:
     description: Administration de COMMUNAUTE
     aliases: [comm]
@@ -75,7 +98,7 @@ permissions:
       communaute.staff: true
       communaute.espion: true
   communaute.staff:
-    description: Recevoir les signalements, ne pas être ignoré, écrire à tout le monde
+    description: Recevoir les signalements, modérer (mute, avertir, tempban), ne pas être filtré
     default: op
   communaute.espion:
     description: /espion (voir les messages privés)
