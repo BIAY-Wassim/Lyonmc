@@ -114,6 +114,7 @@ public final class LyonAchievements extends JavaPlugin {
     public void onEnable() {
         migrateConfig();
         saveDefaultConfig();
+        addMissingKeys();
         configs = new Configs(this);
         configs.load();
 
@@ -293,6 +294,34 @@ public final class LyonAchievements extends JavaPlugin {
             stats.saveAsync();
             profiles.saveAsync();
         }, saveTicks, saveTicks));
+    }
+
+    /**
+     * Ajoute à config.yml les réglages arrivés avec une mise à jour (avec leurs explications),
+     * sans toucher à ceux déjà présents.
+     */
+    private void addMissingKeys() {
+        var cfg = getConfig();
+        var def = cfg.getDefaults();
+        if (def == null) return;
+        boolean changed = false;
+        for (String key : def.getKeys(true)) {
+            if (cfg.isSet(key) || def.isConfigurationSection(key)) continue;
+            cfg.set(key, def.get(key));
+            cfg.setComments(key, def.getComments(key));
+            cfg.setInlineComments(key, def.getInlineComments(key));
+            // Commentaire de la section parente si elle vient d'être créée
+            int dot = key.lastIndexOf('.');
+            if (dot > 0) {
+                String parent = key.substring(0, dot);
+                if (cfg.getComments(parent).isEmpty()) cfg.setComments(parent, def.getComments(parent));
+            }
+            changed = true;
+        }
+        if (changed) {
+            saveConfig();
+            getLogger().info("Nouveaux réglages ajoutés à config.yml (métiers, chat, page Rejoindre et pages légales du site).");
+        }
     }
 
     /** Sauvegarde l'ancienne config et installe la nouvelle quand la version change. */
