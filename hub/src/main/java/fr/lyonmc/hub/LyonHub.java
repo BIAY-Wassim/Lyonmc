@@ -51,7 +51,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
         getServer().getPluginManager().registerEvents(players.menus(), this);
         getServer().getPluginManager().registerEvents(players.positions(), this);
         getServer().getPluginManager().registerEvents(players.parkour(), this);
-        builder = new fr.lyonmc.hub.world.HubBuilder(this, worlds, npcs, players);
+        builder = new fr.lyonmc.hub.world.HubBuilder(this, worlds, npcs, players, paster);
         var survie = getCommand("survie");
         if (survie != null) survie.setExecutor(players.positions());
         var parkour = getCommand("parkour");
@@ -261,7 +261,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
             default -> {
                 msg(sender, "<white><bold>HUB</bold></white> <dark_gray>par wassdead");
                 for (String line : List.of(
-                        "<white>/lyonhub installer</white> <dark_gray>construire le hub tout fait (place, écran, hologrammes, PNJ, parkour)",
+                        "<white>/lyonhub installer</white> <dark_gray>coller le hub médiéval avec écran, hologrammes, PNJ et parkour",
                         "<white>/lyonhub monde [nom]</white> <dark_gray>créer / aller dans le monde vide du hub",
                         "<white>/lyonhub podium <classement> <place> [id]</white> <dark_gray>PNJ du podium (vrai skin du joueur)",
                         "<white>/lyonhub pnj <id> <pseudo> [commande]</white> <dark_gray>PNJ avec un skin et une commande au clic",
