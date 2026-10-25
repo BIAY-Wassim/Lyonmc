@@ -60,6 +60,7 @@ public final class Configs {
     private YamlConfiguration missions;
     private YamlConfiguration rewards;
     private YamlConfiguration events;
+    private YamlConfiguration jobs;
     private YamlConfiguration state;
     private final File stateFile;
 
@@ -75,6 +76,8 @@ public final class Configs {
         mergeChildren(rewards, "titles", "colors", "trails", "paliers", "grades");
         mergeChildren(missions, "daily.easy", "daily.medium", "daily.hard", "weekly");
         events = loadOrCreate("evenements.yml");
+        jobs = loadOrCreate("metiers.yml");
+        mergeChildren(jobs, "metiers");
         state = stateFile.exists() ? YamlConfiguration.loadConfiguration(stateFile) : new YamlConfiguration();
     }
 
@@ -101,6 +104,11 @@ public final class Configs {
 
     public YamlConfiguration events() {
         return events;
+    }
+
+    /** metiers.yml */
+    public YamlConfiguration jobs() {
+        return jobs;
     }
 
     /** État persistant du serveur (saison en cours, spawn, hologrammes...). */

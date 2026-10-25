@@ -167,6 +167,8 @@ public final class ResourceBonusService implements Listener {
         Player p = e.getPlayer();
         Block b = e.getBlock();
         if (!active(b.getWorld()) || p.getGameMode() != GameMode.SURVIVAL) return;
+        // Pierre posée puis recassée : ni pièces, ni trésor
+        if (plugin.placed().isPlaced(b)) return;
         String key = ORE_KEYS.get(b.getType());
         if (key != null) {
             long coins = cfg().getLong("coins." + key, 0);
@@ -180,7 +182,7 @@ public final class ResourceBonusService implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDrop(BlockDropItemEvent e) {
         if (!active(e.getBlock().getWorld()) || !isOre(e.getBlockState().getType())) return;
-        if (e.getPlayer().getGameMode() != GameMode.SURVIVAL) return;
+        if (e.getPlayer().getGameMode() != GameMode.SURVIVAL || plugin.placed().isPlaced(e.getBlock())) return;
         ItemStack tool = e.getPlayer().getInventory().getItemInMainHand();
         if (tool.containsEnchantment(Enchantment.SILK_TOUCH)) return;
         double chance = cfg().getDouble("double-drop-chance", 25);

@@ -86,6 +86,11 @@ public final class HubService implements Listener {
         return enabled() && plugin.getConfig().getBoolean("hub.protect." + what, true);
     }
 
+    /** Monde entièrement réservé au hub (là où l'inventaire de survie est rangé par le plugin HUB). */
+    public boolean inHubWorld(org.bukkit.World w) {
+        return w != null && enabled() && plugin.getConfig().getStringList("hub.worlds").contains(w.getName());
+    }
+
     /** Le point est-il dans la zone protégée du hub ? (cylindre autour du spawn) */
     public boolean inHub(Location l) {
         if (l == null || l.getWorld() == null || !enabled()) return false;

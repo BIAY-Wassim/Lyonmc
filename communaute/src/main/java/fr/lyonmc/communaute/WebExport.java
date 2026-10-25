@@ -110,6 +110,29 @@ final class WebExport {
         welcome.put("finalReward", plugin.bundle("accueil.fin.recompense").coins());
         m.put("welcome", welcome);
 
+        // Règlement et questions fréquentes (pages « Règlement » et « FAQ » du site)
+        Map<String, Object> rules = new LinkedHashMap<>();
+        rules.put("intro", plugin.getConfig().getString("regles.introduction", ""));
+        rules.put("sanctions", plugin.getConfig().getString("regles.sanctions", ""));
+        List<Map<String, Object>> rl = new ArrayList<>();
+        for (Map<?, ?> r : plugin.help().rules()) {
+            Map<String, Object> o = new LinkedHashMap<>();
+            o.put("title", String.valueOf(r.get("titre")));
+            o.put("text", r.get("texte") == null ? "" : String.valueOf(r.get("texte")));
+            rl.add(o);
+        }
+        rules.put("list", rl);
+        m.put("rules", rules);
+        List<Map<String, Object>> faq = new ArrayList<>();
+        for (Map<?, ?> f : plugin.help().faq()) {
+            if (f.get("question") == null || f.get("reponse") == null) continue;
+            Map<String, Object> o = new LinkedHashMap<>();
+            o.put("q", String.valueOf(f.get("question")));
+            o.put("a", String.valueOf(f.get("reponse")));
+            faq.add(o);
+        }
+        m.put("faq", faq);
+
         String json = GSON.toJson(m);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {

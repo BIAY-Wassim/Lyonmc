@@ -94,6 +94,9 @@ public final class Profile {
     public long blocksMined;
     public int hdvSales;
 
+    // Métiers : XP totale par métier (le niveau s'en déduit)
+    public final Map<String, Long> jobs = new LinkedHashMap<>();
+
     // Divers
     public final List<String> mailbox = new ArrayList<>();
     public final Set<String> pendingAdvancements = new HashSet<>();
@@ -177,6 +180,8 @@ public final class Profile {
         p.bossLastHits = c.getInt("stats.boss-last-hits");
         p.blocksMined = c.getLong("stats.blocks-mined");
         p.hdvSales = c.getInt("stats.hdv-sales");
+        ConfigurationSection jobs = c.getConfigurationSection("jobs");
+        if (jobs != null) for (String k : jobs.getKeys(false)) p.jobs.put(k, jobs.getLong(k));
         p.mailbox.addAll(c.getStringList("mailbox"));
         p.pendingAdvancements.addAll(c.getStringList("pending-advancements"));
         p.pendingBundles.addAll(c.getStringList("pending-bundles"));
@@ -228,6 +233,7 @@ public final class Profile {
         c.set("stats.boss-last-hits", bossLastHits);
         c.set("stats.blocks-mined", blocksMined);
         c.set("stats.hdv-sales", hdvSales);
+        for (Map.Entry<String, Long> e : jobs.entrySet()) c.set("jobs." + e.getKey(), e.getValue());
         c.set("mailbox", new ArrayList<>(mailbox));
         c.set("pending-advancements", new ArrayList<>(pendingAdvancements));
         c.set("pending-bundles", new ArrayList<>(pendingBundles));

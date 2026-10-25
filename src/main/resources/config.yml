@@ -44,6 +44,8 @@ modules:
   boss: true
   resource-world: true
   custom-advancements: true
+  # Métiers (/metiers) : réglages dans metiers.yml
+  jobs: true
 
 # Homes, /spawn, /tpa, /rtp
 teleport:
@@ -253,6 +255,10 @@ chat:
   # <badge> rang, <grade> grade automatique, <team> tag d'équipe, <title> titre choisi, <name> pseudo (coloré, survolable)
   format: "<badge><grade><team><title><name> <dark_gray>›</dark_gray> <message>"
   team-format: "<team><dark_gray>(équipe)</dark_gray> <name> <dark_gray>›</dark_gray> <#bfe3ff><message>"
+  # Pseudo mis en valeur (et petit son) quand quelqu'un te mentionne dans le chat
+  mentions: true
+  # [objet] ou [item] dans un message : montre l'objet en main (survolable)
+  item-tag: true
   badge:
     top1: "<#ffd86b>♛</#ffd86b> "
     top2: "<#c8c8c8>✧</#c8c8c8> "

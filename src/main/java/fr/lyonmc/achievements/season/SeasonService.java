@@ -243,12 +243,20 @@ public final class SeasonService {
     /** Lots en attente (à la connexion). */
     public void deliverPending(Player player, Profile p) {
         if (p.pendingBundles.isEmpty()) return;
-        for (String path : new ArrayList<>(p.pendingBundles)) {
-            plugin.rewards().grant(player, Bundle.of(plugin.configs().events().getConfigurationSection(path)));
-        }
+        boolean events = false;
+        List<String> pending = new ArrayList<>(p.pendingBundles);
         p.pendingBundles.clear();
         p.dirty();
-        plugin.msg(player, "<accent>✦</accent> <gray>Tu as reçu des récompenses pendant ton absence (saison, boss...).");
+        for (String path : pending) {
+            // Lots de recompenses.yml (boutique en ligne, concours...) : avec leur propre message
+            if (path.startsWith(fr.lyonmc.achievements.shop.LotService.PREFIX)) {
+                plugin.lots().deliver(player, path.substring(fr.lyonmc.achievements.shop.LotService.PREFIX.length()));
+                continue;
+            }
+            plugin.rewards().grant(player, Bundle.of(plugin.configs().events().getConfigurationSection(path)));
+            events = true;
+        }
+        if (events) plugin.msg(player, "<accent>✦</accent> <gray>Tu as reçu des récompenses pendant ton absence (saison, boss...).");
     }
 
     public List<String> history() {

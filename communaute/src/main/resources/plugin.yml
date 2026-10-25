@@ -3,7 +3,7 @@ version: '${version}'
 main: fr.lyonmc.communaute.Communaute
 api-version: '1.21'
 author: wassdead
-description: LyonMC — accueil des nouveaux, votes, parrainage et fidélité
+description: LyonMC — accueil, centre d'aide, règlement, votes, parrainage, fidélité, amis, messages privés, signalements
 website: https://lyonmc.fr
 depend: [LyonAchievements]
 softdepend: [Votifier, GriefPrevention, HUB]
@@ -24,6 +24,44 @@ commands:
   bienvenue:
     description: Souhaiter la bienvenue au dernier arrivé
     aliases: [bvn]
+  aide:
+    description: Le centre d'aide de LyonMC
+    usage: /aide [sujet]
+    aliases: [guide, wiki, aides]
+  regles:
+    description: Le règlement du serveur
+    aliases: [règles, reglement, règlement, rules]
+  astuces:
+    description: Activer ou couper les astuces dans le chat
+    aliases: [astuce, tips]
+  ami:
+    description: Tes amis
+    usage: /ami [ajouter|accepter|refuser|retirer|liste] [joueur]
+    aliases: [amis, friend, friends]
+  msg:
+    description: Message privé
+    usage: /msg <joueur> <message>
+    aliases: [tell, w, whisper, mp, message, pm]
+  r:
+    description: Répondre au dernier message privé
+    usage: /r <message>
+    aliases: [reply, repondre, répondre]
+  ignorer:
+    description: Ne plus voir les messages d'un joueur
+    usage: /ignorer <joueur>
+    aliases: [ignore]
+  espion:
+    description: Voir les messages privés (staff)
+    aliases: [socialspy, spy]
+    permission: communaute.espion
+  report:
+    description: Signaler un joueur ou un bug
+    usage: /report <joueur|bug> <raison>
+    aliases: [signaler, signalement]
+  signalements:
+    description: Les signalements en attente (staff)
+    aliases: [reports]
+    permission: communaute.staff
   communaute:
     description: Administration de COMMUNAUTE
     aliases: [comm]
@@ -32,4 +70,13 @@ commands:
 permissions:
   communaute.admin:
     description: Administrer COMMUNAUTE
+    default: op
+    children:
+      communaute.staff: true
+      communaute.espion: true
+  communaute.staff:
+    description: Recevoir les signalements, ne pas être ignoré, écrire à tout le monde
+    default: op
+  communaute.espion:
+    description: /espion (voir les messages privés)
     default: op

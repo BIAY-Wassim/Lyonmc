@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-/** HUB (par wassdead) : le monde du hub et les PNJ du podium avec les vrais skins des joueurs. */
+/** HUB (par wassdead) : le monde du hub, les PNJ du podium avec les vrais skins des joueurs et le parkour. */
 public final class LyonHub extends JavaPlugin implements TabExecutor {
 
     private static final MiniMessage MM = MiniMessage.miniMessage();
@@ -49,8 +49,14 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
         getServer().getPluginManager().registerEvents(players, this);
         getServer().getPluginManager().registerEvents(players.menus(), this);
         getServer().getPluginManager().registerEvents(players.positions(), this);
+        getServer().getPluginManager().registerEvents(players.parkour(), this);
         var survie = getCommand("survie");
         if (survie != null) survie.setExecutor(players.positions());
+        var parkour = getCommand("parkour");
+        if (parkour != null) parkour.setExecutor(players.parkour());
+        // Chrono du parkour (toutes les 2 ticks) et classement affiché (toutes les 10 s)
+        Bukkit.getScheduler().runTaskTimer(this, () -> players.parkour().tick(), 2L, 2L);
+        Bukkit.getScheduler().runTaskTimer(this, () -> players.parkour().updateBoard(), 100L, 200L);
         // Joueurs déjà au hub (après un /reload)
         for (org.bukkit.entity.Player online : Bukkit.getOnlinePlayers()) if (players.inHub(online)) players.enter(online, null);
         var cmd = getCommand("lyonhub");
@@ -220,6 +226,9 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
             case "construire", "build" -> {
                 if (p != null) players.toggleBuild(p);
             }
+            case "parkour" -> {
+                if (p != null) players.parkour().admin(p, args);
+            }
             case "reload" -> {
                 reloadConfig();
                 npcs.load();
@@ -239,6 +248,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                         "<white>/lyonhub coller <fichier></white> <dark_gray>coller une construction (.schem) autour de toi",
                         "<white>/lyonhub construire</white> <dark_gray>mode construction au hub (créatif)",
                         "<white>/lyonhub depart</white> <dark_gray>point d'arrivée des nouveaux en survie (village de départ)",
+                        "<white>/lyonhub parkour</white> <dark_gray>créer le parkour du hub (départ, étapes, arrivée, classement)",
                         "<white>/lyonhub liste</white> <dark_gray>· <white>/lyonhub reload")) {
                     sender.sendMessage(MM.deserialize("  " + line));
                 }
@@ -259,13 +269,15 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
-            out.addAll(List.of("monde", "construire", "depart", "coller", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste", "reload"));
+            out.addAll(List.of("monde", "construire", "depart", "coller", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste",
+                    "parkour", "reload"));
         } else if (args.length == 2) {
             switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "podium" -> Rankings.BOARDS.forEach(b -> out.add(b.id()));
                 case "texte", "commande", "deplacer", "suppr" -> npcs.all().forEach(n -> out.add(n.id()));
                 case "monde" -> out.add("hub");
                 case "coller" -> out.addAll(paster.available());
+                case "parkour" -> out.addAll(List.of("depart", "etape", "arrivee", "classement", "effacer", "temps-reset"));
                 default -> {
                 }
             }

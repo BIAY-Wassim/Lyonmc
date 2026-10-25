@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────────────────────
 #   HUB · LyonMC (par wassdead)
-#   Monde du hub et PNJ (podium avec les vrais skins des joueurs).
+#   Monde du hub, PNJ (podium avec les vrais skins des joueurs) et parkour.
 #   Après modification : /lyonhub reload
 # ─────────────────────────────────────────────────────────────
 
@@ -60,6 +60,9 @@ view-distance: 48
 # Aura autour des PNJ du podium (or, argent, bronze)
 aura: true
 
+# Classements possibles pour le podium : succes, saison, fortune, missions, metiers,
+# mineur, bucheron, fermier, chasseur, pecheur (/lyonhub podium <classement> <place>)
+
 # Commande lancée par le joueur qui clique sur un PNJ du podium (<player> = pseudo du PNJ)
 podium-command: "succes <player>"
 
@@ -72,3 +75,20 @@ labels:
   empty:
     - "<rank> <dark_gray>·</dark_gray> <gray><board>"
     - "<dark_gray>Place libre"
+
+# ───────────────────────── Parkour du hub ─────────────────────────
+# Construis le parcours, pose des plaques de pression, puis debout sur chacune :
+#   /lyonhub parkour depart · /lyonhub parkour etape (dans l'ordre) · /lyonhub parkour arrivee
+#   /lyonhub parkour classement : affiche les meilleurs temps à l'endroit où tu es
+# Les joueurs : /parkour (y aller), /parkour top (meilleurs temps)
+parkour:
+  enabled: true
+  # Tomber de plus de X blocs sous la dernière étape : retour à l'étape
+  chute-max: 8
+  # Les temps plus courts que ça sont refusés (anti-triche, 0 = pas de limite)
+  temps-minimum-secondes: 0
+  # Récompense la première fois qu'on termine le parkour (commandes lancées par la console)
+  recompense-commandes:
+    - "eco give %player% 250"
+    - "lmc titre %player% acrobate"
+  message-premiere-fois: "<#9fffe0>✦</#9fffe0> <gray>Première fois : <white>250 pièces</white> et le titre <#9fffe0>Acrobate</#9fffe0> !"

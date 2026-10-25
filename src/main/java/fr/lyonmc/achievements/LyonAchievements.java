@@ -68,6 +68,10 @@ public final class LyonAchievements extends JavaPlugin {
     private BoardManager boards;
     private ChatListener chat;
     private final fr.lyonmc.achievements.api.Boosts boosts = new fr.lyonmc.achievements.api.Boosts();
+    private fr.lyonmc.achievements.core.PlacedBlocks placed;
+    private fr.lyonmc.achievements.jobs.JobService jobs;
+    private fr.lyonmc.achievements.jobs.JobMenu jobMenu;
+    private fr.lyonmc.achievements.shop.LotService lots;
     private fr.lyonmc.achievements.world.ResourceBonusService resourceBonus;
     private fr.lyonmc.achievements.teleport.HubService spawnHub;
     private fr.lyonmc.achievements.rewards.GradeService grades;
@@ -114,6 +118,7 @@ public final class LyonAchievements extends JavaPlugin {
         configs.load();
 
         text = new Text(this);
+        placed = new fr.lyonmc.achievements.core.PlacedBlocks(this);
         profiles = new ProfileStore(this);
         profiles.load();
         discord = new DiscordService(this);
@@ -139,6 +144,10 @@ public final class LyonAchievements extends JavaPlugin {
         missions.load();
         missionMenu = new MissionMenu(this);
         missionListener = new MissionListener(this);
+        jobs = new fr.lyonmc.achievements.jobs.JobService(this);
+        jobs.load();
+        jobMenu = new fr.lyonmc.achievements.jobs.JobMenu(this);
+        lots = new fr.lyonmc.achievements.shop.LotService(this);
         seasons = new SeasonService(this);
         seasons.init();
         seasonMenu = new SeasonMenu(this);
@@ -174,8 +183,9 @@ public final class LyonAchievements extends JavaPlugin {
         achievementsMenu.setHub(p -> hub.open(p));
         web = new WebExportService(this);
 
-        listen(new AdvancementListener(this, registry, stats, boards, text), chat, new MenuListener(this), heads, motd,
-                missionListener, custom, teamCommand, teleporter, teleportCommands, spawnHub, resourceBonus, boss, web);
+        listen(placed, new AdvancementListener(this, registry, stats, boards, text), chat, new MenuListener(this), heads, motd,
+                missionListener, custom, teamCommand, teleporter, teleportCommands, spawnHub, resourceBonus, boss, web,
+                new fr.lyonmc.achievements.jobs.JobListener(this));
 
         SuccesCommand succes = new SuccesCommand(this, registry, stats, boards, achievementsMenu, text);
         command(succes, "succes", "classement", "carte");
@@ -187,6 +197,7 @@ public final class LyonAchievements extends JavaPlugin {
                 "tpaccept", "tpdeny", "rtp");
         command(auctionCommand, "hdv");
         command(new BossCommand(this), "boss");
+        command(new fr.lyonmc.achievements.jobs.JobCommand(this), "metiers");
 
         // Joueurs déjà connectés (cas d'un /reload)
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -251,8 +262,9 @@ public final class LyonAchievements extends JavaPlugin {
         tasks.add(Bukkit.getScheduler().runTaskTimer(this,
                 () -> heads.preload(stats.ranking().subList(0, Math.min(10, stats.ranking().size()))), 200L, 12000L));
 
-        // Toutes les secondes : boss
+        // Toutes les secondes : boss, barres des métiers
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, boss::tick, 20L, 20L));
+        tasks.add(Bukkit.getScheduler().runTaskTimer(this, jobs::tick, 20L, 20L));
         // Toutes les 20 secondes : distance des missions, planning du boss, hologrammes
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, () -> {
             missionListener.tickDistance();
@@ -307,6 +319,7 @@ public final class LyonAchievements extends JavaPlugin {
         rewards.load();
         daily.load();
         missions.load();
+        jobs.load();
         holograms.load();
         web.invalidateContent();
         for (Player p : Bukkit.getOnlinePlayers()) stats.refreshOnline(p);
@@ -360,6 +373,12 @@ public final class LyonAchievements extends JavaPlugin {
     public HubMenu hub() { return hub; }
     public ChatListener chat() { return chat; }
     public fr.lyonmc.achievements.api.Boosts boosts() { return boosts; }
+    /** Blocs posés par des joueurs (ne rapportent rien quand on les recasse). */
+    public fr.lyonmc.achievements.core.PlacedBlocks placed() { return placed; }
+    public fr.lyonmc.achievements.jobs.JobService jobs() { return jobs; }
+    public fr.lyonmc.achievements.jobs.JobMenu jobMenu() { return jobMenu; }
+    /** Lots à donner (/lmc donner) : boutique en ligne, concours... */
+    public fr.lyonmc.achievements.shop.LotService lots() { return lots; }
 
     /** Le joueur est-il AFK ? (selon un autre plugin, ex. COMMUNAUTE) */
     public boolean isAfk(java.util.UUID uuid) {

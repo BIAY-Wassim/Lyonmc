@@ -156,6 +156,10 @@ public final class AuctionService {
     // ───────────────────────────── Actions ─────────────────────────────
 
     public void sell(Player player, long price, int amount) {
+        if (plugin.spawnHub().inHubWorld(player.getWorld())) {
+            plugin.msg(player, "<gray>Au hub, ton inventaire de survie est rangé : mets en vente depuis le monde survie <dark_gray>(/survie)</dark_gray>.");
+            return;
+        }
         ItemStack hand = player.getInventory().getItemInMainHand();
         if (hand.getType().isAir()) {
             plugin.msg(player, "<gray>Prends en main l'objet à vendre.");
@@ -250,16 +254,35 @@ public final class AuctionService {
             plugin.msg(player, "<gray>Rien à récupérer.");
             return;
         }
-        for (ItemStack it : items) give(player, it);
         dirty = true;
+        int kept = giveOrStore(player, items);
         save();
-        plugin.msg(player, "<gray>" + items.size() + " objet(s) récupéré(s).");
+        if (kept < items.size()) plugin.msg(player, "<gray>" + (items.size() - kept) + " objet(s) récupéré(s).");
     }
 
     private void give(Player p, ItemStack item) {
-        for (ItemStack left : p.getInventory().addItem(item).values()) {
-            p.getWorld().dropItemNaturally(p.getLocation(), left);
+        giveOrStore(p, List.of(item));
+    }
+
+    /**
+     * Donne des objets à un joueur. Ce qui ne rentre pas dans l'inventaire n'est jamais jeté par terre :
+     * il attend dans /hdv > Récupérer (même au hub, où l'on ne peut rien ramasser).
+     *
+     * @return le nombre d'objets mis de côté dans la boîte de récupération
+     */
+    public int giveOrStore(Player p, Collection<ItemStack> items) {
+        List<ItemStack> left = new ArrayList<>();
+        for (ItemStack item : items) {
+            if (item == null || item.getType().isAir()) continue;
+            left.addAll(p.getInventory().addItem(item.clone()).values());
         }
+        if (left.isEmpty()) return 0;
+        mailbox.computeIfAbsent(p.getUniqueId(), k -> new ArrayList<>()).addAll(left);
+        dirty = true;
+        save();
+        plugin.msg(p, "<gray>Inventaire plein : <white>" + left.size() + " objet(s)</white> t'attendent dans "
+                + "<white><click:run_command:'/hdv'><u>/hdv</u></click></white> > Récupérer.");
+        return left.size();
     }
 
     /** Annonces expirées -> boîte de récupération (appelé chaque minute). */

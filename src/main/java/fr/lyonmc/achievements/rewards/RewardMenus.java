@@ -257,7 +257,7 @@ public final class RewardMenus {
         } else {
             lore.add(Items.dark("✘ Verrouillé"));
             String how = unlockedBy(def);
-            if (how != null) lore.add(Items.dark("Palier : " + how));
+            if (how != null) lore.add(Items.dark(how));
         }
         inv.setItem(slot, Items.item(owned ? def.icon() : Material.GRAY_DYE, name, lore, equipped));
         if (owned) {
@@ -283,8 +283,16 @@ public final class RewardMenus {
 
     private String unlockedBy(RewardService.CosmeticDef def) {
         for (RewardService.Palier pa : rewards().paliers()) {
-            if (def.kind().equals("color") && def.id().equals(pa.reward().color())) return pa.name();
-            if (def.kind().equals("trail") && def.id().equals(pa.reward().trail())) return pa.name();
+            if (def.kind().equals("color") && def.id().equals(pa.reward().color())) return "Palier : " + pa.name();
+            if (def.kind().equals("trail") && def.id().equals(pa.reward().trail())) return "Palier : " + pa.name();
+        }
+        for (var job : plugin.jobs().all()) {
+            for (var e : job.milestones().entrySet()) {
+                var b = e.getValue();
+                if (def.kind().equals("color") && def.id().equals(b.color()) || def.kind().equals("trail") && def.id().equals(b.trail())) {
+                    return "Métier " + job.name() + ", niveau " + e.getKey() + " (/metiers)";
+                }
+            }
         }
         return null;
     }

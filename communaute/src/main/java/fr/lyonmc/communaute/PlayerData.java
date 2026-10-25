@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Ce que COMMUNAUTE retient d'un joueur (plugins/COMMUNAUTE/joueurs.yml). */
 public final class PlayerData {
@@ -48,6 +49,13 @@ public final class PlayerData {
     public String goalWeek;
     public int contribution;
 
+    // Social (lus aussi par le chat, en asynchrone : ensembles sûrs)
+    public final Set<UUID> friends = ConcurrentHashMap.newKeySet();
+    public final Set<UUID> ignored = ConcurrentHashMap.newKeySet();
+    /** Messages privés acceptés de : tous, amis ou personne. */
+    public volatile String pmMode = "tous";
+    public boolean tips = true;
+
     /** Récompenses à donner à la prochaine connexion (chemins de lots dans config.yml). */
     public final List<String> pending = new ArrayList<>();
 
@@ -86,6 +94,10 @@ public final class PlayerData {
         d.goalWeek = c.getString("objectif.semaine");
         d.contribution = c.getInt("objectif.participation");
         d.pending.addAll(c.getStringList("en-attente"));
+        for (String u : c.getStringList("amis")) parse(u, d.friends);
+        for (String u : c.getStringList("ignores")) parse(u, d.ignored);
+        d.pmMode = c.getString("messages", "tous");
+        d.tips = c.getBoolean("astuces", true);
         return d;
     }
 
@@ -115,6 +127,23 @@ public final class PlayerData {
         c.set("objectif.semaine", goalWeek);
         c.set("objectif.participation", contribution);
         c.set("en-attente", new ArrayList<>(pending));
+        c.set("amis", ids(friends));
+        c.set("ignores", ids(ignored));
+        c.set("messages", pmMode);
+        c.set("astuces", tips);
+    }
+
+    private static void parse(String s, Set<UUID> into) {
+        try {
+            into.add(UUID.fromString(s));
+        } catch (IllegalArgumentException ignored) {
+        }
+    }
+
+    private static List<String> ids(Set<UUID> set) {
+        List<String> out = new ArrayList<>();
+        for (UUID u : set) out.add(u.toString());
+        return out;
     }
 
     /** Votes de ce mois (0 si le dernier vote date d'un autre mois). */

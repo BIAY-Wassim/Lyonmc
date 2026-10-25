@@ -62,6 +62,7 @@ public final class HubPlayers implements Listener {
     private final HubWorlds worlds;
     private final HubMenus menus;
     private final SurvivalPositions positions;
+    private final Parkour parkour;
     private final NamespacedKey itemKey;
     private final File folder;
     private final Map<UUID, Location> returnPoints = new HashMap<>();
@@ -76,6 +77,11 @@ public final class HubPlayers implements Listener {
         if (!folder.isDirectory()) folder.mkdirs();
         this.positions = new SurvivalPositions(plugin, worlds);
         this.menus = new HubMenus(plugin, this);
+        this.parkour = new Parkour(plugin, worlds, this);
+    }
+
+    public Parkour parkour() {
+        return parkour;
     }
 
     public HubMenus menus() {
@@ -116,7 +122,7 @@ public final class HubPlayers implements Listener {
 
     /** Rend l'inventaire de survie (si le joueur en avait un de côté). */
     public void leave(Player p) {
-        builders.remove(p.getUniqueId());
+        boolean wasBuilding = builders.remove(p.getUniqueId());
         File f = file(p.getUniqueId());
         if (!f.exists()) {
             removeHubItems(p);
@@ -138,10 +144,20 @@ public final class HubPlayers implements Listener {
                 return;
             }
         }
+        // Ce qui a été reçu pendant le passage au hub (récompense de palier, de vote, achat à l'HDV...) est gardé.
+        // En mode construction (créatif), l'inventaire du hub n'est pas rapporté en survie.
+        List<ItemStack> received = new ArrayList<>();
+        int receivedXp = 0;
+        if (!wasBuilding) {
+            for (ItemStack it : inv.getContents()) if (it != null && !it.getType().isAir() && !isHubItem(it)) received.add(it.clone());
+            receivedXp = p.calculateTotalExperiencePoints();
+        }
         inv.clear();
         inv.setContents(contents);
         p.setLevel(y.getInt("niveau"));
         p.setExp((float) y.getDouble("experience"));
+        if (receivedXp > 0) p.giveExp(receivedXp);
+        if (!received.isEmpty()) giveBack(p, received);
         var max = p.getAttribute(Attribute.MAX_HEALTH);
         double health = y.getDouble("vie", 20);
         p.setHealth(Math.max(1, Math.min(max == null ? 20 : max.getValue(), health)));
@@ -159,6 +175,21 @@ public final class HubPlayers implements Listener {
         setMode(p, mode);
         // Le fichier n'est supprimé qu'une fois tout rendu
         if (!f.delete()) plugin.getLogger().warning("Impossible de supprimer " + f.getName());
+    }
+
+    /** Rend les objets reçus au hub : inventaire, puis coffre de l'Ender, puis au sol en dernier recours. */
+    private void giveBack(Player p, List<ItemStack> items) {
+        List<ItemStack> left = new ArrayList<>(p.getInventory().addItem(items.toArray(new ItemStack[0])).values());
+        int ender = 0;
+        if (!left.isEmpty()) {
+            int before = left.size();
+            left = new ArrayList<>(p.getEnderChest().addItem(left.toArray(new ItemStack[0])).values());
+            ender = before - left.size();
+        }
+        for (ItemStack it : left) p.getWorld().dropItemNaturally(p.getLocation(), it);
+        p.sendMessage(MM.deserialize("<#e8c872>✦</#e8c872> <gray>Les objets reçus au hub sont dans ton inventaire"
+                + (ender > 0 ? " <dark_gray>(inventaire plein : " + ender + " dans ton coffre de l'Ender)</dark_gray>" : "")
+                + (left.isEmpty() ? "" : " <dark_gray>(" + left.size() + " à tes pieds)</dark_gray>") + "<gray>."));
     }
 
     private boolean save(Player p, Location returnPoint, File f) {
@@ -264,6 +295,20 @@ public final class HubPlayers implements Listener {
         for (int i = 0; i < inv.getSize(); i++) if (isHubItem(inv.getItem(i))) inv.setItem(i, null);
     }
 
+    /** Objet du hub (non déplaçable, action au clic droit). */
+    public ItemStack hubItem(Material m, String name, List<String> description, String action) {
+        ItemStack it = new ItemStack(m);
+        ItemMeta meta = it.getItemMeta();
+        meta.displayName(MM.deserialize(name).decoration(TextDecoration.ITALIC, false));
+        List<Component> lore = new ArrayList<>();
+        for (String l : description) lore.add(MM.deserialize(l).decoration(TextDecoration.ITALIC, false));
+        meta.lore(lore);
+        meta.getPersistentDataContainer().set(itemKey, PersistentDataType.STRING, action);
+        meta.addItemFlags(org.bukkit.inventory.ItemFlag.values());
+        it.setItemMeta(meta);
+        return it;
+    }
+
     public void giveHubItems(Player p) {
         var cfg = plugin.getConfig();
         var sec = cfg.isSet("objets") ? cfg.getConfigurationSection("objets")
@@ -274,15 +319,11 @@ public final class HubPlayers implements Listener {
             if (c == null) continue;
             Material m = Material.matchMaterial(c.getString("objet", "STONE"));
             if (m == null || m.isAir()) continue;
-            ItemStack it = new ItemStack(m);
-            ItemMeta meta = it.getItemMeta();
-            meta.displayName(MM.deserialize(c.getString("nom", key)).decoration(TextDecoration.ITALIC, false));
-            List<Component> lore = new ArrayList<>();
-            for (String l : c.getStringList("description")) lore.add(MM.deserialize(l).decoration(TextDecoration.ITALIC, false));
-            meta.lore(lore);
-            meta.getPersistentDataContainer().set(itemKey, PersistentDataType.STRING, c.getString("action", "menu"));
-            if (meta instanceof SkullMeta skull && m == Material.PLAYER_HEAD) skull.setPlayerProfile(p.getPlayerProfile());
-            it.setItemMeta(meta);
+            ItemStack it = hubItem(m, c.getString("nom", key), c.getStringList("description"), c.getString("action", "menu"));
+            if (m == Material.PLAYER_HEAD && it.getItemMeta() instanceof SkullMeta skull) {
+                skull.setPlayerProfile(p.getPlayerProfile());
+                it.setItemMeta(skull);
+            }
             int slot = c.getInt("case", 0);
             if (slot >= 0 && slot < 36) p.getInventory().setItem(slot, it);
         }
