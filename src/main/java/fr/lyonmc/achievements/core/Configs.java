@@ -61,6 +61,7 @@ public final class Configs {
     private YamlConfiguration rewards;
     private YamlConfiguration events;
     private YamlConfiguration jobs;
+    private YamlConfiguration news;
     private YamlConfiguration state;
     private final File stateFile;
 
@@ -77,6 +78,7 @@ public final class Configs {
         mergeChildren(missions, "daily.easy", "daily.medium", "daily.hard", "weekly");
         events = loadOrCreate("evenements.yml");
         jobs = loadOrCreate("metiers.yml");
+        news = loadOrCreate("actualites.yml");
         mergeChildren(jobs, "metiers");
         state = stateFile.exists() ? YamlConfiguration.loadConfiguration(stateFile) : new YamlConfiguration();
     }
@@ -104,6 +106,19 @@ public final class Configs {
 
     public YamlConfiguration events() {
         return events;
+    }
+
+    /** actualites.yml (sans valeurs par défaut : la liste est celle du fichier) */
+    public YamlConfiguration news() {
+        return news;
+    }
+
+    public void saveNews() {
+        try {
+            news.save(new File(plugin.getDataFolder(), "actualites.yml"));
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.SEVERE, "Impossible d'enregistrer actualites.yml", e);
+        }
     }
 
     /** metiers.yml */

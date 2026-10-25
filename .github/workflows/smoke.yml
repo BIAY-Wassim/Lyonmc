@@ -11,7 +11,7 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 32
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
@@ -100,6 +100,7 @@ jobs:
             await cmd('/report Acheteur test de signalement'); await cmd('/signalements')
             await cmd('/astuces'); await cmd('/astuces'); await cmd('/ignorer'); 
             await cmd('/lmc donner Testeur soutien', 3000)
+            await cmd('/lmc actu Test du site | Ceci est une actualité de test.', 3000)
             await cmd('/ami'); await close()
             await cmd('/menu'); await click(47)
             await cmd('/menu'); await click(34); await click(0, 3000); await close()
@@ -232,11 +233,11 @@ jobs:
           (
             for i in $(seq 1 240); do grep -q "Done (" logs/latest.log 2>/dev/null && break; sleep 1; done
             sleep 3
-            (cd ../bot && timeout 660 node bot.js Testeur > ../bot.log 2>&1 &)
-            (cd ../bot && timeout 660 node bot.js Acheteur > ../bot2.log 2>&1 &)
+            (cd ../bot && timeout 900 node bot.js Testeur > ../bot.log 2>&1 &)
+            (cd ../bot && timeout 900 node bot.js Acheteur > ../bot2.log 2>&1 &)
             sleep 12
             for c in "communaute vote Acheteur site-test" "communaute vote Acheteur site-test" "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob" "lmc donner Acheteur concours" "lmc donner Testeur inconnu"; do echo "$c"; sleep 1; done
-            sleep 340
+            sleep 560
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
             echo "say test-chat-grade"; sleep 30
@@ -244,7 +245,7 @@ jobs:
             sleep 8
             echo "stop"
           ) > in &
-          timeout 760 java -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
+          timeout 1000 java -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
       - name: Analyse des journaux
         if: always()
         run: |
@@ -257,6 +258,9 @@ jobs:
           grep -E "BOT|KICKED|BOTERR|NOWINDOW|CLICKERR" ../bot.log | head -10 | while IFS= read -r l; do echo "::notice::$l"; done
           grep -E "CHAT" ../bot.log | head -10 | while IFS= read -r l; do echo "::warning::$l"; done
           if grep -qE "at fr\.lyonmc|Error occurred while enabling LyonAchievements" logs/latest.log; then exit 1; fi
+      - name: Nettoyer les branches temporaires
+        if: always()
+        run: git push origin --delete deps deps-jars || true
       - name: Publier les journaux (branche ci-logs)
         if: always()
         run: |

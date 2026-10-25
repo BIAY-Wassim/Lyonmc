@@ -44,6 +44,12 @@
     const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
     return h > 0 ? `${num(h)} h ${m} min` : `${m} min`;
   }
+  const fmtNews = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  /** « 2026-10-25 » -> « 25 octobre 2026 » */
+  function dateFr(iso) {
+    const [y, m, d] = String(iso || "").split("-").map(Number);
+    return y && m && d ? fmtNews.format(new Date(Date.UTC(y, m - 1, d))) : String(iso || "");
+  }
   const TZ = "Europe/Paris";
   const fmtDay = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: TZ });
   const fmtDate = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: TZ });
@@ -260,7 +266,7 @@
 
   async function home() {
     setTitle("");
-    const [s, c, j, contenu] = await Promise.all([data("serveur"), data("classements"), data("joueurs"), data("contenu", false)]);
+    const [s, c, j, contenu, news] = await Promise.all([data("serveur"), data("classements"), data("joueurs"), data("contenu", false), data("actualites")]);
     const idx = advIndex(contenu);
     const top = c?.achievements || [];
     const ip = s?.ip || "lyonmc.fr";
@@ -293,7 +299,7 @@
         <div class="wrap">
           <div class="hero-copy">
             <h1 class="wordmark">LyonMC</h1>
-            <p class="hero-lead">Survie Java 1.21.8. ${num(totals.achievements || 146)} succès à obtenir, des missions chaque jour, un boss deux fois par semaine et un classement qui repart chaque mois.</p>
+            <p class="hero-lead">Survie Java ${esc(s?.version || "1.21.8")}. Cinq métiers, ${num(totals.achievements || 146)} succès à obtenir, des missions chaque jour, un boss deux fois par semaine et un classement qui repart chaque mois.</p>
             <div class="join">
               <p class="label">Adresse du serveur</p>
               <div class="row"><img class="srv-icon" src="${serverIcon(ip)}" alt="" onerror="this.onerror=null;this.src='/img/grass_side.png'"><span class="field">${esc(ip)}</span><button class="btn" type="button" id="copy">Copier</button></div>
@@ -327,16 +333,24 @@
         </div>
       </div></section>
 
+      ${(news || []).length ? `<section class="section"><div class="wrap">
+        <div class="panel-h"><h2 style="margin:0">Actualités</h2><a class="muted" href="/actualites" data-link>Toutes les actualités</a></div>
+        <ul class="news-mini" style="margin-top:18px">${news.slice(0, 3).map((n) => `<li class="card"><div class="meta">${esc(dateFr(n.date))}${n.tag ? ` · ${esc(n.tag)}` : ""}</div><h3>${esc(n.title)}</h3><p>${esc(n.text)}</p></li>`).join("")}</ul>
+      </div></section>` : ""}
+
       <section class="section"><div class="wrap">
         <h2>Ce qui t'attend</h2>
         <p class="intro">Une survie classique, sans avantage à acheter, avec de quoi se fixer des objectifs chaque jour.</p>
         <div class="features">
           ${[
+            ["iron_pickaxe", "Métiers", "Mineur, Bûcheron, Fermier, Chasseur et Pêcheur : tu montes de niveau en jouant, et chaque niveau rapporte des pièces."],
             ["knowledge_book", "Succès", `${num(totals.achievements || 146)} succès, dont ${custom} propres au serveur. Chacun rapporte des pièces et des points de saison.`],
             ["writable_book", "Missions", "Trois missions par jour et trois par semaine. Les finir toutes fait monter ta série et ton bonus."],
             ["clock", "Saisons", "Un classement qui repart chaque mois. Le week-end, les points comptent double."],
             ["mace", "Boss mondial", "Le Colosse apparaît deux fois par semaine. Ta récompense dépend des dégâts que tu infliges."],
-            ["name_tag", "Équipes", "Un tag devant ton pseudo, un chat privé et un home commun."],
+            ["diamond_pickaxe", "La mine", "Un monde ressources remis à neuf chaque mois : plus de minerais, des pièces et des trésors cachés."],
+            ["compass", "Le hub", "Le podium des meilleurs joueurs, un grand écran de stats et un parkour chronométré."],
+            ["name_tag", "Équipes et amis", "Un tag devant ton pseudo, un chat d'équipe, ta liste d'amis et des messages privés."],
             ["emerald", "Hôtel des ventes", "Vends et achète entre joueurs avec les pièces du serveur."],
           ].map(([ic, t, d]) => `<div class="feature">${ico(ic)}<div><h3>${t}</h3><p>${d}</p></div></div>`).join("")}
         </div>
@@ -344,7 +358,7 @@
 
       <section class="section"><div class="wrap">
         <h2>Rejoindre le serveur</h2>
-        <p class="intro">Il te faut Minecraft Java en version 1.21.8.</p>
+        <p class="intro">Il te faut Minecraft Java en version ${esc(s?.version || "1.21.8")}. <a href="/rejoindre" data-link>Toutes les étapes${s?.bedrock?.enabled ? ", Java et Bedrock" : ""}</a></p>
         <ol class="steps">
           <li class="card"><strong>Lance Minecraft en 1.21.8</strong><p>Dans le launcher, choisis la dernière version.</p></li>
           <li class="card"><strong>Ajoute le serveur</strong><p>Multijoueur, Ajouter un serveur, puis l'adresse <code class="cmd">${esc(ip)}</code>.</p></li>
@@ -368,6 +382,7 @@
     ["teams", "Équipes", "equipes", "white_banner"],
     ["missions", "Missions", "missions", "writable_book"],
     ["richest", "Fortune", "fortune", "gold_ingot"],
+    ["jobs", "Métiers", "metiers", "iron_pickaxe"],
   ];
   function pastSeasons(list) {
     if (!list || !list.length) return "";
@@ -379,13 +394,15 @@
     }).join("")}</ol></div>`;
   }
 
-  async function boards(slug) {
+  async function boards(slug, sub) {
     setTitle("Classements");
-    const [c, s] = await Promise.all([data("classements"), data("serveur")]);
+    const [c, s, contenu] = await Promise.all([data("classements"), data("serveur"), data("contenu", false)]);
     const cur = BOARDS.find((b) => b[2] === (slug || "")) || BOARDS[0];
     const key = cur[0];
     const total = s?.totals?.achievements || 0;
-    const rows = c?.[key] || [];
+    const jobList = contenu?.jobs?.list || [];
+    const job = key === "jobs" ? jobList.find((x) => x.id === sub) : null;
+    const rows = key === "jobs" ? (c?.jobs?.[job ? job.id : "total"] || []) : (c?.[key] || []);
     const pos = (i) => i < 3 ? `<span class="pos b b${i + 1}">${i + 1}</span>` : `<span class="pos">${i + 1}</span>`;
     const who = (p) => `<span class="who"><strong>${esc(p.name)}</strong>${p.team ? `<span class="tag">${esc(p.team)}</span>` : ""}<span class="t">${p.grade ? `<span class="grade">${p.grade}</span>` : ""}${p.title ? `${p.grade ? " · " : ""}${p.title}` : ""}</span></span>`;
     const val = {
@@ -393,10 +410,11 @@
       season: (p) => `${num(p.points)}<small> pts</small>`,
       missions: (p) => `${num(p.missions)}<small> missions</small><br><small>série record ${p.streak} j</small>`,
       richest: (p) => `${num(p.coins)}<small> pièces</small>`,
+      jobs: (p) => job ? `niv. ${p.level}<br><small>${num(p.xp)} XP</small>` : `${num(p.levels)}<small> niveaux</small>`,
     };
     let list;
     if (!c) list = `<p class="empty">Les classements arrivent dans une minute.</p>`;
-    else if (!rows.length) list = `<p class="empty">${{ season: "Personne n'a encore marqué de points cette saison. Chaque succès, mission ou boss en rapporte.", teams: "Aucune équipe pour l'instant. Fondes-en une en jeu avec /equipe creer.", missions: "Personne n'a encore terminé de mission. Tape /missions en jeu pour voir les tiennes." }[key] || "Personne ici pour l'instant."}</p>`;
+    else if (!rows.length) list = `<p class="empty">${{ season: "Personne n'a encore marqué de points cette saison. Chaque succès, mission ou boss en rapporte.", teams: "Aucune équipe pour l'instant. Fondes-en une en jeu avec /equipe creer.", missions: "Personne n'a encore terminé de mission. Tape /missions en jeu pour voir les tiennes.", jobs: "Personne n'a encore gagné de niveau ici. Tape /metiers en jeu pour commencer." }[key] || "Personne ici pour l'instant."}</p>`;
     else if (key === "teams") list = rows.map((t, i) => `<div class="rowp">${pos(i)}${ico("white_banner", "sm")}
         <span class="who"><strong>${esc(t.name)}</strong><span class="tag" style="color:${esc(t.color)}">${esc(t.tag)}</span><span class="t muted">${t.members.map(esc).join(", ")}</span></span>
         <span class="val">${num(t.achievements)}<small> succès</small><br><small>${num(t.season)} pts de saison</small></span></div>`).join("");
@@ -408,12 +426,16 @@
       teams: "Les équipes, classées par succès cumulés de leurs membres.",
       missions: "Les joueurs les plus réguliers sur les missions du jour et de la semaine.",
       richest: "Les plus grosses fortunes en pièces.",
+      jobs: job ? `Les meilleurs ${esc(job.name.toLowerCase())}s du serveur, classés par XP.` : "Le total des niveaux dans les cinq métiers : Mineur, Bûcheron, Fermier, Chasseur et Pêcheur.",
     }[key];
 
     app.innerHTML = `
       <div class="page-head"><div class="wrap"><h1>Classements</h1><p>${intro}</p></div></div>
       <div class="wrap" style="padding-bottom:72px">
-        <div class="tabs" role="tablist">${BOARDS.map(([k, label, path, ic]) => `<button role="tab" aria-selected="${k === key}" data-tab="${path}">${img(icon(ic))}${label}</button>`).join("")}</div>
+        <div class="tabs" role="tablist">${BOARDS.filter((b) => b[0] !== "jobs" || c?.jobs).map(([k, label, path, ic]) => `<button role="tab" aria-selected="${k === key}" data-tab="${path}">${img(icon(ic))}${label}</button>`).join("")}</div>
+        ${key === "jobs" && jobList.length ? `<div class="subtabs" role="tablist" aria-label="Métier">
+          <button role="tab" aria-selected="${!job}" data-sub="">${img(icon("crafting_table"))}Tous les métiers</button>
+          ${jobList.map((x) => `<button role="tab" aria-selected="${job?.id === x.id}" data-sub="${esc(x.id)}">${img(icon(x.icon))}${esc(x.name)}</button>`).join("")}</div>` : ""}
         <form class="search" id="search"><label class="visually-hidden" for="q">Chercher un joueur</label>
           <input id="q" placeholder="Chercher un joueur" autocomplete="off" list="names"><button class="btn ghost">Voir le profil</button>
           <datalist id="names">${(c?.achievements || []).map((p) => `<option value="${esc(p.name)}">`).join("")}</datalist></form>
@@ -421,6 +443,7 @@
         ${key === "season" ? pastSeasons(c?.history) : ""}
       </div>`;
     app.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click", () => navigate(b.dataset.tab ? `/classements/${b.dataset.tab}` : "/classements", true)));
+    app.querySelectorAll("[data-sub]").forEach((b) => b.addEventListener("click", () => navigate(`/classements/metiers${b.dataset.sub ? "/" + b.dataset.sub : ""}`, true)));
     document.getElementById("search").addEventListener("submit", (e) => {
       e.preventDefault();
       const q = document.getElementById("q").value.trim();
@@ -456,6 +479,22 @@
     document.getElementById("pq").addEventListener("input", draw);
     document.getElementById("sort").addEventListener("change", draw);
     draw();
+  }
+
+  // ───────────── Métiers (profil) ─────────────
+  function jobsBlock(p, contenu) {
+    const list = contenu?.jobs?.list || [];
+    if (!p.jobs || !list.length) return "";
+    return `<div class="panel-h"><h3>Métiers</h3><a class="muted" href="/guide#metiers" data-link>Comment ça marche</a></div>
+      <div class="jobs-grid">${list.map((jb) => {
+        const st = p.jobs[jb.id] || { level: 1, into: 0, span: 0 };
+        const max = contenu.jobs.max || 50;
+        const w = st.span ? Math.min(100, (st.into / st.span) * 100) : 100;
+        return `<div class="card job" style="--job:${esc(jb.color)}"><div class="head">${img(icon(jb.icon))}<span class="name">${esc(jb.name)}</span></div>
+          <div class="lvl">${st.level}<small>/ ${max}</small></div>
+          <span class="meter" role="img" aria-label="Niveau ${st.level} : ${num(st.into)} XP sur ${num(st.span)}"><i style="width:${w.toFixed(1)}%"></i></span>
+          <span class="xp">${st.span ? `${num(st.into)} / ${num(st.span)} XP` : "niveau maximum"}</span></div>`;
+      }).join("")}</div>`;
   }
 
   // ───────────── Profil joueur ─────────────
@@ -521,6 +560,7 @@
             ${stat("Boss vaincus", num(p.bossKills))}
             ${stat("Titres débloqués", num(p.titles))}
           </dl>
+          ${jobsBlock(p, contenu)}
           <div class="cats">${cats}</div>
           <div class="tabs" role="tablist">
             <button role="tab" aria-selected="${mode === "done"}" data-f="">Obtenus (${p.count})</button>
@@ -546,21 +586,37 @@
     rows: 6,
     items: {
       4: { head: true, name: "Ton profil", lore: ["Rang  #4 sur 30", "★ Succès  110 / 146", "⛁ Pièces  12 480", "✦ Saison  640 pts (#3)", "✔ Série de missions  6 j"], action: "", what: "Ton résumé : rang, succès, pièces, points de saison et série de missions." },
-      19: { icon: "writable_book", name: "Missions", lore: ["Missions du jour et de la semaine", "Aujourd'hui  2 / 3", "Série  6 jour(s)"], glint: true, cmd: "/missions", what: "Tes missions du jour et de la semaine. L'icône brille tant qu'il en reste." },
-      20: { icon: "knowledge_book", name: "Succès", lore: ["Ta progression et ce qu'il te reste", "Obtenus  110 / 146"], cmd: "/succes", what: "Tous les succès par catégorie, avec ceux qu'il te manque." },
-      21: { icon: "gold_ingot", name: "Parcours de récompenses", lore: ["Les paliers à débloquer", "Débloqués  9 / 23"], cmd: "/parcours", what: "Les paliers qui se débloquent en jouant." },
-      22: { icon: "chest", name: "Récompense du jour", lore: ["Disponible !", "Série  4 jour(s)"], glint: true, cmd: "/recompense", what: "Un coffre par jour, de plus en plus gros jusqu'au 7e. Brille quand il est disponible." },
-      23: { icon: "nether_star", name: "Saison 2 · Octobre", lore: ["Classement du mois", "Fin dans  13 j 4 h"], cmd: "/saison", what: "Le classement du mois et ses récompenses." },
-      24: { icon: "diamond", name: "Classement des succès", lore: ["Le podium avec les têtes des joueurs"], cmd: "/classement", what: "Le podium et le top des succès." },
-      25: { icon: "white_banner", name: "Équipe", lore: ["Ton équipe : Nordique"], cmd: "/equipe", what: "Créer, rejoindre ou gérer ton équipe." },
-      28: { icon: "name_tag", name: "Titres", lore: ["Choisis le titre devant ton pseudo", "Débloqués  8 / 27"], cmd: "/titres", what: "Le titre affiché devant ton pseudo dans le chat." },
-      29: { icon: "blaze_powder", name: "Cosmétiques", lore: ["Couleur du pseudo et traînées"], cmd: "/cosmetiques", what: "Couleur de pseudo et traînées de particules." },
-      30: { icon: "emerald", name: "Boutique", lore: ["Titres, cosmétiques, homes", "Solde  12 480 pièces"], cmd: "/boutique", what: "Dépense tes pièces en titres, cosmétiques et homes." },
-      31: { icon: "gold_block", name: "Hôtel des ventes", lore: ["Achète et vends entre joueurs", "Objets en vente  17"], cmd: "/hdv", what: "Le marché entre joueurs." },
-      32: { icon: "red_bed", name: "Homes", lore: ["Tes points de téléportation", "Emplacements  2 / 3"], cmd: "/homes", what: "Tes homes, pour revenir chez toi." },
-      33: { icon: "wither_skeleton_skull", name: "Boss mondial", lore: ["Prochaine apparition :", "mercredi à 21:00"], cmd: "/boss", what: "Quand apparaît Le Colosse, et l'accès à l'arène." },
-      34: { icon: "iron_pickaxe", name: "Monde ressources", lore: ["Un monde à miner, réinitialisé", "chaque mois"], cmd: "/ressources", what: "Pour miner sans abîmer le monde principal." },
-      47: { icon: "filled_map", name: "Dynmap", lore: ["La carte du serveur en direct", "sur lyonmc.fr"], cmd: "/carte", what: "Le lien vers la carte en direct." },
+      9: { icon: "lime_stained_glass_pane", name: "Communauté", lore: ["Voter, parrainer, jouer ensemble"], action: "", what: "La rangée de la communauté." },
+      11: { icon: "golden_apple", name: "Voter pour LyonMC", lore: ["Une récompense à chaque vote"], glint: true, cmd: "/vote", what: "Les liens de vote et ta récompense." },
+      12: { icon: "map", name: "Premiers pas", lore: ["Les étapes pour bien commencer"], cmd: "/premierspas", what: "Les étapes guidées des nouveaux joueurs." },
+      13: { icon: "totem_of_undying", name: "Parrainage", lore: ["Invite tes amis"], cmd: "/parrain", what: "Ton parrain, tes filleuls et les récompenses." },
+      14: { icon: "beacon", name: "Objectif de la semaine", lore: ["Un défi pour tout le serveur"], cmd: "/objectif", what: "Le défi commun de la semaine." },
+      18: { icon: "yellow_stained_glass_pane", name: "Progresser", lore: ["Missions, succès, récompenses"], action: "", what: "La rangée pour progresser." },
+      19: { icon: "writable_book", name: "Missions", lore: ["3 missions par jour, 3 par semaine", "Aujourd'hui  2 / 3", "Série  6 jour(s)"], glint: true, cmd: "/missions", what: "Tes missions. L'icône brille tant qu'il en reste à finir aujourd'hui." },
+      20: { icon: "iron_pickaxe", name: "Métiers", lore: ["Mineur  niv. 12", "Bûcheron  niv. 7", "Fermier  niv. 4", "Chasseur  niv. 9", "Pêcheur  niv. 3"], cmd: "/metiers", what: "Tes cinq métiers, leurs niveaux et ce qui rapporte de l'XP." },
+      21: { icon: "knowledge_book", name: "Succès", lore: ["Ta progression et ce qu'il te reste", "Obtenus  110 / 146"], cmd: "/succes", what: "Tous les succès par catégorie, avec ceux qu'il te manque." },
+      22: { icon: "chest", name: "Récompense du jour", lore: ["Disponible : viens la chercher !", "Série  4 jour(s)"], glint: true, cmd: "/recompense", what: "Un coffre par jour, de plus en plus gros jusqu'au 7e. Brille quand il est disponible." },
+      23: { icon: "gold_ingot", name: "Parcours de récompenses", lore: ["Des paliers qui se débloquent tout seuls", "Débloqués  9 / 26"], cmd: "/parcours", what: "Les paliers qui se débloquent en jouant." },
+      24: { icon: "nether_star", name: "Saison 2 · Octobre", lore: ["Le classement du mois", "Fin dans  13 j 4 h"], cmd: "/saison", what: "Le classement du mois et ses récompenses." },
+      25: { icon: "diamond", name: "Classements", lore: ["Le podium des meilleurs joueurs"], cmd: "/classement", what: "Le podium et le top des succès." },
+      26: { icon: "wither_skeleton_skull", name: "Boss mondial", lore: ["Prochaine apparition :", "mercredi à 21:00"], cmd: "/boss", what: "Quand apparaît Le Colosse, et l'accès à l'arène." },
+      27: { icon: "light_blue_stained_glass_pane", name: "Se déplacer", lore: ["Hub, survie, mine, homes..."], action: "", what: "La rangée pour se déplacer." },
+      28: { icon: "lodestone", name: "Hub", lore: ["Le spawn : stats, podium, menus"], cmd: "/hub", what: "Retour au hub." },
+      29: { icon: "grass_block", name: "Retour en survie", lore: ["Là où tu étais dans le monde survie,", "même après le hub ou la mine"], cmd: "/survie", what: "Te ramène exactement là où tu étais en survie." },
+      30: { icon: "diamond_pickaxe", name: "La mine (monde ressources)", lore: ["Le monde où miner rapporte le plus"], cmd: "/mine", what: "Le monde ressources : plus de minerais, des pièces, des trésors." },
+      31: { icon: "red_bed", name: "Homes", lore: ["Tes maisons : clique pour y aller", "Emplacements  2 / 3"], cmd: "/homes", what: "Tes homes, pour revenir chez toi." },
+      32: { icon: "recovery_compass", name: "Position précédente", lore: ["Revenir là où tu étais juste avant", "(dernière téléportation ou mort)"], cmd: "/back", what: "Ta dernière position, ou l'endroit de ta mort." },
+      33: { icon: "ender_pearl", name: "Aventure au hasard", lore: ["Un endroit sûr au hasard du monde survie"], cmd: "/rtp", what: "Une téléportation au hasard dans le monde survie." },
+      34: { icon: "lead", name: "Rejoindre un joueur", lore: ["Choisis un joueur connecté :", "il devra accepter ta demande"], cmd: "/tpa", what: "La liste des joueurs connectés pour leur envoyer une demande." },
+      36: { icon: "purple_stained_glass_pane", name: "Style et échanges", lore: ["Grade, titres, cosmétiques, boutique"], action: "", what: "La rangée du style et des échanges." },
+      37: { icon: "name_tag", name: "Titres et grade", lore: ["Le titre à côté de ton pseudo", "Titres débloqués  8 / 45"], cmd: "/titres", what: "Ton grade et le titre affiché à côté de ton pseudo." },
+      38: { icon: "blaze_powder", name: "Cosmétiques", lore: ["Couleur du pseudo et traînées"], cmd: "/cosmetiques", what: "Couleur de pseudo et traînées de particules." },
+      39: { icon: "emerald", name: "Boutique", lore: ["Titres, cosmétiques, homes en plus", "Solde  12 480 pièces"], cmd: "/boutique", what: "Dépense tes pièces en titres, cosmétiques et homes." },
+      40: { icon: "gold_block", name: "Hôtel des ventes", lore: ["Achète et vends entre joueurs", "Objets en vente  17"], cmd: "/hdv", what: "Le marché entre joueurs." },
+      41: { icon: "white_banner", name: "Équipe", lore: ["Ton équipe : Nordique"], cmd: "/equipe", what: "Créer, rejoindre ou gérer ton équipe." },
+      42: { icon: "filled_map", name: "Carte et site", lore: ["La carte du serveur en direct", "et les classements sur lyonmc.fr"], cmd: "/carte", what: "Le lien vers la carte en direct et le site." },
+      45: { icon: "lectern", name: "Aide et guide", lore: ["Tout comprendre sur LyonMC"], glint: true, cmd: "/aide", what: "Le centre d'aide : chaque sujet s'ouvre dans un livre." },
+      47: { icon: "book", name: "Toutes les commandes", lore: ["La liste des commandes, cliquables,", "dans le chat"], what: "Toutes les commandes, à cliquer dans le chat." },
       49: { icon: "barrier", name: "Fermer", lore: [], action: "", what: "Ferme le menu." },
       51: { icon: "comparator", name: "Scoreboard : affiché", lore: ["Afficher ou masquer le scoreboard"], action: "Cliquer pour changer", what: "Masque ou réaffiche le tableau à droite de l'écran." },
     },
@@ -578,17 +634,21 @@
   }
 
   const COMMANDS = [
-    ["Général", [["/menu", "Le menu principal : tout le serveur en un clic"], ["/missions", "Tes missions du jour et de la semaine"], ["/recompense", "Récompense du jour"], ["/succes", "Ton profil de succès"], ["/classement", "Le podium des succès"], ["/saison", "Le classement du mois"], ["/carte", "Lien vers la carte en direct"]]],
-    ["Récompenses", [["/parcours", "Les paliers à débloquer"], ["/titres", "Choisir ton titre"], ["/cosmetiques", "Couleur de pseudo et traînées"], ["/boutique", "Acheter titres, cosmétiques et homes"]]],
-    ["Pièces", [["/money", "Ton solde"], ["/pay <joueur> <montant>", "Envoyer des pièces"], ["/baltop", "Les plus riches"], ["/hdv", "Hôtel des ventes"], ["/hdv vendre <prix>", "Vendre l'objet en main"], ["/hdv recuperer", "Récupérer tes objets non vendus"]]],
-    ["Déplacements", [["/sethome <nom>", "Créer un home"], ["/home <nom>", "Aller à un home"], ["/homes", "Tes homes"], ["/hub", "Retour au hub (aussi /spawn)"], ["/survie", "Revenir là où tu étais en survie"], ["/tpa <joueur>", "Demander à rejoindre un joueur"], ["/tpahere <joueur>", "Demander à un joueur de venir"], ["/tpaccept", "Accepter une demande"], ["/back", "Revenir à ta position précédente"], ["/rtp", "Téléportation aléatoire"], ["/ressources", "Aller dans le monde ressources"]]],
+    ["Général", [["/menu", "Le menu principal : tout le serveur en un clic"], ["/aide", "Le centre d'aide (aussi /help)"], ["/regles", "Le règlement"], ["/missions", "Tes missions du jour et de la semaine"], ["/recompense", "Récompense du jour"], ["/succes", "Ton profil de succès"], ["/classement", "Le podium des succès"], ["/saison", "Le classement du mois"], ["/carte", "Lien vers la carte en direct"]]],
+    ["Métiers", [["/metiers", "Tes métiers, leurs niveaux et ce qui rapporte de l'XP"], ["/metiers top", "Les meilleurs joueurs de chaque métier"], ["/metiers mineur", "Le détail d'un métier (mineur, bucheron, fermier, chasseur, pecheur)"]]],
+    ["Récompenses", [["/parcours", "Les paliers à débloquer"], ["/titres", "Choisir ton titre (et ton grade, une fois Légende)"], ["/cosmetiques", "Couleur de pseudo et traînées"], ["/boutique", "Acheter titres, cosmétiques et homes"]]],
+    ["Pièces", [["/money", "Ton solde"], ["/pay <joueur> <montant>", "Envoyer des pièces"], ["/baltop", "Les plus riches"], ["/hdv", "Hôtel des ventes"], ["/hdv vendre <prix>", "Vendre l'objet en main"]]],
+    ["Déplacements", [["/sethome <nom>", "Créer un home"], ["/home <nom>", "Aller à un home"], ["/homes", "Tes homes"], ["/hub", "Retour au hub (aussi /spawn)"], ["/survie", "Revenir là où tu étais en survie"], ["/mine", "Aller dans le monde ressources"], ["/tpa <joueur>", "Demander à rejoindre un joueur"], ["/tpahere <joueur>", "Demander à un joueur de venir"], ["/tpaccept", "Accepter une demande"], ["/back", "Revenir à ta position précédente"], ["/rtp", "Téléportation aléatoire"]]],
+    ["Amis et messages", [["/ami", "Ta liste d'amis : qui est connecté, où"], ["/ami ajouter <joueur>", "Envoyer une demande d'ami"], ["/msg <joueur> <message>", "Message privé (aussi /tell, /w)"], ["/r <message>", "Répondre au dernier message"], ["/ignorer <joueur>", "Ne plus voir les messages d'un joueur"], ["/report <joueur> <raison>", "Signaler un joueur au staff"], ["/report bug <description>", "Signaler un bug"]]],
     ["Équipes", [["/equipe", "Menu de ton équipe"], ["/equipe creer <nom> <tag>", "Fonder une équipe"], ["/equipe inviter <joueur>", "Inviter un joueur"], ["/equipe rejoindre <équipe>", "Accepter une invitation"], ["/equipe chat", "Parler seulement à ton équipe"], ["/equipe home", "Home de l'équipe"]]],
-    ["Événements", [["/boss", "Prochain boss, ou rejoindre l'arène"]]],
+    ["Communauté", [["/vote", "Voter pour le serveur"], ["/parrain <joueur>", "Choisir ton parrain"], ["/objectif", "L'objectif de la semaine"], ["/bienvenue", "Souhaiter la bienvenue au dernier arrivé"], ["/premierspas", "Les étapes des nouveaux joueurs"], ["/astuces", "Couper ou remettre les astuces du chat"]]],
+    ["Hub et événements", [["/parkour", "Aller au départ du parkour du hub"], ["/parkour top", "Les meilleurs temps du parkour"], ["/boss", "Prochain boss, ou rejoindre l'arène"]]],
   ];
   const SECTIONS = [
-    ["debuter", "Bien commencer"], ["communaute", "Communauté et votes"], ["menus", "Le menu principal"], ["commandes", "Commandes"], ["missions", "Missions"], ["pieces", "Pièces et boutique"],
-    ["parcours", "Parcours de récompenses"], ["titres", "Grades, titres et cosmétiques"], ["saisons", "Saisons"], ["boss", "Boss mondial"],
-    ["equipes", "Équipes"], ["hdv", "Hôtel des ventes"], ["teleport", "Homes et téléportation"], ["ressources", "Monde ressources"], ["succes", "Tous les succès"],
+    ["debuter", "Bien commencer"], ["aide", "Le centre d'aide en jeu"], ["menus", "Le menu principal"], ["commandes", "Commandes"], ["metiers", "Métiers"],
+    ["missions", "Missions"], ["pieces", "Pièces et boutique"], ["parcours", "Parcours de récompenses"], ["titres", "Grades, titres et cosmétiques"],
+    ["saisons", "Saisons"], ["boss", "Boss mondial"], ["social", "Amis, messages et chat"], ["communaute", "Communauté et votes"], ["equipes", "Équipes"],
+    ["hdv", "Hôtel des ventes"], ["teleport", "Hub, homes et téléportation"], ["parkour", "Parkour du hub"], ["ressources", "Monde ressources"], ["succes", "Tous les succès"],
   ];
   const DAYS = { MONDAY: "lundi", TUESDAY: "mardi", WEDNESDAY: "mercredi", THURSDAY: "jeudi", FRIDAY: "vendredi", SATURDAY: "samedi", SUNDAY: "dimanche" };
 
@@ -618,17 +678,52 @@
         </tbody></table>
         <p class="small muted">Le temps passé AFK (sans bouger la souris pendant 5 minutes) ne compte pas comme du temps de jeu. Toutes les 30 minutes de vrai jeu, tu reçois quelques pièces, et un cadeau t'attend si tu reviens après une longue absence.</p>`
         : `<p>Bientôt : votes, parrainage et objectifs de la semaine.</p>`,
-      debuter: `<p>Bienvenue sur LyonMC. Trois choses à faire en arrivant :</p>
+      debuter: `<p>Bienvenue sur LyonMC. À ta première connexion, tu arrives au <strong>hub</strong> et le guide du serveur s'ouvre tout seul. Une barre en haut de l'écran, les <strong>premiers pas</strong>, te guide ensuite étape par étape : chaque étape rapporte des pièces.</p>
         <ol class="steps" style="margin-top:18px">
-          <li class="card"><strong>Récupère ta récompense</strong><p>Tape <code class="cmd">/recompense</code> chaque jour. Elle grossit jusqu'au 7e jour d'affilée.</p></li>
-          <li class="card"><strong>Lance tes missions</strong><p><code class="cmd">/missions</code> te donne trois objectifs par jour, du plus simple au plus dur.</p></li>
-          <li class="card"><strong>Pose ton home</strong><p><code class="cmd">/sethome base</code> près de ta maison, puis <code class="cmd">/home base</code> pour y revenir.</p></li>
+          <li class="card"><strong>Pars en survie</strong><p>Clic droit avec la boussole du hub, ou <code class="cmd">/survie</code>. Tu reçois un kit de départ.</p></li>
+          <li class="card"><strong>Installe-toi</strong><p>Éloigne-toi du spawn, puis <code class="cmd">/sethome maison</code>. Protège ta base avec la pelle en or.</p></li>
+          <li class="card"><strong>Progresse chaque jour</strong><p><code class="cmd">/recompense</code>, <code class="cmd">/missions</code> et tes <code class="cmd">/metiers</code> rapportent des pièces dès le premier jour.</p></li>
         </ol>
-        <p style="margin-top:22px">Tu commences avec <strong>${num(eco.start)} pièces</strong> et <strong>${st.homesBase} homes</strong>. Le reste se gagne en jouant.</p>`,
+        <p style="margin-top:22px">Tu commences avec <strong>${num(eco.start)} pièces</strong> et <strong>${st.homesBase} homes</strong>. Le reste se gagne en jouant. Une question ? <code class="cmd">/aide</code> en jeu, ou les <a href="/faq" data-link>questions fréquentes</a>.</p>`,
+      aide: `<p>Tape <code class="cmd">/aide</code> (ou <code class="cmd">/help</code>) en jeu : un menu présente tous les sujets. Un clic gauche ouvre un livre qui explique le sujet simplement, avec des commandes sur lesquelles tu peux cliquer. Un clic droit lance directement la commande liée (par exemple <code class="cmd">/metiers</code>).</p>
+        <ul class="perks">
+          <li class="card"><strong>Bien débuter</strong><span class="muted small">Tes premières minutes, étape par étape</span></li>
+          <li class="card"><strong>Gagner des pièces</strong><span class="muted small">Toutes les façons d'en gagner et de les dépenser</span></li>
+          <li class="card"><strong>Protéger sa base</strong><span class="muted small">La pelle en or et les accès pour tes amis</span></li>
+          <li class="card"><strong>Questions fréquentes</strong><span class="muted small">Les réponses aux questions les plus posées</span></li>
+        </ul>
+        <p>Le règlement est disponible avec <code class="cmd">/regles</code> et sur la page <a href="/regles" data-link>Règlement</a>. Des astuces passent de temps en temps dans le chat pour les nouveaux joueurs (<code class="cmd">/astuces</code> pour les couper).</p>`,
       menus: `<p>Tape <code class="cmd">/menu</code> pour l'ouvrir. C'est la copie exacte du menu en jeu : survole une case pour voir ce qu'elle affiche. Les chiffres sont des exemples.</p>
         <div class="wiki-menu" style="margin-top:18px">${chest(HUB)}
           <ul class="legend">${Object.values(HUB.items).map((e) => `<li>${img(e.head ? face("MHF_Steve", 32) : icon(e.icon))}<div><strong>${esc(e.name)}</strong><span>${esc(e.what)}${e.cmd ? ` <code class="cmd">${e.cmd}</code>` : ""}</span></div></li>`).join("")}</ul></div>`,
       commandes: COMMANDS.map(([group, list]) => `<h3>${group}</h3><table class="cmds"><tbody>${list.map(([c, d]) => `<tr><td><code class="cmd">${esc(c)}</code></td><td>${esc(d)}</td></tr>`).join("")}</tbody></table>`).join(""),
+      metiers: (() => {
+        const jb = g.jobs;
+        if (!jb) return `<p>Les métiers arrivent bientôt.</p>`;
+        const bonusMax = String(Math.round(jb.bonusPerLevel * jb.max * 10) / 10).replace(".", ",");
+        return `<p>Tu as cinq métiers : <strong>${jb.list.map((x) => esc(x.name)).join(", ")}</strong>. Tu gagnes de l'XP rien qu'en jouant normalement, et une barre en haut de l'écran montre ta progression. Les niveaux vont de 1 à ${jb.max}.</p>
+        <ul class="perks">
+          <li class="card"><strong>Des pièces à chaque niveau</strong><span class="muted small">${num(jb.coinsPerLevel)} × le niveau atteint (${num(jb.coinsPerLevel * 10)} au niveau 10)</span></li>
+          <li class="card"><strong>Récolte double</strong><span class="muted small">+${String(jb.bonusPerLevel).replace(".", ",")} % de chance par niveau, jusqu'à ${bonusMax} %</span></li>
+          <li class="card"><strong>Titres et traînée</strong><span class="muted small">Aux niveaux 10, 25 et 50 de chaque métier</span></li>
+          <li class="card"><strong>Bonus à la mine</strong><span class="muted small">XP × ${String(jb.resourceMultiplier).replace(".", ",")} dans le monde ressources</span></li>
+        </ul>
+        <p class="small muted">Les blocs posés par des joueurs ne rapportent rien (même déplacés par un piston), les cultures ne comptent que mûres, et rien ne compte au hub, en créatif ou quand tu es AFK. Les monstres des cages à monstres ne rapportent pas d'XP.</p>
+        ${jb.list.map((x) => `<div class="job-block"><h3>${img(icon(x.icon))}${esc(x.name)} <span class="muted small">${esc(x.description)}</span></h3>
+          <ul class="job-src">${x.sources.map((src) => `<li>${img(icon(src.id || "book"))}<span>${esc(src.key ? tr(src.key, src.label || src.id) : src.label)}${src.ripe ? `<span class="note">mûr seulement</span>` : ""}</span><span class="x">+${src.xp}</span></li>`).join("")}</ul>
+          ${(x.milestones || []).length ? `<table class="cmds" style="margin-top:12px"><tbody>${x.milestones.map((m) => `<tr><td><strong>Niveau ${m.level}</strong></td><td>${bundle(m.rewards)}</td></tr>`).join("")}</tbody></table>` : ""}</div>`).join("")}`;
+      })(),
+      social: `<p>Ajoute tes amis avec <code class="cmd">/ami ajouter &lt;joueur&gt;</code> : il reçoit une demande à accepter. <code class="cmd">/ami</code> ouvre ta liste avec, pour chacun, s'il est connecté et où (en survie, à la mine, au hub...). Un clic pour le rejoindre, un autre pour lui écrire. Tu es prévenu quand un ami se connecte.</p>
+        <table class="cmds"><tbody>
+          <tr><td><code class="cmd">/msg &lt;joueur&gt; &lt;message&gt;</code></td><td>Message privé (aussi <code class="cmd">/tell</code> et <code class="cmd">/w</code>). <code class="cmd">/r</code> répond au dernier message.</td></tr>
+          <tr><td>Mentions</td><td>Écris le pseudo d'un joueur dans le chat : il est mis en valeur chez lui, avec un petit son.</td></tr>
+          <tr><td><code class="cmd">[objet]</code></td><td>Écris [objet] dans un message pour montrer l'objet que tu tiens : les autres le survolent pour voir ses détails.</td></tr>
+          <tr><td><code class="cmd">/ignorer &lt;joueur&gt;</code></td><td>Tu ne vois plus ses messages, ni dans le chat ni en privé.</td></tr>
+          <tr><td>Messages privés</td><td>Dans <code class="cmd">/ami</code>, choisis qui peut t'écrire : tout le monde, tes amis seulement ou personne.</td></tr>
+          <tr><td><code class="cmd">/report</code></td><td>Un tricheur, des insultes, un bug ? Le staff est prévenu tout de suite, en jeu et sur Discord.</td></tr>
+        </tbody></table>`,
+      parkour: `<p>Le hub a son parkour chronométré. Tape <code class="cmd">/parkour</code> au hub pour aller au départ, puis avance sur la plaque : le chrono démarre et s'affiche au-dessus de ta barre d'objets. Passe les étapes dans l'ordre jusqu'à l'arrivée.</p>
+        <p>Si tu tombes, tu reviens à la dernière étape. Trois objets t'aident pendant la course : revenir à l'étape, recommencer, quitter. Les meilleurs temps sont affichés au hub et avec <code class="cmd">/parkour top</code>. La première fois que tu le termines, tu gagnes des pièces et le titre <strong>Acrobate</strong>.</p>`,
       missions: `<p>Chaque jour à minuit, tu reçois une mission <strong>facile</strong>, une <strong>moyenne</strong> et une <strong>difficile</strong>. Le lundi, trois missions <strong>hebdomadaires</strong> plus longues arrivent.</p>
         <p>Terminer les trois missions du jour rapporte un bonus (${bundle(mr.bonus)}) et fait avancer ta <strong>série</strong> : chaque jour de série ajoute ${mr.streakPercent} % de pièces sur les missions, jusqu'à +${mr.streakMax} %. Rater un jour remet la série à zéro. Tu peux changer une mission par jour gratuitement avec un clic droit dans le menu.</p>
         <div class="tiers">${["easy", "medium", "hard", "weekly"].map((t) => `<div class="card"><h4>${tierNames[t]}</h4>${bundle(mr[t])}</div>`).join("")}</div>
@@ -659,7 +754,7 @@
         ${rewardsTable([["Participation", g.boss?.rewards?.participation], ["Meilleurs dégâts", g.boss?.rewards?.top1], ["2e", g.boss?.rewards?.top2], ["3e", g.boss?.rewards?.top3], ["Coup de grâce", g.boss?.rewards?.["last-hit"]]])}`,
       equipes: `<p>Fonde une équipe avec <code class="cmd">/equipe creer &lt;nom&gt; &lt;tag&gt;</code> pour ${num(st.teamCost)} pièces, jusqu'à ${st.teamMax} membres. Ton équipe a un tag devant le pseudo, un chat privé, un home commun et sa place dans le classement des équipes. Les coéquipiers ne peuvent pas se blesser, sauf si le chef active le combat.</p>`,
       hdv: `<p>Prends un objet en main et tape <code class="cmd">/hdv vendre &lt;prix&gt;</code>. Tu peux avoir ${st.hdvMax} objets en vente en même temps. Une taxe de ${String(st.hdvTax).replace(/\.0$/, "")} % est prélevée sur chaque vente. Les objets non vendus se récupèrent avec <code class="cmd">/hdv recuperer</code>.</p>`,
-      teleport: `<p>À chaque connexion, tu arrives au <strong>hub</strong>. Tu y trouves les statistiques du serveur, les classements en direct et le podium des meilleurs joueurs. <code class="cmd">/survie</code> (ou la boussole du hub) te ramène là où tu étais dans le monde survie, même après un passage au monde ressources, et <code class="cmd">/hub</code> te ramène au hub à tout moment.</p>
+      teleport: `<p>À chaque connexion, tu arrives au <strong>hub</strong>. Ton inventaire de survie y est rangé en sécurité (jamais supprimé) et rendu dès que tu repars en survie, avec tout ce que tu as reçu entre-temps. Tu y trouves le grand écran des statistiques, le podium des meilleurs joueurs et le parkour. <code class="cmd">/survie</code> (ou la boussole du hub) te ramène là où tu étais dans le monde survie, même après un passage au monde ressources, et <code class="cmd">/hub</code> te ramène au hub à tout moment.</p>
         <p>Tu as ${st.homesBase} homes au départ. Les paliers et la boutique en donnent d'autres. Toutes les téléportations ont un court délai : ne bouge pas pendant le compte à rebours. <code class="cmd">/rtp</code> t'envoie dans un endroit sûr au hasard, une fois toutes les ${Math.round((st.rtpCooldown || 600) / 60)} minutes.</p>`,
       ressources: (() => {
         const rb = st.resourceBonus || {};
@@ -761,6 +856,153 @@
       </div>`;
   }
 
+  // ───────────── Rejoindre ─────────────
+  async function rejoindre() {
+    setTitle("Rejoindre");
+    const [s, cm] = await Promise.all([data("serveur"), data("communaute")]);
+    const ip = s?.ip || "lyonmc.fr";
+    const version = s?.version || "1.21.8";
+    const be = s?.bedrock || {};
+    const copy = (txt, label = "Copier") => `<button type="button" class="copy-mini" data-copy="${esc(txt)}">${label}</button>`;
+    app.innerHTML = `
+      <div class="page-head"><div class="wrap"><h1>Rejoindre LyonMC</h1>
+        <p>Deux minutes suffisent. Le serveur est gratuit, et rien de ce qui aide à jouer n'est à vendre.</p></div></div>
+      <div class="wrap join-page">
+        <section>
+          <div class="mc-list" aria-label="LyonMC dans la liste des serveurs de Minecraft">
+            <div class="mc-entry">
+              <img class="ic" src="${serverIcon(ip)}" alt="" onerror="this.onerror=null;this.src='/img/grass_side.png'">
+              <span class="n">LyonMC</span>
+              <span class="count">${s ? `${s.online}/${s.max}` : "?/?"}<span class="ping" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></span>
+              <span class="motd"><span class="g">Survie ${esc(version)}</span> · métiers, saisons, boss mondial<br><span class="a">${esc(ip)}</span></span>
+            </div>
+          </div>
+          <p class="mc-caption">C'est à ça que LyonMC ressemble dans ta liste de serveurs.</p>
+        </section>
+
+        <section class="platforms">
+          <div class="card platform">
+            <h2>Java (ordinateur)</h2>
+            <p>Windows, Mac ou Linux, avec le launcher Minecraft.</p>
+            <ol>
+              <li><div><strong>Lance Minecraft en ${esc(version)}</strong><p>Dans le launcher, choisis « Dernière version » ou la ${esc(version)}.${s?.versions ? ` Versions acceptées : ${esc(s.versions)}.` : ""}</p></div></li>
+              <li><div><strong>Ouvre « Multijoueur »</strong><p>Puis « Ajouter un serveur ».</p></div></li>
+              <li><div><strong>Entre l'adresse</strong><p class="address"><code class="cmd">${esc(ip)}</code>${copy(ip)}</p></div></li>
+              <li><div><strong>Rejoins le serveur</strong><p>Double-clic sur LyonMC dans la liste. Bienvenue !</p></div></li>
+            </ol>
+          </div>
+          <div class="card platform ${be.enabled ? "" : "off"}">
+            <h2>Bedrock (téléphone, console, Windows)</h2>
+            ${be.enabled ? `<p>Minecraft sur téléphone, tablette, Xbox, PlayStation, Switch ou Windows (Bedrock).</p>
+            <ol>
+              <li><div><strong>Ouvre « Jouer » puis « Serveurs »</strong><p>Fais défiler jusqu'à « Ajouter un serveur ».</p></div></li>
+              <li><div><strong>Adresse du serveur</strong><p class="address"><code class="cmd">${esc(be.address || ip)}</code>${copy(be.address || ip)}</p></div></li>
+              <li><div><strong>Port</strong><p class="address"><code class="cmd">${esc(be.port || 19132)}</code>${copy(String(be.port || 19132))}</p></div></li>
+              <li><div><strong>Rejoins le serveur</strong><p>Sur console, il faut parfois passer par une application dédiée (BedrockTogether, par exemple).</p></div></li>
+            </ol>` : `<p>Pas encore disponible : pour l'instant, LyonMC se joue avec Minecraft Java sur ordinateur.</p>`}
+          </div>
+        </section>
+
+        <section>
+          <h2 style="font:700 var(--step-2)/1.15 var(--sans);margin:0 0 6px">Tes premières minutes</h2>
+          <p class="muted" style="margin:0 0 18px;max-width:62ch">Tout est guidé : tu n'as rien à préparer.</p>
+          <div class="first-minutes">
+            <div class="card">${ico("compass", "sm")}<strong>Tu arrives au hub</strong><p>Le guide du serveur s'ouvre tout seul. Clic droit avec la boussole pour partir en survie.</p></div>
+            <div class="card">${ico("map", "sm")}<strong>Les premiers pas</strong><p>Une barre en haut de l'écran te guide${cm?.welcome?.finalReward ? ` : ${num(cm.welcome.finalReward)} pièces à la fin` : ""}, en plus d'une récompense à chaque étape.</p></div>
+            <div class="card">${ico("iron_pickaxe", "sm")}<strong>Joue comme tu veux</strong><p>Miner, construire, explorer : tes métiers, missions et succès avancent tout seuls.</p></div>
+            <div class="card">${ico("writable_book", "sm")}<strong>Une question ?</strong><p>Tape <code class="cmd">/aide</code> en jeu, ou lis les <a href="/faq" data-link>questions fréquentes</a>.</p></div>
+          </div>
+          <p class="small muted" style="margin-top:18px">En jouant, tu acceptes le <a href="/regles" data-link>règlement</a>.</p>
+        </section>
+      </div>`;
+    app.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Copié"; } catch (e) { b.textContent = b.dataset.copy; }
+      setTimeout(() => (b.textContent = "Copier"), 2000);
+    }));
+  }
+
+  // ───────────── Règlement ─────────────
+  async function regles() {
+    setTitle("Règlement");
+    const cm = await data("communaute");
+    const r = cm?.rules;
+    app.innerHTML = `
+      <div class="page-head"><div class="wrap"><h1>Règlement</h1><p>${esc(r?.intro || "Pour que tout le monde s'amuse, ces règles s'appliquent à tous.")}</p></div></div>
+      <div class="wrap prose-page">
+        ${r?.list?.length ? `<ol class="rules">${r.list.map((x) => `<li class="card"><div><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></div></li>`).join("")}</ol>`
+          : `<p class="empty">Le règlement arrive dans une minute.</p>`}
+        ${r?.sanctions ? `<div class="callout"><p><strong>Sanctions.</strong> ${esc(r.sanctions)}</p></div>` : ""}
+        <h2>Signaler un problème</h2>
+        <p>En jeu, tape <code class="cmd">/report &lt;joueur&gt; &lt;raison&gt;</code> pour prévenir le staff, ou <code class="cmd">/report bug &lt;description&gt;</code> pour un bug. Le règlement est aussi disponible en jeu avec <code class="cmd">/regles</code>.</p>
+      </div>`;
+  }
+
+  // ───────────── Questions fréquentes ─────────────
+  async function faq() {
+    setTitle("Questions fréquentes");
+    const [cm, s] = await Promise.all([data("communaute"), data("serveur")]);
+    const list = cm?.faq || [];
+    app.innerHTML = `
+      <div class="page-head"><div class="wrap"><h1>Questions fréquentes</h1><p>Les réponses aux questions qu'on nous pose le plus. Pas trouvé ? Demande en jeu ou${s?.discord ? ` sur le <a href="${esc(s.discord)}" target="_blank" rel="noopener">Discord</a>` : " sur le Discord"}.</p></div></div>
+      <div class="wrap prose-page">
+        ${list.length ? `<div class="faq">${list.map((x, i) => `<details${i === 0 ? " open" : ""}><summary>${esc(x.q)}</summary><p>${esc(x.a)}</p></details>`).join("")}</div>`
+          : `<p class="empty">Les questions arrivent dans une minute.</p>`}
+        <h2>Encore une question ?</h2>
+        <p>En jeu, <code class="cmd">/aide</code> explique tout, sujet par sujet. Le <a href="/guide" data-link>guide du site</a> détaille chaque fonctionnalité avec les chiffres du serveur.</p>
+      </div>`;
+  }
+
+  // ───────────── Actualités ─────────────
+  async function actualites() {
+    setTitle("Actualités");
+    const news = await data("actualites");
+    app.innerHTML = `
+      <div class="page-head"><div class="wrap"><h1>Actualités</h1><p>Les nouveautés, les événements et les changements du serveur.</p></div></div>
+      <div class="wrap prose-page">
+        ${(news || []).length ? `<ul class="news">${news.map((n) => `<li class="card"><div class="meta"><time datetime="${esc(n.date)}">${esc(dateFr(n.date))}</time>${n.tag ? `<span class="label">${esc(n.tag)}</span>` : ""}</div>
+          <h3>${esc(n.title)}</h3><p>${esc(n.text)}</p></li>`).join("")}</ul>` : `<p class="empty">Pas encore d'actualité. Reviens bientôt !</p>`}
+      </div>`;
+  }
+
+  // ───────────── Pages légales (modèles à compléter) ─────────────
+  const TODO = (t) => `<span class="todo">[À compléter : ${t}]</span>`;
+  async function legal(kind) {
+    const s = await data("serveur");
+    const site = esc(s?.ip || "lyonmc.fr");
+    if (kind === "mentions") {
+      setTitle("Mentions légales");
+      app.innerHTML = `
+        <div class="page-head"><div class="wrap"><h1>Mentions légales</h1><p>Informations sur l'éditeur et l'hébergeur du site ${site}.</p></div></div>
+        <div class="wrap prose-page">
+          <h2>Éditeur du site</h2>
+          <p>Le site ${site} et le serveur Minecraft LyonMC sont édités par ${TODO("nom et prénom, ou nom de l'association")}.<br>
+          Contact : ${TODO("adresse e-mail de contact")}.<br>
+          Directeur de la publication : ${TODO("nom du responsable")}.</p>
+          <p class="small muted">Un particulier qui édite un site à titre non professionnel peut ne pas publier son nom et son adresse, à condition de les avoir communiqués à son hébergeur (article 6 de la loi pour la confiance dans l'économie numérique).</p>
+          <h2>Hébergeur</h2>
+          <p>${TODO("nom de l'hébergeur")}, ${TODO("adresse postale de l'hébergeur")}, ${TODO("téléphone de l'hébergeur")}.</p>
+          <h2>Propriété intellectuelle</h2>
+          <p>Minecraft est une marque de Mojang Synergies AB. LyonMC n'est pas un produit officiel Minecraft et n'est ni approuvé ni associé à Mojang ou Microsoft. Les textures et images issues du jeu appartiennent à leurs auteurs.</p>
+          <p>Les polices Geologica et Tiny5 sont distribuées sous licence SIL Open Font License.</p>
+        </div>`;
+      return;
+    }
+    setTitle("Confidentialité");
+    app.innerHTML = `
+      <div class="page-head"><div class="wrap"><h1>Confidentialité</h1><p>Ce que LyonMC enregistre sur toi, pourquoi, et comment le faire supprimer.</p></div></div>
+      <div class="wrap prose-page">
+        <h2>Sur le serveur Minecraft</h2>
+        <p>Quand tu joues, le serveur enregistre : ton pseudo et ton identifiant Minecraft (UUID), tes statistiques de jeu (succès, missions, métiers, pièces, temps de jeu, dates de connexion), tes paramètres (amis, joueurs ignorés, préférences) et tes positions (homes, dernière position en survie).</p>
+        <p>Pour éviter la triche aux récompenses (parrainage, votes, accueil), le serveur garde une <strong>empreinte</strong> de ton adresse IP, calculée de façon à ne pas pouvoir retrouver l'adresse elle-même. Les messages privés et les signalements sont notés dans le journal du serveur, pour pouvoir traiter un signalement.</p>
+        <p>Ton pseudo, ta tête, tes succès, tes métiers et tes classements sont affichés publiquement sur ce site.</p>
+        <h2>Sur ce site</h2>
+        <p>Le site ne dépose aucun cookie et n'utilise aucun outil de mesure d'audience. Pour afficher les skins, il charge des images depuis <strong>mc-heads.net</strong>, et l'icône du serveur depuis <strong>api.mcstatus.io</strong> : ces services reçoivent donc ton adresse IP, comme pour toute image chargée sur Internet. Les polices sont hébergées sur le site lui-même.</p>
+        <h2>Durée et suppression</h2>
+        <p>Les données sont gardées tant que le serveur existe. Tu peux demander à les consulter ou à les faire supprimer (droits prévus par le RGPD) en écrivant à ${TODO("adresse e-mail de contact")}. Tu peux aussi saisir la CNIL (cnil.fr).</p>
+        <p class="small muted">Responsable du traitement : ${TODO("nom du responsable")}. Dernière mise à jour : ${TODO("date")}.</p>
+      </div>`;
+  }
+
   // ───────────── Routage ─────────────
   async function render(scroll = true) {
     tipEl.hidden = true;
@@ -770,12 +1012,18 @@
     document.body.classList.toggle("is-map", parts[0] === "carte");
     try {
       if (path === "/") await home();
-      else if (parts[0] === "classements") await boards(parts[1]);
+      else if (parts[0] === "classements") await boards(parts[1], parts[2]);
       else if (parts[0] === "joueurs") await players();
       else if (parts[0] === "joueur" && parts[1]) await player(parts[1], parts[2]);
       else if (parts[0] === "guide") await guide(location.hash.slice(1));
       else if (parts[0] === "carte") carte();
       else if (parts[0] === "voter") await voter();
+      else if (parts[0] === "rejoindre") await rejoindre();
+      else if (parts[0] === "regles" || parts[0] === "reglement") await regles();
+      else if (parts[0] === "faq") await faq();
+      else if (parts[0] === "actualites") await actualites();
+      else if (parts[0] === "mentions-legales") await legal("mentions");
+      else if (parts[0] === "confidentialite") await legal("confidentialite");
       else {
         setTitle("Page introuvable");
         app.innerHTML = `<div class="page-head"><div class="wrap"><h1>Page introuvable</h1><p>Cette page n'existe pas. <a href="/" data-link>Retour à l'accueil</a></p></div></div>`;

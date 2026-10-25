@@ -237,7 +237,7 @@ public final class JobMenu {
     }
 
     /** Icône d'un bloc qui n'est pas un objet (cultures...). */
-    private static Material icon(Material m) {
+    public static Material icon(Material m) {
         return switch (m) {
             case WHEAT -> Material.WHEAT;
             case CARROTS -> Material.CARROT;

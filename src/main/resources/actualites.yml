@@ -1,0 +1,24 @@
+# ─────────────────────────────────────────────────────────────
+#  Actualités de LyonMC : page « Actualités » du site et accueil.
+#  Les plus récentes en premier. Ajout rapide en jeu :
+#     /lmc actu <titre> | <texte>
+#  (l'actualité est aussi annoncée en jeu et sur Discord)
+#  tag : petit mot affiché à côté (Nouveauté, Événement, Correctif, Info...)
+# ─────────────────────────────────────────────────────────────
+actualites:
+  - date: "2026-10-25"
+    tag: "Nouveauté"
+    titre: "Les métiers arrivent sur LyonMC"
+    texte: "Mineur, Bûcheron, Fermier, Chasseur et Pêcheur : tu gagnes de l'XP en jouant normalement. Chaque niveau rapporte des pièces et plus de chances de récolte double, et les niveaux 10, 25 et 50 débloquent des titres et une traînée. Tape /metiers en jeu."
+  - date: "2026-10-25"
+    tag: "Nouveauté"
+    titre: "Un centre d'aide en jeu et un règlement clair"
+    texte: "Tape /aide : chaque sujet s'ouvre dans un livre avec des commandes cliquables (bien débuter, gagner des pièces, protéger sa base, la mine...). Le règlement complet est disponible avec /regles et sur le site."
+  - date: "2026-10-25"
+    tag: "Nouveauté"
+    titre: "Amis, messages privés et signalements"
+    texte: "/ami pour retrouver tes amis (qui est connecté, où), /msg et /r pour les messages privés, /ignorer pour ne plus voir quelqu'un, et /report pour prévenir le staff d'un problème."
+  - date: "2026-10-25"
+    tag: "Hub"
+    titre: "Le parkour du hub"
+    texte: "Un parcours chronométré au hub : bats ton record, grimpe au classement et décroche le titre Acrobate la première fois que tu le termines. Tape /parkour au hub."

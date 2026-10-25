@@ -92,6 +92,7 @@ public final class WebExportService implements Listener {
             files.put("serveur.json", GSON.toJson(server()));
             files.put("classements.json", GSON.toJson(leaderboards()));
             files.put("joueurs.json", GSON.toJson(players()));
+            files.put("actualites.json", GSON.toJson(news()));
             long now = System.currentTimeMillis();
             // Le guide est regénéré toutes les 10 minutes, ou tout de suite s'il a disparu du dossier
             if (now - lastContent > 10 * 60_000L || !Files.exists(folder().resolve("contenu.json"))) {
@@ -130,6 +131,23 @@ public final class WebExportService implements Listener {
         }
     }
 
+    // ───────────────────────────── actualites.json ─────────────────────────────
+
+    private List<Map<String, Object>> news() {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (Map<?, ?> n : plugin.configs().news().getMapList("actualites")) {
+            if (n.get("titre") == null) continue;
+            Map<String, Object> o = new LinkedHashMap<>();
+            o.put("date", String.valueOf(n.get("date") == null ? "" : n.get("date")));
+            o.put("tag", n.get("tag") == null ? "" : String.valueOf(n.get("tag")));
+            o.put("title", String.valueOf(n.get("titre")));
+            o.put("text", n.get("texte") == null ? "" : String.valueOf(n.get("texte")));
+            out.add(o);
+            if (out.size() >= 50) break;
+        }
+        return out;
+    }
+
     // ───────────────────────────── serveur.json ─────────────────────────────
 
     private Map<String, Object> server() {
@@ -137,7 +155,13 @@ public final class WebExportService implements Listener {
         m.put("generated", System.currentTimeMillis());
         m.put("ip", cfg().getString("ip", "lyonmc.fr"));
         m.put("discord", cfg().getString("discord", ""));
-        m.put("version", "1.21.8");
+        m.put("version", cfg().getString("version-conseillee", "1.21.8"));
+        m.put("versions", cfg().getString("versions-acceptees", ""));
+        Map<String, Object> bedrock = new LinkedHashMap<>();
+        bedrock.put("enabled", cfg().getBoolean("bedrock.enabled", false));
+        bedrock.put("address", cfg().getString("bedrock.adresse", cfg().getString("ip", "lyonmc.fr")));
+        bedrock.put("port", cfg().getInt("bedrock.port", 19132));
+        m.put("bedrock", bedrock);
         m.put("online", Bukkit.getOnlinePlayers().size());
         m.put("max", Bukkit.getMaxPlayers());
         List<Map<String, Object>> online = new ArrayList<>();
@@ -554,31 +578,35 @@ public final class WebExportService implements Listener {
                 o.put("description", String.join(" ", job.description()));
                 List<Map<String, Object>> src = new ArrayList<>();
                 for (Map.Entry<org.bukkit.Material, Integer> e : job.blocks().entrySet()) {
-                    src.add(Map.of("key", e.getKey().translationKey(), "id", e.getKey().getKey().getKey(), "xp", e.getValue()));
+                    org.bukkit.Material mat = e.getKey();
+                    src.add(Map.of("key", mat.translationKey(), "id", fr.lyonmc.achievements.jobs.JobMenu.icon(mat).getKey().getKey(),
+                            "xp", e.getValue(), "ripe", fr.lyonmc.achievements.jobs.JobListenerAccess.isCrop(mat)));
                 }
                 for (Map.Entry<org.bukkit.Material, Integer> e : job.harvests().entrySet()) {
-                    src.add(Map.of("key", e.getKey().translationKey(), "id", e.getKey().getKey().getKey(), "xp", e.getValue()));
+                    org.bukkit.Material mat = e.getKey();
+                    src.add(Map.of("key", mat.translationKey(), "id", fr.lyonmc.achievements.jobs.JobMenu.icon(mat).getKey().getKey(), "xp", e.getValue()));
                 }
-                if (job.breed() > 0) src.add(Map.of("label", "Faire naître un animal", "xp", job.breed()));
+                if (job.breed() > 0) src.add(Map.of("label", "Faire naître un animal", "id", "wheat", "xp", job.breed()));
                 for (Map.Entry<String, Integer> e : job.mobs().entrySet()) {
                     String k = e.getKey();
-                    if (k.equals("HOSTILE")) src.add(Map.of("label", "Autres monstres", "xp", e.getValue()));
-                    else if (k.equals("PASSIVE")) src.add(Map.of("label", "Animaux", "xp", e.getValue()));
+                    if (k.equals("HOSTILE")) src.add(Map.of("label", "Autres monstres", "id", "rotten_flesh", "xp", e.getValue()));
+                    else if (k.equals("PASSIVE")) src.add(Map.of("label", "Animaux", "id", "leather", "xp", e.getValue()));
                     else {
                         try {
                             org.bukkit.entity.EntityType t = org.bukkit.entity.EntityType.valueOf(k);
-                            src.add(Map.of("key", t.translationKey(), "xp", e.getValue()));
+                            org.bukkit.Material egg = org.bukkit.Material.matchMaterial(k + "_SPAWN_EGG");
+                            src.add(Map.of("key", t.translationKey(), "id", egg == null ? "bone" : egg.getKey().getKey(), "xp", e.getValue()));
                         } catch (IllegalArgumentException ignored) {
                         }
                     }
                 }
                 for (Map.Entry<String, Integer> e : job.fish().entrySet()) {
-                    String label = switch (e.getKey()) {
-                        case "POISSON" -> "Poisson";
-                        case "TRESOR" -> "Trésor (livre enchanté, selle, arc...)";
-                        default -> "Déchet";
+                    String[] l = switch (e.getKey()) {
+                        case "POISSON" -> new String[]{"Poisson", "cod"};
+                        case "TRESOR" -> new String[]{"Trésor (livre enchanté, selle, arc...)", "enchanted_book"};
+                        default -> new String[]{"Déchet (bâton, cuir, bol...)", "stick"};
                     };
-                    src.add(Map.of("label", label, "xp", e.getValue()));
+                    src.add(Map.of("label", l[0], "id", l[1], "xp", e.getValue()));
                 }
                 src.sort((a, b) -> Integer.compare((Integer) b.get("xp"), (Integer) a.get("xp")));
                 o.put("sources", src);
