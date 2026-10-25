@@ -114,6 +114,7 @@ public final class MenuCommands implements TabExecutor {
                         + plugin.jobs().level(p, job.id()) + "</white> (sans récompenses).");
             }
             case "donner" -> plugin.lots().giveCommand(sender, args);
+            case "actu", "actualite" -> news(sender, args);
             case "pieces" -> sender.getServer().dispatchCommand(sender, "eco " + String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length)));
             case "import" -> {
                 plugin.msg(sender, "<gray>Import des succès depuis les fichiers du monde...");
@@ -149,6 +150,34 @@ public final class MenuCommands implements TabExecutor {
         }
     }
 
+    /** /lmc actu <titre> | <texte> : ajoute une actualité au site, annoncée en jeu et sur Discord. */
+    private void news(CommandSender sender, String[] args) {
+        String raw = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
+        int bar = raw.indexOf('|');
+        if (bar <= 0 || bar >= raw.length() - 1) {
+            plugin.msg(sender, "<gray>Usage : <white>/lmc actu <titre> | <texte></white> <dark_gray>(ajoutée en haut de la page Actualités du site)");
+            return;
+        }
+        String title = raw.substring(0, bar).trim(), text = raw.substring(bar + 1).trim();
+        var y = plugin.configs().news();
+        List<java.util.Map<?, ?>> list = new ArrayList<>(y.getMapList("actualites"));
+        java.util.Map<String, Object> n = new java.util.LinkedHashMap<>();
+        n.put("date", java.time.LocalDate.now(plugin.text().zone()).toString());
+        n.put("tag", "Info");
+        n.put("titre", title);
+        n.put("texte", text);
+        list.add(0, n);
+        y.set("actualites", list);
+        plugin.configs().saveNews();
+        plugin.web().export();
+        org.bukkit.Bukkit.broadcast(plugin.text().parse("<accent>✦</accent> <white>Nouvelle actualité :</white> <gray>")
+                .append(net.kyori.adventure.text.Component.text(title, fr.lyonmc.achievements.util.Text.WHITE))
+                .append(plugin.text().parse(" <dark_gray>(<click:open_url:'https://" + plugin.getConfig().getString("web.ip", "lyonmc.fr")
+                        + "/actualites'><u>lyonmc.fr/actualites</u></click>)")));
+        plugin.discord().send(title, text, 0xE8C872, null);
+        plugin.msg(sender, "<gray>Actualité ajoutée et annoncée.");
+    }
+
     private void help(CommandSender sender) {
         String[] lines = {
                 "/lmc reload", "recharger toutes les configurations",
@@ -158,6 +187,7 @@ public final class MenuCommands implements TabExecutor {
                 "/lmc missions reset <joueur>", "nouvelles missions pour un joueur",
                 "/lmc titre <joueur> <titre>", "donner un titre",
                 "/lmc donner <joueur> <lot>", "donner un lot de recompenses.yml (boutique en ligne, concours...)",
+                "/lmc actu <titre> | <texte>", "ajouter une actualité au site (annoncée en jeu et sur Discord)",
                 "/lmc metier <joueur> <métier> <niveau>", "fixer le niveau d'un métier (tests)",
                 "/eco give|take|set <joueur> <montant>", "gérer les pièces",
                 "/boss arene · lancer · stop", "boss mondial",
@@ -173,7 +203,7 @@ public final class MenuCommands implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
         if (!command.getName().equalsIgnoreCase("lmc") || !sender.hasPermission("lyonmc.admin")) return out;
-        if (args.length == 1) out.addAll(List.of("reload", "holo", "saison", "missions", "titre", "donner", "metier", "import"));
+        if (args.length == 1) out.addAll(List.of("reload", "holo", "saison", "missions", "titre", "donner", "metier", "actu", "import"));
         else if (args.length == 2) {
             switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "holo" -> out.addAll(List.of("creer", "suppr", "liste"));

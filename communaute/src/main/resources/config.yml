@@ -69,15 +69,16 @@ accueil:
     ouvrir-a-la-premiere-connexion: true
     titre: "Guide de LyonMC"
     pages:
-      - "<bold>Bienvenue sur LyonMC !</bold>\n\nUn serveur survie entre Lyonnais, avec des succès, des missions, des saisons et un boss.\n\nCe guide t'explique l'essentiel.\n\n<dark_gray>Tourne la page →"
-      - "<bold>Les commandes</bold>\n\n/menu : tout le serveur\n/missions : missions du jour\n/recompense : cadeau du jour\n/sethome maison : ton home\n/home : y retourner\n/hub : le hub\n/survie : revenir en survie"
-      - "<bold>La mine</bold>\n\n/mine t'envoie dans le monde ressources : plus de minerais, minage plus rapide, minerais parfois doublés, des pièces pour chaque minerai et des trésors cachés.\n\nNe construis pas là-bas : il est remis à neuf chaque mois."
-      - "<bold>Protéger ta base</bold>\n\nPose ta maison loin du spawn, puis protège-la (si le serveur a GriefPrevention : clic droit avec une pelle en or sur deux coins opposés).\n\nPersonne ne pourra rien y casser."
-      - "<bold>Les pièces</bold>\n\nTu gagnes des pièces avec les succès, les missions, la mine, les votes et le boss.\n\n/boutique : titres, couleurs, homes\n/hdv : acheter et vendre entre joueurs"
-      - "<bold>Monter de grade</bold>\n\nTon grade monte tout seul avec tes succès : Novice, Aventurier, Explorateur, Vétéran, Maître, Grand Maître, Légende.\n\nChaque mois, la saison récompense les meilleurs."
-      - "<bold>Les métiers</bold>\n\nMineur, Bûcheron, Fermier, Chasseur et Pêcheur : tu gagnes de l'XP en jouant.\n\nChaque niveau rapporte des pièces et plus de chances de récolte double.\n\n<click:run_command:'/metiers'><u>/metiers</u></click>"
-      - "<bold>Jouer ensemble</bold>\n\n/vote : une récompense à chaque vote\n/parrain : invite tes amis\n/ami : ta liste d'amis\n/equipe : crée ton équipe\n/objectif : le défi de la semaine\n\nLe site : lyonmc.fr"
-      - "<bold>Les règles</bold>\n\nRespect, pas de triche, pas de grief ni de vol.\n\nLe règlement complet :\n<click:run_command:'/regles'><u>/regles</u></click>\n\nUne question ? Tout est expliqué ici :\n<click:run_command:'/aide'><u>/aide</u></click>\n\n<dark_gray>Bon jeu !"
+      - "<bold>Bienvenue sur LyonMC !</bold>\n\nUn serveur survie avec des métiers, des succès, des missions, des saisons et un boss mondial.\n\nCe guide t'explique l'essentiel.\n\n<dark_gray>Tourne la page →"
+      - "<bold>Les commandes</bold>\n\n/menu : tout le serveur\n/aide : le centre d'aide\n/missions : tes missions\n/recompense : cadeau du jour\n/metiers : tes métiers\n/survie : la survie\n/hub : le hub"
+      - "<bold>Ta maison</bold>\n\nÉloigne-toi du spawn pour t'installer, puis :\n/sethome maison\n\nPour y revenir :\n/home maison\n\n/back : là où tu es mort"
+      - "<bold>Protéger ta base</bold>\n\nAvec la pelle en or : clic droit sur deux coins opposés de ta base.\n\nPersonne ne pourra rien y casser. /trust <joueur> pour un ami."
+      - "<bold>La mine</bold>\n\n/mine : le monde fait pour miner. Plus de minerais, minage rapide, des pièces et des trésors.\n\nN'y construis pas : il est remis à neuf chaque mois."
+      - "<bold>Les pièces</bold>\n\nSuccès, missions, métiers, mine, votes et boss en rapportent.\n\n/boutique : titres, couleurs, homes\n/hdv : acheter et vendre entre joueurs"
+      - "<bold>Les métiers</bold>\n\nMineur, Bûcheron, Fermier, Chasseur, Pêcheur : de l'XP en jouant.\n\nChaque niveau rapporte des pièces.\n\n<click:run_command:'/metiers'><u>/metiers</u></click>"
+      - "<bold>Monter de grade</bold>\n\nTon grade monte tout seul avec tes succès, de Novice jusqu'à Légende.\n\nChaque mois, la saison récompense les meilleurs."
+      - "<bold>Jouer ensemble</bold>\n\n/ami : tes amis\n/msg : message privé\n/equipe : ton équipe\n/vote : une récompense\n/parrain : invite tes amis"
+      - "<bold>Les règles</bold>\n\nRespect, pas de triche, pas de vol.\n<click:run_command:'/regles'><u>/regles</u></click>\n\nUne question ?\n<click:run_command:'/aide'><u>/aide</u></click>\n\n<dark_gray>Bon jeu !"
 
 # ───────────────────────── Votes ─────────────────────────
 # Il faut installer NuVotifier et inscrire le serveur sur les sites de vote.
@@ -242,7 +243,7 @@ aide:
       resume: ["Personne ne pourra casser", "ni voler chez toi."]
       pages:
         - "<bold>Protéger sa base</bold>\n\n<bold>1.</bold> Prends la pelle en or (donnée au début).\n\n<bold>2.</bold> Clic droit sur un coin de ta base, puis sur le coin opposé.\n\nC'est protégé !"
-        - "<bold>Ta zone</bold>\n\nTu gagnes des blocs de protection en jouant.\n\nUn bâton en main + clic droit : voir les zones.\n\n/abandonclaim : retirer la zone où tu es."
+        - "<bold>Ta zone</bold>\n\nTu gagnes des blocs de protection en jouant.\n\nBâton en main + clic droit : voir les zones.\n\n/abandonclaim : retirer une zone."
         - "<bold>Tes amis</bold>\n\n/trust <joueur> : il peut construire chez toi\n/containertrust <joueur> : il peut ouvrir tes coffres\n/untrust <joueur> : retirer l'accès\n/trustlist : qui a accès"
     deplacer:
       nom: "Se déplacer"
@@ -252,7 +253,7 @@ aide:
       pages:
         - "<bold>Se déplacer</bold>\n\n/hub : le hub\n/survie : là où tu étais en survie\n/mine : le monde ressources\n/rtp : un endroit au hasard\n/back : position précédente (ou mort)"
         - "<bold>Tes homes</bold>\n\n/sethome <nom> : poser un home\n/home <nom> : y aller\n/homes : la liste\n/delhome <nom> : le supprimer\n\nTu peux en avoir plus avec la /boutique."
-        - "<bold>Rejoindre un joueur</bold>\n\n/tpa <joueur> : demander à le rejoindre\n/tpahere <joueur> : lui demander de venir\n/tpaccept ou /tpdeny : répondre\n\nNe bouge pas pendant les 3 secondes."
+        - "<bold>Rejoindre un joueur</bold>\n\n/tpa <joueur> : le rejoindre\n/tpahere <joueur> : le faire venir\n/tpaccept : accepter\n/tpdeny : refuser\n\nNe bouge pas pendant 3 s."
     grades:
       nom: "Grades, titres et style"
       icone: NAME_TAG
@@ -277,7 +278,7 @@ aide:
       resume: ["Le classement du mois", "et le boss à affronter ensemble."]
       essayer: "saison"
       pages:
-        - "<bold>La saison</bold>\n\nChaque mois, tes succès et tes missions te donnent des points. Les meilleurs gagnent de grosses récompenses et un titre.\n\nLe week-end, les points comptent double !"
+        - "<bold>La saison</bold>\n\nChaque mois, succès et missions donnent des points. Les meilleurs gagnent des récompenses et un titre.\n\nLe week-end : points doublés !"
         - "<bold>Le boss mondial</bold>\n\nIl apparaît à heures fixes. Tout le monde peut l'affronter : plus tu fais de dégâts, plus tu gagnes.\n\n<click:run_command:'/boss'><u>/boss</u></click> : quand et où"
     ensemble:
       nom: "Jouer ensemble"
@@ -288,7 +289,7 @@ aide:
         - "<bold>Tes amis</bold>\n\n/ami ajouter <joueur>\n/ami : ta liste (qui est connecté, où)\n\n<bold>Messages privés</bold>\n/msg <joueur> <message>\n/r <message> : répondre"
         - "<bold>Ton équipe</bold>\n\n/equipe creer <nom> <tag>\n/equipe inviter <joueur>\n\nVotre tag s'affiche dans le chat et vos succès s'additionnent au classement des équipes."
         - "<bold>Faire grandir le serveur</bold>\n\n/vote : une récompense par vote\n/parrain <joueur> : ton parrain et toi êtes récompensés\n/objectif : le défi de la semaine pour tout le serveur"
-        - "<bold>Dans le chat</bold>\n\nÉcris le pseudo d'un joueur pour le mentionner.\n\nÉcris [objet] pour montrer l'objet que tu tiens.\n\n/ignorer <joueur> : ne plus voir ses messages."
+        - "<bold>Dans le chat</bold>\n\nÉcris un pseudo pour mentionner le joueur.\n\n[objet] montre l'objet que tu tiens.\n\n/ignorer <joueur> : ne plus le voir."
     echanges:
       nom: "Acheter et vendre"
       icone: EMERALD
@@ -307,7 +308,7 @@ aide:
       icone: BELL
       resume: ["Un tricheur, un bug,", "une question ?"]
       pages:
-        - "<bold>Un problème ?</bold>\n\n<bold>Un joueur triche ou t'embête :</bold>\n/report <joueur> <raison>\n\n<bold>Un bug :</bold>\n/report bug <ce qui se passe>\n\nLe staff est prévenu tout de suite."
+        - "<bold>Un problème ?</bold>\n\n<bold>Un tricheur :</bold>\n/report <joueur> <raison>\n\n<bold>Un bug :</bold>\n/report bug <description>\n\nLe staff est prévenu tout de suite."
         - "<bold>Mort ou objets perdus ?</bold>\n\n/back te ramène là où tu es mort. Tes objets restent 5 minutes au sol.\n\n<bold>Une question ?</bold>\nPose-la dans le chat ou sur le Discord du serveur (lyonmc.fr)."
     faq:
       nom: "Questions fréquentes"

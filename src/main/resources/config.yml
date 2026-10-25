@@ -141,6 +141,15 @@ web:
   interval-seconds: 60
   ip: "lyonmc.fr"
   discord: ""
+  # Page « Rejoindre » du site
+  version-conseillee: "1.21.8"
+  # Autres versions acceptées, à remplir si ViaVersion et ViaBackwards sont installés (ex. : "1.20 à 1.21.8")
+  versions-acceptees: ""
+  # Joueurs Bedrock (téléphone, console, Windows) : seulement si Geyser et Floodgate sont installés
+  bedrock:
+    enabled: false
+    adresse: "lyonmc.fr"
+    port: 19132
 
 # Annonces sur Discord (laisser vide pour désactiver)
 # Discord : Paramètres du salon > Intégrations > Webhooks > Copier l'URL

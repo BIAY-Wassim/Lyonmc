@@ -4,16 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LyonMC · Serveur Minecraft survie 1.21.8</title>
-  <meta name="description" content="LyonMC, serveur Minecraft survie Java 1.21.8 : succès, missions quotidiennes, saisons mensuelles, boss mondial, équipes et classements. Adresse : lyonmc.fr">
+  <meta name="description" content="LyonMC, serveur Minecraft survie Java 1.21.8 : métiers, succès, missions quotidiennes, saisons mensuelles, boss mondial, parkour, équipes et classements. Adresse : lyonmc.fr">
   <meta property="og:title" content="LyonMC · Survie Minecraft 1.21.8">
-  <meta property="og:description" content="Succès, missions du jour, saisons, boss mondial et classements. Rejoins-nous sur lyonmc.fr">
+  <meta property="og:description" content="Métiers, succès, missions du jour, saisons, boss mondial et classements. Rejoins-nous sur lyonmc.fr">
   <meta property="og:type" content="website">
   <meta name="theme-color" content="#0f131b">
   <link rel="icon" href="https://api.mcstatus.io/v2/icon/lyonmc.fr">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;500;600;700&family=Tiny5&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/style.css?v=9">
+  <link rel="preload" href="/assets/fonts/geologica-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/tiny5-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/style.css?v=10">
 </head>
 <body>
   <header class="topbar">
@@ -21,9 +20,11 @@
       <a class="brand" href="/" data-link><img class="logo" src="https://api.mcstatus.io/v2/icon/lyonmc.fr" alt="" onerror="this.onerror=null;this.src='/img/grass_side.png'">LyonMC</a>
       <nav class="nav" aria-label="Navigation principale">
         <a href="/" data-link>Accueil</a>
+        <a href="/rejoindre" data-link>Rejoindre</a>
         <a href="/classements" data-link>Classements</a>
         <a href="/joueurs" data-link>Joueurs</a>
         <a href="/guide" data-link>Guide</a>
+        <a href="/actualites" data-link>Actualités</a>
         <a href="/voter" data-link>Voter</a>
         <a href="/carte" data-link>Carte</a>
       </nav>
@@ -36,14 +37,20 @@
   <footer class="footer">
     <div class="wrap">
       <span>LyonMC, survie Java 1.21.8</span>
-      <a href="/guide" data-link>Guide</a>
-      <a href="/carte" data-link>Carte en direct</a>
-      <a id="discord-link" href="#" hidden>Discord</a>
+      <nav class="links" aria-label="Liens du site">
+        <a href="/rejoindre" data-link>Rejoindre</a>
+        <a href="/regles" data-link>Règlement</a>
+        <a href="/faq" data-link>Questions fréquentes</a>
+        <a href="/actualites" data-link>Actualités</a>
+        <a href="/mentions-legales" data-link>Mentions légales</a>
+        <a href="/confidentialite" data-link>Confidentialité</a>
+        <a id="discord-link" href="#" hidden>Discord</a>
+      </nav>
       <span class="legal">Pas un produit officiel Minecraft. Non approuvé par Mojang ni Microsoft.</span>
     </div>
   </footer>
 
   <div class="tip" id="tip" role="tooltip" hidden></div>
-  <script src="/assets/app.js?v=9" defer></script>
+  <script src="/assets/app.js?v=10" defer></script>
 </body>
 </html>
