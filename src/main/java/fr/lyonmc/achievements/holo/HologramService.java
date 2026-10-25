@@ -414,23 +414,36 @@ public final class HologramService {
         }
         panels.add(c);
 
-        // 4. Fortune et missions
+        // 4. Fortune et métiers (ou missions si les métiers sont désactivés)
         List<Component> d = new ArrayList<>();
         d.add(title("⛁ Les plus riches", TextColor.color(0xFFD86B)));
         d.add(RULE);
         List<Profile> rich = plugin.economy().top();
-        for (int i = 0; i < 5; i++) {
+        boolean jobs = plugin.jobs() != null && plugin.jobs().enabled();
+        for (int i = 0; i < (jobs ? 4 : 5); i++) {
             Profile p = i < rich.size() ? rich.get(i) : null;
             d.add(Component.text(" ").append(line(i + 1, p == null ? "-" : p.name, p == null ? "" : plugin.economy().format(p.coins))));
         }
         d.add(Component.empty());
-        d.add(Component.text(" ✔ Missions", TextColor.color(0x9FD8FF)));
-        List<Profile> mi = new ArrayList<>(plugin.profiles().all());
-        mi.removeIf(p -> p.missionsDone <= 0 || p.name == null);
-        mi.sort(Comparator.comparingInt((Profile p) -> p.missionsDone).reversed());
-        for (int i = 0; i < 3; i++) {
-            Profile p = i < mi.size() ? mi.get(i) : null;
-            d.add(Component.text(" ").append(line(i + 1, p == null ? "-" : p.name, p == null ? "" : "✔ " + Text.num(p.missionsDone))));
+        if (jobs) {
+            d.add(Component.text(" ⚒ Meilleurs métiers", TextColor.color(0x9FD8FF)));
+            for (var job : plugin.jobs().all()) {
+                List<Profile> top = plugin.jobs().top(job);
+                Profile p = top.isEmpty() ? null : top.get(0);
+                d.add(Component.text(" ").append(Component.text(job.symbol() + " ", job.color()))
+                        .append(Component.text(job.name() + "  ", Text.GRAY))
+                        .append(Component.text(p == null ? "-" : p.name, Text.WHITE))
+                        .append(Component.text(p == null ? "" : "  niv. " + plugin.jobs().level(p, job.id()), accent)));
+            }
+        } else {
+            d.add(Component.text(" ✔ Missions", TextColor.color(0x9FD8FF)));
+            List<Profile> mi = new ArrayList<>(plugin.profiles().all());
+            mi.removeIf(p -> p.missionsDone <= 0 || p.name == null);
+            mi.sort(Comparator.comparingInt((Profile p) -> p.missionsDone).reversed());
+            for (int i = 0; i < 3; i++) {
+                Profile p = i < mi.size() ? mi.get(i) : null;
+                d.add(Component.text(" ").append(line(i + 1, p == null ? "-" : p.name, p == null ? "" : "✔ " + Text.num(p.missionsDone))));
+            }
         }
         panels.add(d);
 

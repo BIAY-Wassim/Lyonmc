@@ -279,6 +279,8 @@ public final class RewardService {
             case "boss-kills" -> p.bossKills;
             case "coins-earned" -> p.earned;
             case "titles" -> unlockedTitles(p);
+            case "job-levels" -> plugin.jobs().totalLevels(p);
+            case "job-level" -> c.arg() == null ? 0 : plugin.jobs().level(p, c.arg());
             default -> 0;
         };
     }
@@ -299,6 +301,11 @@ public final class RewardService {
             case "boss-kills" -> "Vaincre " + v + " fois le boss mondial";
             case "coins-earned" -> "Gagner " + Text.num(v) + " pièces au total";
             case "titles" -> "Débloquer " + v + " titres";
+            case "job-levels" -> "Cumuler " + v + " niveaux de métiers";
+            case "job-level" -> {
+                var job = plugin.jobs().get(c.arg());
+                yield (job == null ? c.arg() : job.name()) + " niveau " + v;
+            }
             default -> c.type();
         };
     }
@@ -354,11 +361,8 @@ public final class RewardService {
         }
         if (b.xpLevels() > 0) player.giveExpLevels(b.xpLevels());
         if (b.xpPoints() > 0) player.giveExp(b.xpPoints());
-        for (ItemStack item : b.itemStacks()) {
-            for (ItemStack left : player.getInventory().addItem(item).values()) {
-                player.getWorld().dropItemNaturally(player.getLocation(), left);
-            }
-        }
+        List<ItemStack> items = b.itemStacks();
+        if (!items.isEmpty()) plugin.auctions().giveOrStore(player, items);
         for (String cmd : b.commands()) {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", player.getName()));
         }

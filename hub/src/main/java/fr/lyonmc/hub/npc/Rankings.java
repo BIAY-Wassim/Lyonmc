@@ -29,7 +29,13 @@ public final class Rankings {
             new Board("succes", "achievements", "count", "Succès", "succès"),
             new Board("saison", "season", "points", "Saison", "pts"),
             new Board("fortune", "richest", "coins", "Fortune", "pièces"),
-            new Board("missions", "missions", "missions", "Missions", "missions"));
+            new Board("missions", "missions", "missions", "Missions", "missions"),
+            new Board("metiers", "jobs.total", "levels", "Métiers", "niveaux"),
+            new Board("mineur", "jobs.mineur", "level", "Mineur", "niv."),
+            new Board("bucheron", "jobs.bucheron", "level", "Bûcheron", "niv."),
+            new Board("fermier", "jobs.fermier", "level", "Fermier", "niv."),
+            new Board("chasseur", "jobs.chasseur", "level", "Chasseur", "niv."),
+            new Board("pecheur", "jobs.pecheur", "level", "Pêcheur", "niv."));
 
     private volatile Map<String, List<Entry>> data = Map.of();
 
@@ -46,7 +52,11 @@ public final class Rankings {
             Map<String, List<Entry>> out = new HashMap<>();
             for (Board b : BOARDS) {
                 List<Entry> list = new ArrayList<>();
-                JsonElement arr = root.get(b.key());
+                // Clé simple (« achievements ») ou chemin (« jobs.total »)
+                JsonElement arr = root;
+                for (String part : b.key().split("\\.")) {
+                    arr = arr instanceof JsonObject obj ? obj.get(part) : null;
+                }
                 if (arr instanceof JsonArray a) {
                     for (JsonElement e : a) {
                         if (!(e instanceof JsonObject o) || !o.has("name")) continue;

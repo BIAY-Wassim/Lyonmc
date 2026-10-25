@@ -26,7 +26,8 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * COMMUNAUTE (par wassdead) : accueil des nouveaux, votes, parrainage et fidélité.
+ * COMMUNAUTE (par wassdead) : accueil des nouveaux, centre d'aide, règlement, votes, parrainage, fidélité,
+ * amis, messages privés et signalements.
  * S'appuie sur LyonAchievements pour les pièces, les lots, les profils et l'affichage.
  */
 public final class Communaute extends JavaPlugin implements TabExecutor {
@@ -40,6 +41,10 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
     private Goals goals;
     private HappyHours happyHours;
     private WebExport export;
+    private Help help;
+    private Friends friends;
+    private Messages messages;
+    private Reports reports;
     private final List<BukkitTask> tasks = new ArrayList<>();
 
     @Override
@@ -57,19 +62,28 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         goals = new Goals(this);
         happyHours = new HappyHours(this);
         export = new WebExport(this);
+        help = new Help(this);
+        friends = new Friends(this);
+        messages = new Messages(this);
+        reports = new Reports(this);
 
         var pm = getServer().getPluginManager();
         pm.registerEvents(welcome, this);
         pm.registerEvents(votes, this);
         pm.registerEvents(loyalty, this);
         pm.registerEvents(goals, this);
+        pm.registerEvents(help, this);
+        pm.registerEvents(friends, this);
+        pm.registerEvents(messages, this);
+        pm.registerEvents(reports, this);
         votes.hookVotifier();
 
         // LyonAchievements affiche « AFK » dans TAB et un panneau « Communauté » sur le grand écran du hub
         getServer().getServicesManager().register(fr.lyonmc.achievements.api.AfkProvider.class, loyalty, this, ServicePriority.Normal);
         getServer().getServicesManager().register(fr.lyonmc.achievements.api.ScreenPanel.class, new Panel(this), this, ServicePriority.Normal);
 
-        for (String c : List.of("vote", "premierspas", "parrain", "objectif", "bienvenue", "communaute")) {
+        for (String c : List.of("vote", "premierspas", "parrain", "objectif", "bienvenue", "communaute", "aide", "regles", "astuces",
+                "ami", "msg", "r", "ignorer", "espion", "report", "signalements")) {
             var cmd = getCommand(c);
             if (cmd != null) {
                 cmd.setExecutor(this);
@@ -103,6 +117,8 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             votes.tick();
             goals.tick();
             happyHours.tick();
+            help.tick();
+            friends.tick();
         }, 100L, 600L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, export::export, 200L, 1200L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, () -> store.save(true), 2400L, 2400L));
@@ -114,11 +130,28 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         var defaults = cfg.getDefaults();
         if (defaults == null) return;
         boolean changed = false;
+        // Lu avant d'ajouter les clés manquantes (sinon la version du .jar serait prise pour celle du fichier)
+        int version = cfg.isSet("config-version") ? cfg.getInt("config-version") : 1;
         for (String key : defaults.getKeys(false)) {
             if (!cfg.isSet(key)) {
                 cfg.set(key, defaults.get(key));
                 changed = true;
             }
+        }
+        // 1.1 : nouvelle étape « métier » des premiers pas, et guide de départ avec les métiers, l'aide et les règles
+        if (version < 2) {
+            var steps = cfg.getConfigurationSection("accueil.etapes");
+            var defSteps = defaults.getConfigurationSection("accueil.etapes");
+            if (steps != null && defSteps != null) {
+                for (String k : defSteps.getKeys(false)) {
+                    if (!steps.isSet(k)) steps.set(k, defSteps.get(k));
+                }
+            }
+            List<String> pages = cfg.getStringList("accueil.livre.pages");
+            boolean untouched = pages.size() == 7 && pages.get(6).contains("Bon jeu") && pages.stream().noneMatch(x -> x.contains("/regles"));
+            if (untouched) cfg.set("accueil.livre.pages", defaults.getStringList("accueil.livre.pages"));
+            cfg.set("config-version", 2);
+            changed = true;
         }
         if (changed) saveConfig();
     }
@@ -155,6 +188,14 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
 
     public Welcome welcome() {
         return welcome;
+    }
+
+    public Help help() {
+        return help;
+    }
+
+    public Friends friends() {
+        return friends;
     }
 
     /** Section de la config (celle du .jar si le fichier du serveur ne l'a pas). */
@@ -247,6 +288,10 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             admin(sender, args);
             return true;
         }
+        if (name.equals("signalements") && !(sender instanceof Player)) {
+            reports.staffCommand(sender, args);
+            return true;
+        }
         if (!(sender instanceof Player p)) {
             sender.sendMessage("Commande réservée aux joueurs.");
             return true;
@@ -257,6 +302,16 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             case "parrain" -> referral.command(p, args);
             case "objectif" -> goals.command(p);
             case "bienvenue" -> welcome.welcomeCommand(p);
+            case "aide" -> help.command(p, args);
+            case "regles" -> help.openRules(p);
+            case "astuces" -> help.toggleTips(p);
+            case "ami" -> friends.command(p, args);
+            case "msg" -> messages.msg(p, args);
+            case "r" -> messages.reply(p, args);
+            case "ignorer" -> messages.ignore(p, args);
+            case "espion" -> messages.spy(p);
+            case "report" -> reports.command(p, args);
+            case "signalements" -> reports.staffCommand(p, args);
             default -> {
             }
         }
@@ -330,6 +385,18 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
         } else if (name.equals("premierspas") && args.length == 1) out.addAll(List.of("cacher", "afficher"));
         else if (name.equals("communaute") && args.length == 2 && args[0].equalsIgnoreCase("vote")) Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
+        else if (name.equals("aide") && args.length == 1) {
+            var sec = section("aide.sujets");
+            if (sec != null) out.addAll(sec.getKeys(false));
+        } else if (name.equals("ami")) {
+            if (args.length == 1) out.addAll(List.of("ajouter", "accepter", "refuser", "retirer", "liste"));
+            else if (args.length == 2) Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
+        } else if ((name.equals("msg") || name.equals("ignorer")) && args.length == 1) {
+            Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
+        } else if (name.equals("report") && args.length == 1) {
+            out.add("bug");
+            Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
+        } else if (name.equals("signalements") && args.length == 1) out.add("traiter");
         String last = args.length == 0 ? "" : args[args.length - 1].toLowerCase(Locale.ROOT);
         out.removeIf(x -> !x.toLowerCase(Locale.ROOT).startsWith(last));
         return out;

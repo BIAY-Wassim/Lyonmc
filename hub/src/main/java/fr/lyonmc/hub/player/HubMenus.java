@@ -57,6 +57,9 @@ public final class HubMenus implements Listener {
         else if (action.equals("site")) {
             p.closeInventory();
             p.sendMessage(MM.deserialize("<#e8c872>✦</#e8c872> <gray>Le site du serveur : <white><click:open_url:'https://lyonmc.fr'><u>lyonmc.fr</u></click></white> <dark_gray>(classements, profils, carte en direct)"));
+        } else if (action.startsWith("parkour:")) {
+            p.closeInventory();
+            players.parkour().action(p, action.substring(8));
         } else if (action.startsWith("commande:")) {
             p.closeInventory();
             p.performCommand(action.substring(9).trim());
@@ -154,6 +157,19 @@ public final class HubMenus implements Listener {
                 "<gray>Crée ou gère ton équipe.", "", "<#e8c872>➤ Cliquer")), "commande:equipe");
         button(h, 33, item(Material.FILLED_MAP, "<white><bold>Site et carte", List.of(
                 "<gray>lyonmc.fr : classements, profils,", "<gray>carte du monde en direct.", "", "<#e8c872>➤ Cliquer")), "site");
+        if (Bukkit.getPluginCommand("metiers") != null) button(h, 19, item(Material.IRON_PICKAXE, "<#9fd3ff><bold>Métiers", List.of(
+                "<gray>Mineur, Bûcheron, Fermier,", "<gray>Chasseur et Pêcheur : tes niveaux", "<gray>et ce qui rapporte de l'XP.", "", "<#e8c872>➤ Cliquer")), "commande:metiers");
+        if (players.parkour().ready()) {
+            long best = players.parkour().best(p.getUniqueId());
+            button(h, 25, item(Material.FEATHER, "<#9fffe0><bold>Parkour", List.of(
+                    "<gray>Le parcours du hub : bats ton record", "<gray>et le meilleur temps du serveur !",
+                    best > 0 ? "<dark_gray>Ton record : " + Parkour.time(best) : "<dark_gray>Pas encore terminé",
+                    "", "<#e8c872>➤ Cliquer pour y aller")), "parkour:aller");
+        }
+        if (Bukkit.getPluginCommand("aide") != null) button(h, 28, item(Material.LECTERN, "<white><bold>Aide", List.of(
+                "<gray>Tout comprendre sur LyonMC,", "<gray>et le règlement.", "", "<#e8c872>➤ Cliquer")), "commande:aide");
+        if (Bukkit.getPluginCommand("ami") != null) button(h, 34, item(Material.PLAYER_HEAD, "<#7cd4ff><bold>Amis", List.of(
+                "<gray>Qui est connecté, où,", "<gray>et rejoindre tes amis.", "", "<#e8c872>➤ Cliquer")), "commande:ami");
         // Communauté (plugin COMMUNAUTE)
         int slot = 38;
         if (Bukkit.getPluginCommand("vote") != null) button(h, slot++, item(Material.GOLDEN_APPLE, "<#9be37c><bold>Voter pour LyonMC", List.of(

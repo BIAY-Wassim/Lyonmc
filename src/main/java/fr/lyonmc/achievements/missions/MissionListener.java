@@ -33,16 +33,7 @@ import java.util.*;
 /** Fait avancer les missions à partir des actions des joueurs. */
 public final class MissionListener implements Listener {
 
-    private static final int MAX_TRACKED = 100_000;
-
     private final LyonAchievements plugin;
-    /** Blocs posés par des joueurs (ne comptent pas comme "minés"). */
-    private final Set<String> placed = Collections.newSetFromMap(new LinkedHashMap<String, Boolean>() {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldest) {
-            return size() > MAX_TRACKED;
-        }
-    });
     private final Map<UUID, Long> lastDistance = new HashMap<>();
 
     public MissionListener(LyonAchievements plugin) {
@@ -55,10 +46,6 @@ public final class MissionListener implements Listener {
 
     private static boolean playing(Player p) {
         return p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE;
-    }
-
-    private static String key(Block b) {
-        return b.getWorld().getName() + ":" + b.getX() + ":" + b.getY() + ":" + b.getZ();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -75,7 +62,8 @@ public final class MissionListener implements Listener {
         if (!playing(p)) return;
         Block b = event.getBlock();
         Material type = b.getType();
-        boolean wasPlaced = placed.remove(key(b));
+        // Blocs posés par des joueurs : ils ne comptent pas comme "minés" (retenu même après un redémarrage)
+        boolean wasPlaced = plugin.placed().isPlaced(b);
 
         if (b.getBlockData() instanceof Ageable age && isCrop(type)) {
             if (age.getAge() >= age.getMaximumAge()) missions().progress(p, MissionType.HARVEST, type.name(), false, 1);
@@ -103,7 +91,6 @@ public final class MissionListener implements Listener {
     public void onPlace(BlockPlaceEvent event) {
         Player p = event.getPlayer();
         Block b = event.getBlockPlaced();
-        if (!isCrop(b.getType())) placed.add(key(b));
         if (playing(p)) missions().progress(p, MissionType.PLACE, b.getType().name(), false, 1);
     }
 

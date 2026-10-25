@@ -128,6 +128,11 @@ commands:
   boss:
     description: Boss mondial
     permission: lyonmc.succes.use
+  metiers:
+    description: Métiers (Mineur, Bûcheron, Fermier, Chasseur, Pêcheur)
+    usage: /metiers [top|<métier>]
+    aliases: [metier, métiers, métier, jobs, job]
+    permission: lyonmc.succes.use
 
 permissions:
   lyonmc.succes.use:

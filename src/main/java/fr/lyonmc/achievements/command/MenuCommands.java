@@ -96,6 +96,24 @@ public final class MenuCommands implements TabExecutor {
                 p.dirty();
                 plugin.msg(sender, "<gray>Titre <white>" + args[2] + "</white> donné à <white>" + p.name + "</white>.");
             }
+            case "metier" -> {
+                Profile p = args.length > 3 ? plugin.profiles().byName(args[1]) : null;
+                var job = args.length > 3 ? plugin.jobs().get(args[2]) : null;
+                int level;
+                try {
+                    level = args.length > 3 ? Integer.parseInt(args[3]) : -1;
+                } catch (NumberFormatException e) {
+                    level = -1;
+                }
+                if (p == null || job == null || level < 1) {
+                    plugin.msg(sender, "<gray>Usage : <white>/lmc metier <joueur> <mineur|bucheron|fermier|chasseur|pecheur> <niveau>");
+                    return;
+                }
+                plugin.jobs().setLevel(p, job, level);
+                plugin.msg(sender, "<gray>" + job.name() + " de <white>" + p.name + "</white> mis au niveau <white>"
+                        + plugin.jobs().level(p, job.id()) + "</white> (sans récompenses).");
+            }
+            case "donner" -> plugin.lots().giveCommand(sender, args);
             case "pieces" -> sender.getServer().dispatchCommand(sender, "eco " + String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length)));
             case "import" -> {
                 plugin.msg(sender, "<gray>Import des succès depuis les fichiers du monde...");
@@ -139,6 +157,8 @@ public final class MenuCommands implements TabExecutor {
                 "/lmc saison fin", "terminer la saison maintenant",
                 "/lmc missions reset <joueur>", "nouvelles missions pour un joueur",
                 "/lmc titre <joueur> <titre>", "donner un titre",
+                "/lmc donner <joueur> <lot>", "donner un lot de recompenses.yml (boutique en ligne, concours...)",
+                "/lmc metier <joueur> <métier> <niveau>", "fixer le niveau d'un métier (tests)",
                 "/eco give|take|set <joueur> <montant>", "gérer les pièces",
                 "/boss arene · lancer · stop", "boss mondial",
                 "/setspawn", "définir le spawn",
@@ -153,13 +173,13 @@ public final class MenuCommands implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
         if (!command.getName().equalsIgnoreCase("lmc") || !sender.hasPermission("lyonmc.admin")) return out;
-        if (args.length == 1) out.addAll(List.of("reload", "holo", "saison", "missions", "titre", "import"));
+        if (args.length == 1) out.addAll(List.of("reload", "holo", "saison", "missions", "titre", "donner", "metier", "import"));
         else if (args.length == 2) {
             switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "holo" -> out.addAll(List.of("creer", "suppr", "liste"));
                 case "saison" -> out.add("fin");
                 case "missions" -> out.add("reset");
-                case "titre" -> {
+                case "titre", "donner", "metier" -> {
                     for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
                 }
                 default -> {
@@ -170,6 +190,8 @@ public final class MenuCommands implements TabExecutor {
             else if (args[0].equalsIgnoreCase("holo") && args[1].equalsIgnoreCase("suppr")) out.addAll(plugin.holograms().ids());
             else if (args[0].equalsIgnoreCase("missions")) for (Player p : Bukkit.getOnlinePlayers()) out.add(p.getName());
             else if (args[0].equalsIgnoreCase("titre")) for (var t : plugin.rewards().titles()) out.add(t.id());
+            else if (args[0].equalsIgnoreCase("donner")) out.addAll(plugin.lots().ids());
+            else if (args[0].equalsIgnoreCase("metier")) for (var j : plugin.jobs().all()) out.add(j.id());
         }
         String last = args.length == 0 ? "" : args[args.length - 1].toLowerCase(Locale.ROOT);
         out.removeIf(s -> !s.toLowerCase(Locale.ROOT).startsWith(last));

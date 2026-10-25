@@ -122,6 +122,61 @@ titles:
     display: "<gradient:#ffd86b:#fff3b0>Magnat</gradient>"
     description: "En vente à la boutique"
     price: 30000
+  acrobate:
+    display: "<#9fffe0>Acrobate"
+    description: "Finir le parkour du hub"
+  soutien:
+    display: "<gradient:#ff9ad5:#ffd0a8>Soutien ♥</gradient>"
+    description: "Soutenir le serveur"
+  maitre-artisan:
+    display: "<gradient:#e8c872:#9fd3ff>Maître artisan</gradient>"
+    description: "150 niveaux de métiers"
+  # Métiers (/metiers) : niveaux 10, 25 et 50
+  mineur-confirme:
+    display: "<#9fd3ff>Mineur confirmé"
+    description: "Mineur niveau 10"
+  maitre-mineur:
+    display: "<#6fb6ff>Maître mineur"
+    description: "Mineur niveau 25"
+  legende-profondeurs:
+    display: "<gradient:#9fd3ff:#e8f6ff><bold>Légende des profondeurs</bold></gradient>"
+    description: "Mineur niveau 50"
+  bucheron-confirme:
+    display: "<#c9a26b>Bûcheron confirmé"
+    description: "Bûcheron niveau 10"
+  maitre-bucheron:
+    display: "<#b07d43>Maître bûcheron"
+    description: "Bûcheron niveau 25"
+  legende-foret:
+    display: "<gradient:#7fbf5f:#c9a26b><bold>Légende de la forêt</bold></gradient>"
+    description: "Bûcheron niveau 50"
+  fermier-confirme:
+    display: "<#a8e07a>Fermier confirmé"
+    description: "Fermier niveau 10"
+  maitre-fermier:
+    display: "<#86c95a>Maître fermier"
+    description: "Fermier niveau 25"
+  legende-champs:
+    display: "<gradient:#ffe08a:#a8e07a><bold>Légende des champs</bold></gradient>"
+    description: "Fermier niveau 50"
+  chasseur-confirme:
+    display: "<#ff8a7a>Chasseur confirmé"
+    description: "Chasseur niveau 10"
+  maitre-chasseur:
+    display: "<#ff6b5c>Maître chasseur"
+    description: "Chasseur niveau 25"
+  legende-chasse:
+    display: "<gradient:#ff6b5c:#ffb35c><bold>Légende de la chasse</bold></gradient>"
+    description: "Chasseur niveau 50"
+  pecheur-confirme:
+    display: "<#7cc8ff>Pêcheur confirmé"
+    description: "Pêcheur niveau 10"
+  maitre-pecheur:
+    display: "<#4fa8ff>Maître pêcheur"
+    description: "Pêcheur niveau 25"
+  legende-mers:
+    display: "<gradient:#4fa8ff:#9ff0e0><bold>Légende des mers</bold></gradient>"
+    description: "Pêcheur niveau 50"
 
 # ───────────────────────── Cosmétiques ─────────────────────────
 # Couleur du pseudo (chat et tablist)
@@ -219,13 +274,35 @@ trails:
     particle: TOTEM_OF_UNDYING
     icon: TOTEM_OF_UNDYING
     price: 15000
+  # Métiers : niveau 50 (pas en vente)
+  eclats:
+    display: "Éclats dorés"
+    particle: WAX_ON
+    icon: GOLD_NUGGET
+  seve:
+    display: "Sève"
+    particle: COMPOSTER
+    icon: OAK_SAPLING
+  recolte:
+    display: "Récolte"
+    particle: HAPPY_VILLAGER
+    icon: WHEAT
+  frappe:
+    display: "Coups critiques"
+    particle: CRIT
+    icon: IRON_SWORD
+  sillage:
+    display: "Sillage"
+    particle: DOLPHIN
+    icon: HEART_OF_THE_SEA
 
 # ───────────────────────── Parcours de récompenses ─────────────────────────
 # Paliers débloqués automatiquement. Visibles avec /parcours.
 # condition.type :
 #   achievements (nombre), achievements-percent, challenges (nombre), challenges-percent,
 #   category (arg = story, nether, end, adventure, husbandry, lyonmc ; catégorie terminée),
-#   missions, mission-streak, login-streak, playtime-hours, boss-kills, coins-earned, titles
+#   missions, mission-streak, login-streak, playtime-hours, boss-kills, coins-earned, titles,
+#   job-levels (total des niveaux de métiers), job-level (arg = mineur, bucheron... ; niveau du métier)
 # reward : coins, title, color, trail, homes, xp-levels, items ["DIAMOND:2"],
 #          commands ["give %player% minecraft:apple 1"] (console)
 # announce: true -> annoncé à tout le serveur
@@ -240,6 +317,11 @@ paliers:
     icon: WRITABLE_BOOK
     condition: { type: missions, value: 5 }
     reward: { coins: 200, trail: notes }
+  touche-a-tout:
+    name: "Touche-à-tout"
+    icon: STONE_PICKAXE
+    condition: { type: job-levels, value: 25 }
+    reward: { coins: 400, xp-levels: 5 }
   aventurier:
     name: "Aventurier"
     icon: LEATHER_BOOTS
@@ -275,6 +357,17 @@ paliers:
     icon: CAMPFIRE
     condition: { type: mission-streak, value: 7 }
     reward: { coins: 1000, title: regulier, trail: runes }
+  artisan:
+    name: "Artisan"
+    icon: SMITHING_TABLE
+    condition: { type: job-levels, value: 75 }
+    reward: { coins: 1500, homes: 1 }
+  maitre-artisan:
+    name: "Maître artisan"
+    icon: ANVIL
+    condition: { type: job-levels, value: 150 }
+    reward: { coins: 5000, title: maitre-artisan }
+    announce: true
   veteran:
     name: "Vétéran"
     icon: SHIELD
@@ -371,3 +464,27 @@ shop:
     price: 4000
     price-increase: 2000
     max: 3
+
+# ───────────────────────── Lots ─────────────────────────
+# Lots donnés avec /lmc donner <joueur> <lot> [note] : boutique en ligne (Tebex...), concours, événements.
+# Le joueur peut être hors ligne : il le recevra à sa prochaine connexion.
+# Chaque lot donné est noté dans plugins/LyonAchievements/lots-donnes.log (historique).
+#
+# ⚠ Règles de Mojang pour les serveurs : ce qui est VENDU doit rester cosmétique
+#   (titres, couleurs, traînées...). Pas de pièces, d'objets ni d'avantages en jeu contre de l'argent réel.
+#   Les pièces et objets sont permis pour un concours ou un événement gratuit.
+# Contenu possible (comme les paliers) : coins, title / titles, color, trail, homes, xp-levels, items, commands
+#   nom : nom affiché · message : message au joueur · annonce : message à tout le serveur (vide = pas d'annonce)
+lots:
+  soutien:
+    nom: "Pack Soutien"
+    title: soutien
+    color: aurore
+    trail: coeurs
+    message: "<accent>✦</accent> <gray>Merci pour ton soutien ! Tu as reçu le <white><lot></white>."
+    annonce: "<accent>♥</accent> <white><player></white> <gray>soutient le serveur, merci à lui !"
+  concours:
+    nom: "Récompense de concours"
+    coins: 2000
+    message: "<accent>✦</accent> <gray>Bravo ! Tu as gagné la <white><lot></white>."
+    annonce: "<accent>✦</accent> <white><player></white> <gray>a gagné un concours !"

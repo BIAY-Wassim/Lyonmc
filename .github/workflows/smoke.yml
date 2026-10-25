@@ -85,10 +85,22 @@ jobs:
           }
           async function close() { if (bot.currentWindow) bot.closeWindow(bot.currentWindow); await sleep(800) }
           async function testeur() {
+            await cmd('/ami ajouter Acheteur', 2000)
             await cmd('salut tout le monde')
+            await cmd('Acheteur regarde mon [objet] !', 2000)
             await cmd('/menu'); await click(22); await click(10); await close()
             await cmd('/menu'); await click(19); await close()
             await cmd('/premierspas'); await cmd('/vote'); await cmd('/objectif'); await cmd('/bienvenue'); await cmd('/parrain')
+            await cmd('/aide'); await click(19); await close()
+            await cmd('/help'); await close()
+            await cmd('/regles', 2000); await cmd('/aide faq', 2000)
+            await cmd('/metiers'); await click(20); await close()
+            await cmd('/metiers top'); await close()
+            await cmd('/msg Acheteur salut toi'); await cmd('/r merci !')
+            await cmd('/report Acheteur test de signalement'); await cmd('/signalements')
+            await cmd('/astuces'); await cmd('/astuces'); await cmd('/ignorer'); 
+            await cmd('/lmc donner Testeur soutien', 3000)
+            await cmd('/ami'); await close()
             await cmd('/menu'); await click(47)
             await cmd('/menu'); await click(34); await click(0, 3000); await close()
             await cmd('/succes'); await cmd('/succes menu'); await click(19); await close()
@@ -121,12 +133,15 @@ jobs:
             await cmd('/gamemode survival'); await cmd('/money'); await cmd('/parcours'); await close()
             await cmd('/rtp', 12000); await cmd('/ressources', 14000)
             log('EFFETS', JSON.stringify(bot.entity.effects))
-            await cmd('/give Testeur iron_pickaxe'); await cmd('/setblock ~1 ~ ~ minecraft:diamond_ore', 1500)
-            try {
-              const pick = bot.inventory.items().find(i => i.name === 'iron_pickaxe'); if (pick) await bot.equip(pick, 'hand')
-              const ore = bot.blockAt(bot.entity.position.offset(1, 0, 0).floored()); log('MINERAI', ore && ore.name)
-              if (ore && ore.name.includes('ore')) { await bot.dig(ore, true); await sleep(1500) }
-            } catch (er) { log('DIGERR', er.message) }
+            await cmd('/give Testeur iron_pickaxe'); await cmd('/lmc metier Testeur mineur 1')
+            for (let k = 0; k < 4; k++) {
+              await cmd('/setblock ~1 ~ ~ minecraft:diamond_ore', 1500)
+              try {
+                const pick = bot.inventory.items().find(i => i.name === 'iron_pickaxe'); if (pick) await bot.equip(pick, 'hand')
+                const ore = bot.blockAt(bot.entity.position.offset(1, 0, 0).floored()); log('MINERAI', ore && ore.name)
+                if (ore && ore.name.includes('ore')) { await bot.dig(ore, true); await sleep(1500) }
+              } catch (er) { log('DIGERR', er.message) }
+            }
             await cmd('/money'); await cmd('/back', 6000)
             await cmd('/lmc saison fin', 4000)
             await cmd('/saison'); await close()
@@ -150,7 +165,20 @@ jobs:
             log('NPCS', npcs.length, npcs.map(e => e.username + '@' + e.position.toString()).join(' '))
             const jouer = npcs.find(e => e.position.x > 2)
             if (jouer) { await bot.activateEntity(jouer).catch(er => log('ACTERR', er.message)); await sleep(2500); await close() }
+            // Parkour : départ (12,65,0), étape (14,65,0), arrivée (16,65,0)
+            bot.chat('/tp Testeur 12.5 65 0.5'); await sleep(1500); await cmd('/lyonhub parkour depart')
+            bot.chat('/tp Testeur 14.5 65 0.5'); await sleep(1500); await cmd('/lyonhub parkour etape')
+            bot.chat('/tp Testeur 16.5 65 0.5'); await sleep(1500); await cmd('/lyonhub parkour arrivee')
+            bot.chat('/tp Testeur 18.5 65 3.5'); await sleep(1500); await cmd('/lyonhub parkour classement')
+            bot.chat('/tp Testeur 9.5 65 0.5 -90 0'); await sleep(2500)
+            bot.setControlState('forward', true); await sleep(1200)
+            log('PARKOUR INV', bot.inventory.items().map(i => i.name).join(', '))
+            await sleep(1600); bot.setControlState('forward', false); await sleep(2000)
+            log('APRES PARKOUR', bot.entity.position.floored().toString(), bot.inventory.items().map(i => i.name).join(', '))
+            await cmd('/parkour top')
+            log('PARKOUR TEXTE', Object.values(bot.entities).filter(e => e.name === 'text_display' && e.position.x > 17).length)
             // Inventaire et règles du hub
+            await cmd('/give Testeur diamond 3'); await cmd('/hdv vendre 100')
             await cmd('/missions'); await close()
             bot.setControlState('forward', true); await sleep(3000); bot.setControlState('forward', false)
             log('HUB INV', bot.game.gameMode, bot.inventory.items().map(i => i.name + ' x' + i.count).join(', '))
@@ -170,7 +198,11 @@ jobs:
           async function acheteur() {
             await cmd('/parrain Testeur', 3000)
             await cmd('bonjour tout le monde', 2000)
-            await sleep(55000)
+            await sleep(6000)
+            await cmd('/ami accepter', 2000)
+            await cmd('/msg Testeur coucou', 2000)
+            await cmd('/ami'); await close()
+            await sleep(41000)
             for (let i = 0; i < 25; i++) {
               await cmd('/hdv', 2000)
               const it = bot.currentWindow && bot.currentWindow.slots[0]
@@ -203,7 +235,7 @@ jobs:
             (cd ../bot && timeout 660 node bot.js Testeur > ../bot.log 2>&1 &)
             (cd ../bot && timeout 660 node bot.js Acheteur > ../bot2.log 2>&1 &)
             sleep 12
-            for c in "communaute vote Acheteur site-test" "communaute vote Acheteur site-test" "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob"; do echo "$c"; sleep 1; done
+            for c in "communaute vote Acheteur site-test" "communaute vote Acheteur site-test" "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob" "lmc donner Acheteur concours" "lmc donner Testeur inconnu"; do echo "$c"; sleep 1; done
             sleep 340
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
@@ -219,6 +251,7 @@ jobs:
           echo "=== BOT ==="; cat bot.log bot2.log | head -300
           cd srv
           echo "=== LyonAchievements ==="; grep -n "LyonAchievements" logs/latest.log | head -60
+          echo "=== Nouveautés ==="; grep -nE "Métier|Mineur|Parkour|parkour|Signalement|MP\]|ami|Lot|lot|Astuce|Centre|Règlement" ../bot.log ../bot2.log logs/latest.log | head -80 || true
           echo "=== Erreurs ==="; grep -nE "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -80 || true
           grep -E "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -10 | while IFS= read -r l; do echo "::error::$l"; done
           grep -E "BOT|KICKED|BOTERR|NOWINDOW|CLICKERR" ../bot.log | head -10 | while IFS= read -r l; do echo "::notice::$l"; done

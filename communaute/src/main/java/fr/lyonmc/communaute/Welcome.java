@@ -61,6 +61,7 @@ public final class Welcome implements Listener {
         if (s == null) return out;
         for (String id : s.getKeys(false)) {
             if (id.equals("protection") && griefPrevention() == null) continue;
+            if (id.equals("metier") && (plugin.lyon().jobs() == null || !plugin.lyon().jobs().enabled())) continue;
             out.add(id);
         }
         return out;
@@ -100,6 +101,11 @@ public final class Welcome implements Listener {
             case "mission" -> pr.missionsDone > 0 || pr.daily.stream().anyMatch(m -> m.done) || pr.weekly.stream().anyMatch(m -> m.done);
             case "mine" -> d.visitedMine || plugin.isMine(p.getWorld());
             case "chat" -> d.saidHello;
+            case "metier" -> {
+                var jobs = plugin.lyon().jobs();
+                // Un niveau gagné dans n'importe quel métier (tous commencent au niveau 1)
+                yield jobs != null && jobs.totalLevels(pr) > jobs.all().size();
+            }
             case "succes" -> {
                 PlayerStats s = plugin.lyon().stats().get(p.getUniqueId());
                 ConfigurationSection c = plugin.section("accueil.etapes.succes");
@@ -181,6 +187,21 @@ public final class Welcome implements Listener {
         p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1f);
     }
 
+    private List<Component> guidePages() {
+        ConfigurationSection s = plugin.section("accueil.livre");
+        List<Component> pages = new ArrayList<>();
+        if (s != null) for (String page : s.getStringList("pages")) pages.add(plugin.parse(page.replace("\\n", "\n")));
+        return pages;
+    }
+
+    /** Ouvre le guide à l'écran (sans objet), par exemple à la toute première connexion. */
+    void openGuide(Player p) {
+        ConfigurationSection s = plugin.section("accueil.livre");
+        List<Component> pages = guidePages();
+        if (s == null || pages.isEmpty()) return;
+        p.openBook(net.kyori.adventure.inventory.Book.book(Component.text(s.getString("titre", "Guide de LyonMC")), Component.text("LyonMC"), pages));
+    }
+
     private void giveBook(Player p) {
         ConfigurationSection s = plugin.section("accueil.livre");
         if (s == null) return;
@@ -188,9 +209,7 @@ public final class Welcome implements Listener {
         if (book.getItemMeta() instanceof BookMeta meta) {
             meta.title(Component.text(s.getString("titre", "Guide de LyonMC")));
             meta.author(Component.text("wassdead"));
-            List<Component> pages = new ArrayList<>();
-            for (String page : s.getStringList("pages")) pages.add(plugin.parse(page.replace("\\n", "\n")));
-            meta.pages(pages);
+            meta.pages(guidePages());
             book.setItemMeta(meta);
         }
         for (ItemStack left : p.getInventory().addItem(book).values()) p.getWorld().dropItemNaturally(p.getLocation(), left);
@@ -280,6 +299,13 @@ public final class Welcome implements Listener {
                 + "<#9be37c>[Souhaiter la bienvenue]</#9be37c></hover></click>");
         for (Player other : Bukkit.getOnlinePlayers()) if (!other.equals(p)) other.sendMessage(line);
         p.sendMessage(plugin.lyon().prefixed("<gray>Bienvenue ! Suis les <#e8c872>premiers pas</#e8c872> en haut de l'écran : chaque étape te rapporte des pièces."));
+        p.sendMessage(plugin.lyon().prefixed("<gray>Une question ? Tout est expliqué dans <white><click:run_command:'/aide'><u>/aide</u></click></white>."));
+        // Le guide s'ouvre tout seul quelques secondes après l'arrivée
+        if (plugin.getConfig().getBoolean("accueil.livre.ouvrir-a-la-premiere-connexion", true)) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (p.isOnline()) openGuide(p);
+            }, 80L);
+        }
     }
 
     void welcomeCommand(Player p) {

@@ -72,31 +72,42 @@ public final class HubMenu {
                 Items.kv("Série", plugin.missions().activeStreak(p) + " jour(s)"),
                 Items.dark("Commande : /missions")), done < p.daily.size(),
                 pl -> plugin.missionMenu().open(pl));
-        button(holder, inv, 20, Material.KNOWLEDGE_BOOK, "Succès", List.of(
+        if (plugin.jobs().enabled()) {
+            List<Component> jl = new ArrayList<>();
+            jl.add(Items.line("Mineur, Bûcheron, Fermier, Chasseur,"));
+            jl.add(Items.line("Pêcheur : des niveaux et des pièces"));
+            jl.add(Items.line("en jouant normalement"));
+            for (var job : plugin.jobs().all()) {
+                jl.add(Component.text(" ").append(job.label()).append(Component.text("  niv. " + plugin.jobs().level(p, job.id()), Text.WHITE)));
+            }
+            jl.add(Items.dark("Commande : /metiers"));
+            button(holder, inv, 20, Material.IRON_PICKAXE, "Métiers", jl, false, pl -> plugin.jobMenu().open(pl));
+        }
+        button(holder, inv, 21, Material.KNOWLEDGE_BOOK, "Succès", List.of(
                 Items.line("Ta progression et ce qu'il te reste"),
                 Items.kv("Obtenus", s.count() + " / " + plugin.registry().total()),
                 Items.dark("Commande : /succes")), false,
                 pl -> plugin.achievementsMenu().open(pl));
-        button(holder, inv, 21, daily ? Material.CHEST : Material.BARREL, "Récompense du jour", List.of(
+        button(holder, inv, 22, daily ? Material.CHEST : Material.BARREL, "Récompense du jour", List.of(
                 Items.line(daily ? "Disponible : viens la chercher !" : "Déjà récupérée aujourd'hui"),
                 Items.kv("Série", plugin.daily().currentStreak(p) + " jour(s)"),
                 Items.dark("Commande : /recompense")), daily,
                 pl -> plugin.rewardMenus().openDaily(pl));
-        button(holder, inv, 22, Material.GOLD_INGOT, "Parcours de récompenses", List.of(
+        button(holder, inv, 23, Material.GOLD_INGOT, "Parcours de récompenses", List.of(
                 Items.line("Des paliers qui se débloquent tout seuls"),
                 Items.kv("Débloqués", p.claimed.size() + " / " + plugin.rewards().paliers().size()),
                 Items.dark("Commande : /parcours")), false,
                 pl -> plugin.rewardMenus().openPath(pl, 1));
-        button(holder, inv, 23, Material.NETHER_STAR, plugin.seasons().name(), List.of(
+        button(holder, inv, 24, Material.NETHER_STAR, plugin.seasons().name(), List.of(
                 Items.line("Le classement du mois"),
                 Items.kv("Fin dans", plugin.seasons().timeLeft()),
                 plugin.seasons().isWeekend() ? Component.text("✦ Week-end : points bonus !", accent) : Items.dark("Commande : /saison")),
                 plugin.seasons().isWeekend(), pl -> plugin.seasonMenu().open(pl));
-        button(holder, inv, 24, Material.DIAMOND, "Classements", List.of(
+        button(holder, inv, 25, Material.DIAMOND, "Classements", List.of(
                 Items.line("Le podium des meilleurs joueurs"),
                 Items.dark("Commande : /classement")), false,
                 pl -> plugin.achievementsMenu().openTop(pl));
-        button(holder, inv, 25, Material.WITHER_SKELETON_SKULL, "Boss mondial", List.of(
+        button(holder, inv, 26, Material.WITHER_SKELETON_SKULL, "Boss mondial", List.of(
                 Items.line(plugin.boss().active() ? "Le boss est en cours de combat !" : "Prochaine apparition :"),
                 Items.line(plugin.boss().active() ? "Clique pour rejoindre l'arène" : plugin.boss().nextText()),
                 Items.dark("Commande : /boss")),
@@ -143,6 +154,16 @@ public final class HubMenu {
                 });
 
         // ─── Bas ───
+        if (hasCommand("aide")) {
+            button(holder, inv, 45, Material.LECTERN, "Aide et guide", List.of(
+                    Items.line("Tout comprendre sur LyonMC :"),
+                    Items.line("commencer, gagner des pièces,"),
+                    Items.line("protéger sa base, les règles..."),
+                    Items.dark("Commande : /aide")), true, pl -> {
+                        pl.closeInventory();
+                        pl.performCommand("aide");
+                    });
+        }
         button(holder, inv, 47, Material.BOOK, "Toutes les commandes", List.of(
                 Items.line("La liste des commandes, cliquables,"),
                 Items.line("dans le chat")), false, pl -> {
@@ -323,8 +344,8 @@ public final class HubMenu {
         groups.add(new String[]{"Se déplacer", "hub|Le hub (spawn)", hasCommand("survie") ? "survie|Retour en survie" : "rtp|Aventure au hasard",
                 "mine|La mine (monde ressources)", "home|Tes homes", "sethome maison|Poser un home ici", "back|Position précédente",
                 "rtp|Aventure au hasard", "tpa |Rejoindre un joueur"});
-        groups.add(new String[]{"Progresser", "missions|Missions du jour", "succes|Tes succès", "recompense|Récompense du jour", "parcours|Paliers",
-                "saison|Saison du mois", "classement|Classements", "boss|Boss mondial"});
+        groups.add(new String[]{"Progresser", "missions|Missions du jour", "metiers|Tes métiers", "succes|Tes succès",
+                "recompense|Récompense du jour", "parcours|Paliers", "saison|Saison du mois", "classement|Classements", "boss|Boss mondial"});
         List<String> community = new ArrayList<>();
         community.add("Communauté");
         if (hasCommand("vote")) community.add("vote|Voter pour le serveur");
@@ -332,6 +353,11 @@ public final class HubMenu {
         if (hasCommand("parrain")) community.add("parrain|Parrainage");
         if (hasCommand("objectif")) community.add("objectif|Objectif de la semaine");
         if (hasCommand("bienvenue")) community.add("bienvenue|Souhaiter la bienvenue au dernier arrivé");
+        if (hasCommand("ami")) community.add("ami|Tes amis");
+        if (hasCommand("msg")) community.add("msg |Message privé à un joueur");
+        if (hasCommand("report")) community.add("report |Signaler un joueur ou un problème");
+        if (hasCommand("aide")) community.add("aide|Le centre d'aide");
+        if (hasCommand("regles")) community.add("regles|Le règlement");
         if (community.size() > 1) groups.add(community.toArray(new String[0]));
         groups.add(new String[]{"Style et échanges", "titres|Titres et grade", "cosmetiques|Cosmétiques", "boutique|Boutique", "hdv|Hôtel des ventes",
                 "equipe|Équipe", "money|Ton solde", "pay |Donner des pièces"});

@@ -1,0 +1,244 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  Métiers LyonMC — /metiers
+#  On progresse en jouant normalement : miner, couper du bois, récolter,
+#  chasser, pêcher. Chaque niveau rapporte des pièces et augmente la chance
+#  de « récolte double ». Les blocs posés par des joueurs ne rapportent rien.
+#  Rien ne compte au hub, en créatif, ni quand le joueur est AFK.
+# ═══════════════════════════════════════════════════════════════════════
+
+reglages:
+  actif: true
+  niveau-max: 50
+  # XP pour passer du niveau N au niveau N+1 : xp-base + xp-multiplicateur × N^xp-exposant
+  # (avec ces valeurs : niveau 10 en ~30 min, niveau 25 en ~5 h, niveau 50 en ~25 h de jeu par métier)
+  xp-base: 100
+  xp-multiplicateur: 15
+  xp-exposant: 1.6
+  # Pièces gagnées en passant un niveau : pieces-par-niveau × nouveau niveau
+  pieces-par-niveau: 20
+  # Chance de récolte double (en %) gagnée à chaque niveau (0.5 → 25 % au niveau 50)
+  bonus-par-niveau: 0.5
+  # L'XP des métiers est multipliée dans le monde ressources
+  multiplicateur-monde-ressources: 1.5
+  # Les monstres des cages à monstres ne rapportent que ce pourcentage de l'XP
+  cage-a-monstres: 0
+  # Barre en haut de l'écran quand on gagne de l'XP (disparaît après quelques secondes)
+  barre: true
+  # Annonce à tout le serveur tous les 10 niveaux à partir de ce niveau (0 = jamais)
+  annonce: 10
+
+# Pour chaque métier :
+#   blocs     : bloc cassé → XP (les cultures ne comptent que mûres)
+#   recoltes  : clic droit sur des baies → XP
+#   elevage   : XP quand on fait naître un animal
+#   monstres  : créature tuée → XP (HOSTILE = monstre non listé, PASSIVE = animal non listé)
+#   peche     : POISSON, TRESOR ou DECHET → XP
+#   paliers   : récompenses en plus à certains niveaux (titres, cosmétiques, pièces...)
+metiers:
+  mineur:
+    nom: "Mineur"
+    icone: IRON_PICKAXE
+    couleur: "#9fd3ff"
+    symbole: "⛏"
+    description:
+      - "Mine la pierre et les minerais."
+      - "Les minerais rares rapportent beaucoup :"
+      - "va miner dans le monde ressources (/mine) !"
+    blocs:
+      STONE: 1
+      DEEPSLATE: 1
+      TUFF: 1
+      GRANITE: 1
+      DIORITE: 1
+      ANDESITE: 1
+      CALCITE: 1
+      BLACKSTONE: 1
+      BASALT: 1
+      END_STONE: 1
+      OBSIDIAN: 3
+      COAL_ORE: 4
+      DEEPSLATE_COAL_ORE: 5
+      COPPER_ORE: 4
+      DEEPSLATE_COPPER_ORE: 5
+      IRON_ORE: 6
+      DEEPSLATE_IRON_ORE: 7
+      GOLD_ORE: 8
+      DEEPSLATE_GOLD_ORE: 9
+      NETHER_GOLD_ORE: 3
+      REDSTONE_ORE: 5
+      DEEPSLATE_REDSTONE_ORE: 6
+      LAPIS_ORE: 6
+      DEEPSLATE_LAPIS_ORE: 7
+      NETHER_QUARTZ_ORE: 3
+      DIAMOND_ORE: 20
+      DEEPSLATE_DIAMOND_ORE: 22
+      EMERALD_ORE: 25
+      DEEPSLATE_EMERALD_ORE: 27
+      ANCIENT_DEBRIS: 30
+      AMETHYST_CLUSTER: 3
+    # Récolte double : seulement pour ces blocs (pas avec Toucher de soie)
+    double:
+      - COAL_ORE
+      - DEEPSLATE_COAL_ORE
+      - COPPER_ORE
+      - DEEPSLATE_COPPER_ORE
+      - IRON_ORE
+      - DEEPSLATE_IRON_ORE
+      - GOLD_ORE
+      - DEEPSLATE_GOLD_ORE
+      - NETHER_GOLD_ORE
+      - REDSTONE_ORE
+      - DEEPSLATE_REDSTONE_ORE
+      - LAPIS_ORE
+      - DEEPSLATE_LAPIS_ORE
+      - NETHER_QUARTZ_ORE
+      - DIAMOND_ORE
+      - DEEPSLATE_DIAMOND_ORE
+      - EMERALD_ORE
+      - DEEPSLATE_EMERALD_ORE
+    paliers:
+      10: { titles: [mineur-confirme], coins: 500 }
+      25: { titles: [maitre-mineur], coins: 2000 }
+      50: { titles: [legende-profondeurs], trail: eclats, coins: 10000 }
+
+  bucheron:
+    nom: "Bûcheron"
+    icone: IRON_AXE
+    couleur: "#c9a26b"
+    symbole: "♣"
+    description:
+      - "Coupe des arbres (les bûches)."
+      - "Les arbres que tu as plantés comptent"
+      - "une fois qu'ils ont poussé."
+    blocs:
+      OAK_LOG: 2
+      BIRCH_LOG: 2
+      SPRUCE_LOG: 2
+      JUNGLE_LOG: 2
+      ACACIA_LOG: 2
+      DARK_OAK_LOG: 2
+      MANGROVE_LOG: 2
+      CHERRY_LOG: 2
+      PALE_OAK_LOG: 2
+      CRIMSON_STEM: 2
+      WARPED_STEM: 2
+      MANGROVE_ROOTS: 1
+      BROWN_MUSHROOM_BLOCK: 1
+      RED_MUSHROOM_BLOCK: 1
+      MUSHROOM_STEM: 1
+    double:
+      - OAK_LOG
+      - BIRCH_LOG
+      - SPRUCE_LOG
+      - JUNGLE_LOG
+      - ACACIA_LOG
+      - DARK_OAK_LOG
+      - MANGROVE_LOG
+      - CHERRY_LOG
+      - PALE_OAK_LOG
+      - CRIMSON_STEM
+      - WARPED_STEM
+    paliers:
+      10: { titles: [bucheron-confirme], coins: 500 }
+      25: { titles: [maitre-bucheron], coins: 2000 }
+      50: { titles: [legende-foret], trail: seve, coins: 10000 }
+
+  fermier:
+    nom: "Fermier"
+    icone: IRON_HOE
+    couleur: "#a8e07a"
+    symbole: "✿"
+    description:
+      - "Récolte les cultures mûres"
+      - "et fais naître des animaux."
+      - "Pense à replanter !"
+    blocs:
+      WHEAT: 1
+      CARROTS: 1
+      POTATOES: 1
+      BEETROOTS: 1
+      NETHER_WART: 1
+      COCOA: 1
+      TORCHFLOWER: 3
+      PITCHER_CROP: 3
+      MELON: 2
+      PUMPKIN: 2
+      SUGAR_CANE: 1
+      CACTUS: 1
+    recoltes:
+      SWEET_BERRY_BUSH: 1
+      CAVE_VINES: 1
+      CAVE_VINES_PLANT: 1
+    elevage: 4
+    double:
+      - WHEAT
+      - CARROTS
+      - POTATOES
+      - BEETROOTS
+      - NETHER_WART
+      - COCOA
+      - MELON
+      - PUMPKIN
+    paliers:
+      10: { titles: [fermier-confirme], coins: 500 }
+      25: { titles: [maitre-fermier], coins: 2000 }
+      50: { titles: [legende-champs], trail: recolte, coins: 10000 }
+
+  chasseur:
+    nom: "Chasseur"
+    icone: IRON_SWORD
+    couleur: "#ff8a7a"
+    symbole: "⚔"
+    description:
+      - "Élimine des monstres et chasse."
+      - "Les gros monstres rapportent beaucoup."
+      - "Les cages à monstres ne comptent pas."
+    monstres:
+      HOSTILE: 8
+      PASSIVE: 2
+      CREEPER: 10
+      ENDERMAN: 12
+      WITCH: 12
+      BLAZE: 10
+      WITHER_SKELETON: 14
+      PIGLIN_BRUTE: 14
+      PHANTOM: 8
+      GHAST: 12
+      SHULKER: 12
+      GUARDIAN: 10
+      BREEZE: 14
+      VINDICATOR: 14
+      PILLAGER: 10
+      EVOKER: 25
+      RAVAGER: 25
+      ELDER_GUARDIAN: 60
+      WARDEN: 120
+      WITHER: 200
+      ENDER_DRAGON: 400
+      SLIME: 2
+      MAGMA_CUBE: 2
+      ZOMBIFIED_PIGLIN: 2
+      SILVERFISH: 1
+      ENDERMITE: 1
+    paliers:
+      10: { titles: [chasseur-confirme], coins: 500 }
+      25: { titles: [maitre-chasseur], coins: 2000 }
+      50: { titles: [legende-chasse], trail: frappe, coins: 10000 }
+
+  pecheur:
+    nom: "Pêcheur"
+    icone: FISHING_ROD
+    couleur: "#7cc8ff"
+    symbole: "⚓"
+    description:
+      - "Pêche avec une canne à pêche."
+      - "Les trésors (livres, selles, arcs...)"
+      - "rapportent le plus d'XP."
+    peche:
+      POISSON: 15
+      TRESOR: 30
+      DECHET: 5
+    paliers:
+      10: { titles: [pecheur-confirme], coins: 500 }
+      25: { titles: [maitre-pecheur], coins: 2000 }
+      50: { titles: [legende-mers], trail: sillage, coins: 10000 }

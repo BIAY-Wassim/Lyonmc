@@ -254,6 +254,33 @@ public final class WebExportService implements Listener {
         }
         m.put("missions", missions);
 
+        // Métiers : total des niveaux, puis chaque métier
+        if (plugin.jobs().enabled()) {
+            Map<String, Object> jobs = new LinkedHashMap<>();
+            List<Map<String, Object>> total = new ArrayList<>();
+            List<Profile> tj = plugin.jobs().top(null);
+            for (int i = 0; i < Math.min(20, tj.size()); i++) {
+                Profile p = tj.get(i);
+                Map<String, Object> o = base(p.uuid(), p.name);
+                o.put("levels", plugin.jobs().totalLevels(p));
+                total.add(o);
+            }
+            jobs.put("total", total);
+            for (fr.lyonmc.achievements.jobs.JobService.Job job : plugin.jobs().all()) {
+                List<Map<String, Object>> list = new ArrayList<>();
+                List<Profile> tl = plugin.jobs().top(job);
+                for (int i = 0; i < Math.min(20, tl.size()); i++) {
+                    Profile p = tl.get(i);
+                    Map<String, Object> o = base(p.uuid(), p.name);
+                    o.put("level", plugin.jobs().level(p, job.id()));
+                    o.put("xp", plugin.jobs().xp(p, job.id()));
+                    list.add(o);
+                }
+                jobs.put(job.id(), list);
+            }
+            m.put("jobs", jobs);
+        }
+
         List<Map<String, Object>> history = new ArrayList<>();
         for (String h : plugin.seasons().history()) {
             String[] parts = h.split(";");
@@ -343,6 +370,18 @@ public final class WebExportService implements Listener {
                 o.put("lastSeen", p.lastSeen);
                 o.put("blocks", p.blocksMined);
                 o.put("sales", p.hdvSales);
+                if (plugin.jobs().enabled()) {
+                    Map<String, Object> jobs = new LinkedHashMap<>();
+                    for (fr.lyonmc.achievements.jobs.JobService.Job job : plugin.jobs().all()) {
+                        long xp = plugin.jobs().xp(p, job.id());
+                        Map<String, Object> j = new LinkedHashMap<>();
+                        j.put("level", plugin.jobs().level(xp));
+                        j.put("into", plugin.jobs().into(xp));
+                        j.put("span", plugin.jobs().span(xp));
+                        jobs.put(job.id(), j);
+                    }
+                    o.put("jobs", jobs);
+                }
             }
             Team t = plugin.teams().teamOf(uuid);
             if (t != null) {
@@ -493,6 +532,69 @@ public final class WebExportService implements Listener {
         eco.put("goal", plugin.configs().rewards().getLong("achievement-coins.goal", 40));
         eco.put("challenge", plugin.configs().rewards().getLong("achievement-coins.challenge", 150));
         m.put("economy", eco);
+
+        if (plugin.jobs().enabled()) {
+            fr.lyonmc.achievements.jobs.JobService js = plugin.jobs();
+            Map<String, Object> jobs = new LinkedHashMap<>();
+            jobs.put("max", js.maxLevel());
+            jobs.put("coinsPerLevel", js.coinsPerLevel());
+            jobs.put("bonusPerLevel", js.bonusPerLevel());
+            jobs.put("resourceMultiplier", js.resourceMultiplier());
+            List<Long> curve = new ArrayList<>();
+            for (int l : new int[]{1, 10, 25, 49}) curve.add(js.need(l));
+            jobs.put("need", curve);
+            List<Map<String, Object>> list = new ArrayList<>();
+            for (fr.lyonmc.achievements.jobs.JobService.Job job : js.all()) {
+                Map<String, Object> o = new LinkedHashMap<>();
+                o.put("id", job.id());
+                o.put("name", job.name());
+                o.put("symbol", job.symbol());
+                o.put("color", job.color().asHexString());
+                o.put("icon", job.icon().getKey().getKey());
+                o.put("description", String.join(" ", job.description()));
+                List<Map<String, Object>> src = new ArrayList<>();
+                for (Map.Entry<org.bukkit.Material, Integer> e : job.blocks().entrySet()) {
+                    src.add(Map.of("key", e.getKey().translationKey(), "id", e.getKey().getKey().getKey(), "xp", e.getValue()));
+                }
+                for (Map.Entry<org.bukkit.Material, Integer> e : job.harvests().entrySet()) {
+                    src.add(Map.of("key", e.getKey().translationKey(), "id", e.getKey().getKey().getKey(), "xp", e.getValue()));
+                }
+                if (job.breed() > 0) src.add(Map.of("label", "Faire naître un animal", "xp", job.breed()));
+                for (Map.Entry<String, Integer> e : job.mobs().entrySet()) {
+                    String k = e.getKey();
+                    if (k.equals("HOSTILE")) src.add(Map.of("label", "Autres monstres", "xp", e.getValue()));
+                    else if (k.equals("PASSIVE")) src.add(Map.of("label", "Animaux", "xp", e.getValue()));
+                    else {
+                        try {
+                            org.bukkit.entity.EntityType t = org.bukkit.entity.EntityType.valueOf(k);
+                            src.add(Map.of("key", t.translationKey(), "xp", e.getValue()));
+                        } catch (IllegalArgumentException ignored) {
+                        }
+                    }
+                }
+                for (Map.Entry<String, Integer> e : job.fish().entrySet()) {
+                    String label = switch (e.getKey()) {
+                        case "POISSON" -> "Poisson";
+                        case "TRESOR" -> "Trésor (livre enchanté, selle, arc...)";
+                        default -> "Déchet";
+                    };
+                    src.add(Map.of("label", label, "xp", e.getValue()));
+                }
+                src.sort((a, b) -> Integer.compare((Integer) b.get("xp"), (Integer) a.get("xp")));
+                o.put("sources", src);
+                List<Map<String, Object>> ms = new ArrayList<>();
+                for (Map.Entry<Integer, Bundle> e : job.milestones().entrySet()) {
+                    Map<String, Object> mo = new LinkedHashMap<>();
+                    mo.put("level", e.getKey());
+                    mo.put("rewards", bundle(e.getValue()));
+                    ms.add(mo);
+                }
+                o.put("milestones", ms);
+                list.add(o);
+            }
+            jobs.put("list", list);
+            m.put("jobs", jobs);
+        }
 
         Map<String, Object> settings = new LinkedHashMap<>();
         settings.put("homesBase", plugin.getConfig().getInt("teleport.homes-base", 2));
