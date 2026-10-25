@@ -45,6 +45,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
     private Friends friends;
     private Messages messages;
     private Reports reports;
+    private Moderation moderation;
     private final List<BukkitTask> tasks = new ArrayList<>();
 
     @Override
@@ -66,6 +67,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         friends = new Friends(this);
         messages = new Messages(this);
         reports = new Reports(this);
+        moderation = new Moderation(this);
 
         var pm = getServer().getPluginManager();
         pm.registerEvents(welcome, this);
@@ -76,6 +78,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         pm.registerEvents(friends, this);
         pm.registerEvents(messages, this);
         pm.registerEvents(reports, this);
+        pm.registerEvents(moderation, this);
         votes.hookVotifier();
 
         // LyonAchievements affiche « AFK » dans TAB et un panneau « Communauté » sur le grand écran du hub
@@ -83,7 +86,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         getServer().getServicesManager().register(fr.lyonmc.achievements.api.ScreenPanel.class, new Panel(this), this, ServicePriority.Normal);
 
         for (String c : List.of("vote", "premierspas", "parrain", "objectif", "bienvenue", "communaute", "aide", "regles", "astuces",
-                "ami", "msg", "r", "ignorer", "espion", "report", "signalements")) {
+                "ami", "msg", "r", "ignorer", "espion", "report", "signalements", "mute", "unmute", "avertir", "tempban", "sanctions")) {
             var cmd = getCommand(c);
             if (cmd != null) {
                 cmd.setExecutor(this);
@@ -198,6 +201,10 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         return friends;
     }
 
+    public Moderation moderation() {
+        return moderation;
+    }
+
     /** Section de la config (celle du .jar si le fichier du serveur ne l'a pas). */
     public ConfigurationSection section(String path) {
         if (getConfig().isSet(path)) return getConfig().getConfigurationSection(path);
@@ -292,6 +299,31 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             reports.staffCommand(sender, args);
             return true;
         }
+        // Modération (aussi depuis la console)
+        switch (name) {
+            case "mute" -> {
+                moderation.mute(sender, args);
+                return true;
+            }
+            case "unmute" -> {
+                moderation.unmute(sender, args);
+                return true;
+            }
+            case "avertir" -> {
+                moderation.warn(sender, args);
+                return true;
+            }
+            case "tempban" -> {
+                moderation.tempban(sender, args);
+                return true;
+            }
+            case "sanctions" -> {
+                moderation.list(sender, args);
+                return true;
+            }
+            default -> {
+            }
+        }
         if (!(sender instanceof Player p)) {
             sender.sendMessage("Commande réservée aux joueurs.");
             return true;
@@ -368,7 +400,12 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
                         "<white>/communaute vote <joueur> [site]</white> <dark_gray>simuler un vote",
                         "<white>/communaute bonus [minutes]</white> <dark_gray>lancer une heure bonus",
                         "<white>/communaute objectif</white> <dark_gray>passer à l'objectif suivant",
-                        "<white>/communaute premierspas reset <joueur></white> <dark_gray>recommencer les premiers pas")) {
+                        "<white>/communaute premierspas reset <joueur></white> <dark_gray>recommencer les premiers pas",
+                        "<white>/mute <joueur> [durée] [raison]</white> <dark_gray>réduire au silence (/unmute pour annuler)",
+                        "<white>/avertir <joueur> <raison></white> <dark_gray>avertissement (noté dans l'historique)",
+                        "<white>/tempban <joueur> <durée> [raison]</white> <dark_gray>exclure pour un temps (2h, 1j, 1sem)",
+                        "<white>/sanctions <joueur></white> <dark_gray>historique des sanctions",
+                        "<white>/signalements</white> <dark_gray>signalements en attente · <white>/espion</white> <dark_gray>voir les messages privés")) {
                     s.sendMessage(parse("  " + l));
                 }
             }
@@ -397,6 +434,10 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             out.add("bug");
             Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
         } else if (name.equals("signalements") && args.length == 1) out.add("traiter");
+        else if (List.of("mute", "unmute", "avertir", "tempban", "sanctions").contains(name)) {
+            if (args.length == 1) Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
+            else if (args.length == 2 && (name.equals("mute") || name.equals("tempban"))) out.addAll(List.of("10m", "30m", "1h", "2h", "1j", "3j", "1sem"));
+        }
         String last = args.length == 0 ? "" : args[args.length - 1].toLowerCase(Locale.ROOT);
         out.removeIf(x -> !x.toLowerCase(Locale.ROOT).startsWith(last));
         return out;

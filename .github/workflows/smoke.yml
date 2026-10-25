@@ -72,6 +72,21 @@ jobs:
           const sleep = ms => new Promise(r => setTimeout(r, ms))
           const log = (...a) => console.log(role, ...a)
           let gradeSignal = false
+          let filtreDone = false, muetDone = false
+          bot.on('messagestr', async (m) => {
+            if (role !== 'Acheteur') return
+            if (m.includes('test-filtre') && !filtreDone) {
+              filtreDone = true
+              bot.chat('venez sur monserveur.fr c est mieux'); await sleep(1500)
+              bot.chat('SALUT TOUT LE MONDE COMMENT CA VA'); await sleep(1500)
+              for (let i = 0; i < 5; i++) { bot.chat('spam numero ' + i); await sleep(150) }
+              await sleep(1500); bot.chat('espece de connard')
+            }
+            if (m.includes('test-muet') && !muetDone) {
+              muetDone = true
+              await sleep(800); bot.chat('je suis muet ?'); await sleep(1000); bot.chat('/msg Testeur message pendant le mute')
+            }
+          })
           bot.on('messagestr', m => { if (m.trim()) log('CHAT', m); if (m.includes('test-chat-grade')) gradeSignal = true })
           bot.on('kicked', r => log('KICKED', JSON.stringify(r)))
           bot.on('bossBarCreated', b => log('BOSSBAR', b.title ? b.title.toString() : ''))
@@ -237,7 +252,10 @@ jobs:
             (cd ../bot && timeout 900 node bot.js Acheteur > ../bot2.log 2>&1 &)
             sleep 12
             for c in "communaute vote Acheteur site-test" "communaute vote Acheteur site-test" "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob" "lmc donner Acheteur concours" "lmc donner Testeur inconnu"; do echo "$c"; sleep 1; done
-            sleep 560
+            sleep 20; echo "deop Acheteur"; sleep 2; echo "say test-filtre"; sleep 14
+            echo "mute Acheteur 2m test du mute"; sleep 1; echo "say test-muet"; sleep 6
+            echo "unmute Acheteur"; sleep 1; echo "avertir Acheteur test d'avertissement"; sleep 1; echo "sanctions Acheteur"; sleep 1; echo "op Acheteur"
+            sleep 515
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
             echo "say test-chat-grade"; sleep 30

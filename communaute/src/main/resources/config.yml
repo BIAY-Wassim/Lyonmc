@@ -411,3 +411,38 @@ signalements:
   delai-secondes: 60
   # Envoyer aussi les signalements sur Discord (webhook de LyonAchievements)
   discord: true
+
+# ───────────────────────── Modération ─────────────────────────
+# Commandes du staff (permission communaute.staff, les op l'ont) :
+#   /mute <joueur> [durée] [raison] · /unmute <joueur> · /avertir <joueur> <raison>
+#   /tempban <joueur> <durée> [raison] · /sanctions <joueur> (historique)
+# Durées : 30m, 2h, 1j, 1sem. Tout est noté dans plugins/COMMUNAUTE/sanctions.yml
+moderation:
+  filtre:
+    enabled: true
+    # Plus de X messages en 5 secondes : bloqué
+    messages-par-5-secondes: 4
+    # Le même message deux fois en 30 secondes : bloqué
+    anti-repetition: true
+    # Adresses IP et liens de sites bloqués, sauf ceux de cette liste (ajoute ton lien Discord ici)
+    anti-pub: true
+    sites-autorises: ["lyonmc.fr", "minecraft.wiki"]
+    # Messages presque tout en majuscules : envoyés en minuscules
+    anti-majuscules: true
+    majuscules-pourcent: 70
+    # Messages bloqués (et staff prévenu) s'ils contiennent un de ces mots ou expressions.
+    # Pas besoin d'accents ni de majuscules : « Saluuut » = « salut », « 3 » = « e »...
+    mots-interdits:
+      - "connard"
+      - "connasse"
+      - "salope"
+      - "pute"
+      - "encule"
+      - "enculer"
+      - "fdp"
+      - "ntm"
+      - "nique ta mere"
+      - "batard"
+      - "pd"
+      - "negre"
+      - "bougnoule"
