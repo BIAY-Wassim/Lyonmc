@@ -300,7 +300,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                 case "podium" -> Rankings.BOARDS.forEach(b -> out.add(b.id()));
                 case "texte", "commande", "deplacer", "suppr" -> npcs.all().forEach(n -> out.add(n.id()));
                 case "monde" -> out.add("hub");
-                case "installer" -> out.add("confirmer");
+                case "installer" -> out.addAll(List.of("confirmer", "recoller"));
                 case "coller" -> out.addAll(paster.available());
                 case "parkour" -> out.addAll(List.of("depart", "etape", "arrivee", "classement", "effacer", "temps-reset"));
                 default -> {

@@ -41,6 +41,8 @@ public final class HubBuilder {
     private final SchematicPaster paster;
     private final NamespacedKey decoKey;
     private boolean busy;
+    /** Décalage du hub déjà en place par rapport au point habituel (0, 65, 0). */
+    private int dx, dy, dz;
 
     public HubBuilder(JavaPlugin plugin, HubWorlds worlds, NpcService npcs, HubPlayers players, SchematicPaster paster) {
         this.paster = paster;
@@ -71,16 +73,38 @@ public final class HubBuilder {
         return null;
     }
 
-    /** /lyonhub installer [confirmer] [pseudo du skin des PNJ] */
+    /**
+     * Part du hub médiéval qui correspond au monde si son point de référence est en (ax, ay, az) :
+     * on compare 600 blocs pris au hasard autour de la place.
+     */
+    private double match(World w, SchematicPaster.Schem s, int ax, int ay, int az) {
+        int bx = ax + s.offsetX(), by = ay + s.offsetY(), bz = az + s.offsetZ();
+        java.util.Random r = new java.util.Random(42);
+        int tested = 0, same = 0;
+        for (int tries = 0; tries < 20000 && tested < 600; tries++) {
+            int sx = -s.offsetX() + r.nextInt(121) - 60, sz = -s.offsetZ() + r.nextInt(121) - 60, sy = r.nextInt(s.height());
+            if (sx < 0 || sz < 0 || sx >= s.width() || sz >= s.length()) continue;
+            int id = s.blocks()[(sy * s.length() + sz) * s.width() + sx];
+            BlockData bd = id < s.palette().length ? s.palette()[id] : null;
+            if (bd == null || bd.getMaterial().isAir()) continue;
+            int y = by + sy;
+            if (y < w.getMinHeight() || y >= w.getMaxHeight()) return 0;
+            tested++;
+            if (w.getBlockAt(bx + sx, y, bz + sz).getType() == bd.getMaterial()) same++;
+        }
+        return tested == 0 ? 0 : same / (double) tested;
+    }
+
+    /** /lyonhub installer [confirmer|recoller] [pseudo du skin des PNJ] */
     public void command(Player p, String[] args) {
-        boolean confirm = args.length > 1 && args[1].equalsIgnoreCase("confirmer");
-        if (!confirm) {
+        String mode = args.length > 1 ? args[1].toLowerCase(java.util.Locale.ROOT) : "";
+        boolean confirm = mode.equals("confirmer"), repaste = mode.equals("recoller");
+        if (!confirm && !repaste) {
             msg(p, "<white><bold>Hub médiéval de LyonMC, tout prêt</bold></white>");
-            p.sendMessage(MM.deserialize("  <gray>Colle le hub médiéval (<white>hub-medieval.schem</white>) au centre du monde du hub, puis ajoute :"));
-            p.sendMessage(MM.deserialize("  <gray>le spawn sur la grande place, le grand écran, les hologrammes, le podium des succès et des métiers"));
-            p.sendMessage(MM.deserialize("  <gray>et les PNJ (jouer, aide)."));
-            p.sendMessage(MM.deserialize("  <red>Attention :</red> <gray>tout ce qui est construit à moins de 150 blocs du centre du monde du hub est remplacé,"));
-            p.sendMessage(MM.deserialize("  <gray>ainsi que ses hologrammes et ses PNJ. Les joueurs et leurs inventaires ne sont pas touchés."));
+            p.sendMessage(MM.deserialize("  <gray>Ajoute au hub médiéval : le spawn sur la grande place, le grand écran, les hologrammes,"));
+            p.sendMessage(MM.deserialize("  <gray>le podium des succès et des métiers et les PNJ (jouer, aide)."));
+            p.sendMessage(MM.deserialize("  <gray>Si ton hub médiéval est déjà collé, il est gardé tel quel. Sinon, il est collé au centre du monde du hub."));
+            p.sendMessage(MM.deserialize("  <gray>Les anciens hologrammes et PNJ du hub sont remplacés. Les joueurs et leurs inventaires ne sont pas touchés."));
             p.sendMessage(MM.deserialize("  <gray>Pour lancer : <white><click:run_command:'/lyonhub installer confirmer'><u>/lyonhub installer confirmer</u></click></white>"
                     + " <dark_gray>(ajoute un pseudo à la fin pour choisir le skin des PNJ)"));
             return;
@@ -106,9 +130,55 @@ public final class HubBuilder {
             return;
         }
         String skin = args.length > 2 ? args[2] : p.getName();
-        busy = true;
         HubPlan plan = HubPlan.build();
         World world = w;
+
+        // Le hub médiéval est-il déjà là ? D'abord à sa place habituelle, puis là où se tient le joueur
+        // (s'il est revenu à l'endroit d'où il l'avait collé).
+        if (!repaste) {
+            List<int[]> anchors = new ArrayList<>();
+            anchors.add(new int[]{HubPlan.ANCHOR_X, HubPlan.ANCHOR_Y, HubPlan.ANCHOR_Z});
+            if (p.getWorld().equals(w)) anchors.add(new int[]{p.getLocation().getBlockX(), p.getLocation().getBlockY(), p.getLocation().getBlockZ()});
+            int[] found = null;
+            for (int[] a : anchors) {
+                if (match(w, schem, a[0], a[1], a[2]) >= 0.85) {
+                    found = a;
+                    break;
+                }
+            }
+            if (found == null) {
+                boolean empty = match(w, schem, HubPlan.ANCHOR_X, HubPlan.ANCHOR_Y, HubPlan.ANCHOR_Z) < 0.05 && emptyAround(w);
+                if (!empty) {
+                    msg(p, "<gray>Je ne retrouve pas ton hub médiéval à sa place habituelle.");
+                    p.sendMessage(MM.deserialize("  <white>1.</white> <gray>Va exactement à l'endroit où tu étais quand tu l'as collé, puis retape"
+                            + " <white>/lyonhub installer confirmer</white> : il sera gardé tel quel."));
+                    p.sendMessage(MM.deserialize("  <white>2.</white> <gray>Ou recolle-le proprement au centre : <white><click:run_command:'/lyonhub installer recoller'><u>/lyonhub installer recoller</u></click></white>"
+                            + " <red>(efface tout à moins de 150 blocs du centre du hub)"));
+                    return;
+                }
+                repaste = true; // monde du hub vide : on colle le hub
+            } else {
+                dx = found[0] - HubPlan.ANCHOR_X;
+                dy = found[1] - HubPlan.ANCHOR_Y;
+                dz = found[2] - HubPlan.ANCHOR_Z;
+                busy = true;
+                msg(p, "<gray>Ton hub médiéval est déjà en place : je le garde et j'ajoute les podiums, l'écran, les hologrammes et les PNJ…");
+                place(world, plan.blocks(), () -> {
+                    try {
+                        setup(p, world, plan, skin);
+                    } catch (RuntimeException e) {
+                        plugin.getLogger().log(java.util.logging.Level.SEVERE, "Installation du hub", e);
+                        msg(p, "<red>Erreur pendant la mise en place : " + e.getMessage());
+                    } finally {
+                        busy = false;
+                    }
+                });
+                return;
+            }
+        }
+
+        dx = dy = dz = 0;
+        busy = true;
         // Le joueur vole au-dessus du chantier pendant les travaux
         boolean couldFly = p.getAllowFlight();
         p.teleport(new Location(w, 0.5, 140, 0.5, 90, 40));
@@ -142,6 +212,13 @@ public final class HubBuilder {
                 finish.run();
             }
         });
+    }
+
+    /** Presque rien de construit autour du centre (monde du hub tout neuf, avec sa plateforme de départ). */
+    private boolean emptyAround(World w) {
+        int blocks = 0;
+        for (int x = -40; x <= 40; x += 4) for (int z = -40; z <= 40; z += 4) if (w.getHighestBlockYAt(x, z) > w.getMinHeight()) blocks++;
+        return blocks <= 9;
     }
 
     // ───────────────────────────── Nettoyage et construction ─────────────────────────────
@@ -198,7 +275,7 @@ public final class HubBuilder {
                         plugin.getLogger().warning("Bloc inconnu dans le plan du hub : " + b.data());
                         continue;
                     }
-                    w.getBlockAt(b.x(), b.y(), b.z()).setBlockData(data, false);
+                    w.getBlockAt(b.x() + dx, b.y() + dy, b.z() + dz).setBlockData(data, false);
                 }
                 if (i >= blocks.size()) {
                     cancel();
@@ -211,11 +288,11 @@ public final class HubBuilder {
     // ───────────────────────────── Spawn, hologrammes, PNJ ─────────────────────────────
 
     private Location at(World w, HubPlan.Spot s) {
-        return new Location(w, s.x(), s.y(), s.z(), s.yaw(), 0);
+        return new Location(w, s.x() + dx, s.y() + dy, s.z() + dz, s.yaw(), 0);
     }
 
     private void setup(Player p, World w, HubPlan plan, String skin) {
-        w.setSpawnLocation(HubPlan.ANCHOR_X, HubPlan.ANCHOR_Y, HubPlan.ANCHOR_Z);
+        w.setSpawnLocation(HubPlan.ANCHOR_X + dx, HubPlan.ANCHOR_Y + dy, HubPlan.ANCHOR_Z + dz);
         w.setTime(6000);
         int oldNpcs = npcs.removeInWorld(w.getName());
         int oldHolos = removeHolograms(w.getName());

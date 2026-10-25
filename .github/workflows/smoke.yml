@@ -200,7 +200,8 @@ jobs:
             bot.setControlState('forward', true); await sleep(3000); bot.setControlState('forward', false)
             log('HUB INV', bot.game.gameMode, bot.inventory.items().map(i => i.name + ' x' + i.count).join(', '))
             // Hub tout fait (/lyonhub installer)
-            await cmd('/lyonhub installer'); await cmd('/lyonhub installer confirmer', 120000)
+            await cmd('/lyonhub installer'); await cmd('/lyonhub installer confirmer', 5000); await cmd('/lyonhub installer recoller', 120000)
+            await cmd('/tp Testeur 30 70 30'); await cmd('/lyonhub installer confirmer', 15000)
             log('HUB FAIT', bot.entity.position.floored().toString(), 'textes', Object.values(bot.entities).filter(e => e.name === 'text_display').length,
               'pnj', Object.values(bot.entities).filter(e => e.type === 'player' && e.username !== 'Testeur').length)
             await cmd('/lyonhub liste'); await cmd('/lmc holo liste'); await cmd('/parkour', 4000)
@@ -263,7 +264,7 @@ jobs:
             sleep 20; echo "deop Acheteur"; sleep 2; echo "say test-filtre"; sleep 14
             echo "mute Acheteur 2m test du mute"; sleep 1; echo "say test-muet"; sleep 6
             echo "unmute Acheteur"; sleep 1; echo "avertir Acheteur test d'avertissement"; sleep 1; echo "sanctions Acheteur"; sleep 1; echo "op Acheteur"
-            sleep 650
+            sleep 675
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
             echo "say test-chat-grade"; sleep 30
