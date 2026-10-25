@@ -4,7 +4,6 @@ import fr.lyonmc.hub.npc.NpcService;
 import fr.lyonmc.hub.player.HubPlayers;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -12,12 +11,10 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Hanging;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -29,8 +26,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * /lyonhub installer : colle le hub médiéval (hub-medieval.schem), y ajoute les podiums et un parkour long et
- * difficile dans le ciel, puis pose le spawn, les hologrammes, les PNJ et règle le parkour.
+ * /lyonhub installer : colle le hub médiéval (hub-medieval.schem), y ajoute les podiums, puis pose le spawn,
+ * les hologrammes et les PNJ.
  */
 public final class HubBuilder {
 
@@ -80,8 +77,8 @@ public final class HubBuilder {
         if (!confirm) {
             msg(p, "<white><bold>Hub médiéval de LyonMC, tout prêt</bold></white>");
             p.sendMessage(MM.deserialize("  <gray>Colle le hub médiéval (<white>hub-medieval.schem</white>) au centre du monde du hub, puis ajoute :"));
-            p.sendMessage(MM.deserialize("  <gray>le spawn sur la grande place, le grand écran, les hologrammes, le podium des succès et des métiers,"));
-            p.sendMessage(MM.deserialize("  <gray>les PNJ (jouer, aide, parkour) et un parkour long et difficile dans le ciel (3 étapes)."));
+            p.sendMessage(MM.deserialize("  <gray>le spawn sur la grande place, le grand écran, les hologrammes, le podium des succès et des métiers"));
+            p.sendMessage(MM.deserialize("  <gray>et les PNJ (jouer, aide)."));
             p.sendMessage(MM.deserialize("  <red>Attention :</red> <gray>tout ce qui est construit à moins de 150 blocs du centre du monde du hub est remplacé,"));
             p.sendMessage(MM.deserialize("  <gray>ainsi que ses hologrammes et ses PNJ. Les joueurs et leurs inventaires ne sont pas touchés."));
             p.sendMessage(MM.deserialize("  <gray>Pour lancer : <white><click:run_command:'/lyonhub installer confirmer'><u>/lyonhub installer confirmer</u></click></white>"
@@ -211,7 +208,7 @@ public final class HubBuilder {
         }.runTaskTimer(plugin, 1L, 1L);
     }
 
-    // ───────────────────────────── Spawn, hologrammes, PNJ, parkour ─────────────────────────────
+    // ───────────────────────────── Spawn, hologrammes, PNJ ─────────────────────────────
 
     private Location at(World w, HubPlan.Spot s) {
         return new Location(w, s.x(), s.y(), s.z(), s.yaw(), 0);
@@ -224,7 +221,7 @@ public final class HubBuilder {
         int oldHolos = removeHolograms(w.getName());
         boolean lyon = Bukkit.getPluginManager().isPluginEnabled("LyonAchievements");
 
-        int holos = 0, npcCount = 0, labels = 0;
+        int holos = 0, npcCount = 0;
         for (HubPlan.Spot s : plan.spots) {
             Location l = at(w, s);
             switch (s.kind()) {
@@ -245,20 +242,12 @@ public final class HubBuilder {
                     if (a.length > 1) npcs.setLabel(n, Arrays.asList(a[1].split("\\|")));
                     npcCount++;
                 }
-                case "label" -> {
-                    label(w, l, s.id());
-                    labels++;
-                }
                 default -> {
                 }
             }
         }
-        // Parkour : départ, étapes, arrivée et classement
-        List<Block> steps = new ArrayList<>();
-        for (int[] c : plan.checkpoints) steps.add(w.getBlockAt(c[0], c[1], c[2]));
-        players.parkour().setup(w.getBlockAt(plan.start[0], plan.start[1], plan.start[2]), steps,
-                w.getBlockAt(plan.finish[0], plan.finish[1], plan.finish[2]),
-                new Location(w, plan.board[0], plan.board[1], plan.board[2]));
+        // Pas de parkour dans ce hub : on retire celui d'avant (points et classement)
+        players.parkour().clear(w);
 
         // Spawn du serveur (LyonAchievements) : au centre, tourné vers le grand écran
         HubPlan.Spot spawn = plan.spots.stream().filter(s -> s.kind().equals("spawn")).findFirst().orElse(null);
@@ -266,26 +255,8 @@ public final class HubBuilder {
             p.teleport(at(w, spawn));
             if (lyon) p.performCommand("setspawn");
         }
-        msg(p, "<green>Hub médiéval installé !</green> <gray>" + holos + " hologrammes, " + npcCount + " PNJ, parkour de "
-                + plan.checkpoints.size() + " étapes" + (oldNpcs + oldHolos > 0 ? " <dark_gray>(" + oldNpcs + " anciens PNJ et " + oldHolos + " anciens hologrammes retirés)" : "") + "<gray>.");
+        msg(p, "<green>Hub médiéval installé !</green> <gray>" + holos + " hologrammes, " + npcCount + " PNJ" + (oldNpcs + oldHolos > 0 ? " <dark_gray>(" + oldNpcs + " anciens PNJ et " + oldHolos + " anciens hologrammes retirés)" : "") + "<gray>.");
         p.sendMessage(MM.deserialize("  <gray>Tu es au spawn. Les classements des podiums se remplissent en une minute."));
-        p.sendMessage(MM.deserialize("  <gray>Essaie le parkour : <white><click:run_command:'/parkour'><u>/parkour</u></click></white>"));
-    }
-
-    /** Petit texte flottant (départ, étapes et arrivée du parkour). */
-    private void label(World w, Location l, String text) {
-        String[] lines = text.split("\\|");
-        StringBuilder sb = new StringBuilder("<#9fffe0><bold>" + lines[0] + "</bold>");
-        for (int i = 1; i < lines.length; i++) sb.append("\n").append(lines[i]);
-        w.spawn(l, TextDisplay.class, td -> {
-            td.text(MM.deserialize(sb.toString()));
-            td.setBillboard(Display.Billboard.CENTER);
-            td.setDefaultBackground(false);
-            td.setBackgroundColor(Color.fromARGB(90, 0, 0, 0));
-            td.setShadowed(true);
-            td.setPersistent(true);
-            td.getPersistentDataContainer().set(decoKey, PersistentDataType.BYTE, (byte) 1);
-        });
     }
 
     /** Retire les hologrammes de LyonAchievements posés dans ce monde. */

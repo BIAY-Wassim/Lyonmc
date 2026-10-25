@@ -161,6 +161,20 @@ public final class Parkour implements Listener, CommandExecutor {
         updateBoard();
     }
 
+    /** Plus de parkour dans ce monde : points et classement retirés (les meilleurs temps sont gardés). */
+    public void clear(World w) {
+        for (UUID u : new ArrayList<>(runs.keySet())) {
+            Player o = Bukkit.getPlayer(u);
+            if (o != null) stop(o, null);
+        }
+        start = null;
+        finish = null;
+        checkpoints.clear();
+        removeBoards(w);
+        data.set("classement", null);
+        save();
+    }
+
     public boolean ready() {
         return start != null && finish != null;
     }
