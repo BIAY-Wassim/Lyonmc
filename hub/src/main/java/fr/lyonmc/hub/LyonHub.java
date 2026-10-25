@@ -29,6 +29,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
     private NpcService npcs;
     private fr.lyonmc.hub.player.HubPlayers players;
     private fr.lyonmc.hub.world.SchematicPaster paster;
+    private fr.lyonmc.hub.world.HubBuilder builder;
 
     @Override
     public void onEnable() {
@@ -50,6 +51,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
         getServer().getPluginManager().registerEvents(players.menus(), this);
         getServer().getPluginManager().registerEvents(players.positions(), this);
         getServer().getPluginManager().registerEvents(players.parkour(), this);
+        builder = new fr.lyonmc.hub.world.HubBuilder(this, worlds, npcs, players);
         var survie = getCommand("survie");
         if (survie != null) survie.setExecutor(players.positions());
         var parkour = getCommand("parkour");
@@ -243,6 +245,13 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
             case "parkour" -> {
                 if (p != null) players.parkour().admin(p, args);
             }
+            case "installer", "install" -> {
+                if (p == null) {
+                    msg(sender, "<gray>À faire en jeu (tu seras téléporté au hub).");
+                    return true;
+                }
+                builder.command(p, args);
+            }
             case "reload" -> {
                 reloadConfig();
                 npcs.load();
@@ -252,6 +261,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
             default -> {
                 msg(sender, "<white><bold>HUB</bold></white> <dark_gray>par wassdead");
                 for (String line : List.of(
+                        "<white>/lyonhub installer</white> <dark_gray>construire le hub tout fait (place, écran, hologrammes, PNJ, parkour)",
                         "<white>/lyonhub monde [nom]</white> <dark_gray>créer / aller dans le monde vide du hub",
                         "<white>/lyonhub podium <classement> <place> [id]</white> <dark_gray>PNJ du podium (vrai skin du joueur)",
                         "<white>/lyonhub pnj <id> <pseudo> [commande]</white> <dark_gray>PNJ avec un skin et une commande au clic",
@@ -283,13 +293,14 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
-            out.addAll(List.of("monde", "construire", "depart", "coller", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste",
+            out.addAll(List.of("installer", "monde", "construire", "depart", "coller", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste",
                     "parkour", "reload"));
         } else if (args.length == 2) {
             switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "podium" -> Rankings.BOARDS.forEach(b -> out.add(b.id()));
                 case "texte", "commande", "deplacer", "suppr" -> npcs.all().forEach(n -> out.add(n.id()));
                 case "monde" -> out.add("hub");
+                case "installer" -> out.add("confirmer");
                 case "coller" -> out.addAll(paster.available());
                 case "parkour" -> out.addAll(List.of("depart", "etape", "arrivee", "classement", "effacer", "temps-reset"));
                 default -> {

@@ -180,6 +180,15 @@ public final class NpcService implements Listener {
         }
     }
 
+    /** Supprime tous les PNJ d'un monde (avant d'installer le hub tout fait). */
+    public int removeInWorld(String world) {
+        int n = 0;
+        for (Npc npc : new ArrayList<>(npcs.values())) {
+            if (world.equals(npc.world) && remove(npc.id)) n++;
+        }
+        return n;
+    }
+
     public Collection<Npc> all() {
         return npcs.values();
     }
