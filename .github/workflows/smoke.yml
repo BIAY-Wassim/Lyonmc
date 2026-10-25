@@ -198,6 +198,13 @@ jobs:
             await cmd('/missions'); await close()
             bot.setControlState('forward', true); await sleep(3000); bot.setControlState('forward', false)
             log('HUB INV', bot.game.gameMode, bot.inventory.items().map(i => i.name + ' x' + i.count).join(', '))
+            // Hub tout fait (/lyonhub installer)
+            await cmd('/lyonhub installer'); await cmd('/lyonhub installer confirmer', 45000)
+            log('HUB FAIT', bot.entity.position.floored().toString(), 'textes', Object.values(bot.entities).filter(e => e.name === 'text_display').length,
+              'pnj', Object.values(bot.entities).filter(e => e.type === 'player' && e.username !== 'Testeur').length)
+            await cmd('/lyonhub liste'); await cmd('/lmc holo liste'); await cmd('/parkour', 4000)
+            log('PARKOUR DEPART', bot.entity.position.floored().toString())
+            bot.chat('/tp Testeur 0.5 65 0.5 180 0'); await sleep(2000)
             await cmd('/advancement grant Testeur only minecraft:adventure/sleep_in_bed')
             bot.setQuickBarSlot(0); await sleep(500); bot.activateItem(); await sleep(2500)
             await click(10, 6000)
@@ -248,14 +255,14 @@ jobs:
           (
             for i in $(seq 1 240); do grep -q "Done (" logs/latest.log 2>/dev/null && break; sleep 1; done
             sleep 3
-            (cd ../bot && timeout 900 node bot.js Testeur > ../bot.log 2>&1 &)
+            (cd ../bot && timeout 960 node bot.js Testeur > ../bot.log 2>&1 &)
             (cd ../bot && timeout 900 node bot.js Acheteur > ../bot2.log 2>&1 &)
             sleep 12
             for c in "communaute vote Acheteur site-test" "communaute vote Acheteur site-test" "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob" "lmc donner Acheteur concours" "lmc donner Testeur inconnu"; do echo "$c"; sleep 1; done
             sleep 20; echo "deop Acheteur"; sleep 2; echo "say test-filtre"; sleep 14
             echo "mute Acheteur 2m test du mute"; sleep 1; echo "say test-muet"; sleep 6
             echo "unmute Acheteur"; sleep 1; echo "avertir Acheteur test d'avertissement"; sleep 1; echo "sanctions Acheteur"; sleep 1; echo "op Acheteur"
-            sleep 515
+            sleep 575
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
             echo "say test-chat-grade"; sleep 30
@@ -263,14 +270,14 @@ jobs:
             sleep 8
             echo "stop"
           ) > in &
-          timeout 1000 java -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
+          timeout 1060 java -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
       - name: Analyse des journaux
         if: always()
         run: |
           echo "=== BOT ==="; cat bot.log bot2.log | head -300
           cd srv
           echo "=== LyonAchievements ==="; grep -n "LyonAchievements" logs/latest.log | head -60
-          echo "=== Nouveautés ==="; grep -nE "Métier|Mineur|Parkour|parkour|Signalement|MP\]|ami|Lot|lot|Astuce|Centre|Règlement" ../bot.log ../bot2.log logs/latest.log | head -80 || true
+          echo "=== Nouveautés ==="; grep -nE "Hub installé|HUB FAIT|PARKOUR DEPART|Métier|Mineur|Parkour|parkour|Signalement|MP\]|ami|Lot|lot|Astuce|Centre|Règlement" ../bot.log ../bot2.log logs/latest.log | head -80 || true
           echo "=== Erreurs ==="; grep -nE "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -80 || true
           grep -E "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -10 | while IFS= read -r l; do echo "::error::$l"; done
           grep -E "BOT|KICKED|BOTERR|NOWINDOW|CLICKERR" ../bot.log | head -10 | while IFS= read -r l; do echo "::notice::$l"; done

@@ -87,6 +87,8 @@ parkour:
   chute-max: 8
   # Les temps plus courts que ça sont refusés (anti-triche, 0 = pas de limite)
   temps-minimum-secondes: 0
+  # Une fois arrivé, retour au départ après 5 secondes (pour retenter son temps)
+  retour-apres-arrivee: true
   # Récompense la première fois qu'on termine le parkour (commandes lancées par la console)
   recompense-commandes:
     - "eco give %player% 250"

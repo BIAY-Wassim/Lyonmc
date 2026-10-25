@@ -141,6 +141,24 @@ public final class Parkour implements Listener, CommandExecutor {
         }
     }
 
+    /** Installe un parkour complet (hub tout fait) : départ, étapes, arrivée et classement affiché. */
+    public void setup(Block startBlock, List<Block> steps, Block finishBlock, Location boardAt) {
+        for (UUID u : new ArrayList<>(runs.keySet())) {
+            Player o = Bukkit.getPlayer(u);
+            if (o != null) stop(o, null);
+        }
+        start = Point.of(startBlock);
+        finish = Point.of(finishBlock);
+        checkpoints.clear();
+        for (Block b : steps) checkpoints.add(Point.of(b));
+        if (boardAt != null) {
+            removeBoards(boardAt.getWorld());
+            data.set("classement", boardAt.getWorld().getName() + ";" + boardAt.getX() + ";" + boardAt.getY() + ";" + boardAt.getZ() + ";" + boardAt.getYaw());
+        }
+        save();
+        updateBoard();
+    }
+
     public boolean ready() {
         return start != null && finish != null;
     }
@@ -384,6 +402,15 @@ public final class Parkour implements Listener, CommandExecutor {
         }
         stop(p, null);
         updateBoard();
+        // Retour au départ après quelques secondes (l'arrivée est souvent tout en haut)
+        if (c == null || c.getBoolean("retour-apres-arrivee", true)) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                Location l = start == null ? null : start.center();
+                if (l == null || !p.isOnline() || running(p) || !worlds.isHub(p.getWorld())) return;
+                l.setYaw(p.getLocation().getYaw());
+                teleport(p, l);
+            }, 100L);
+        }
     }
 
     private static long parseMs(String s) {
