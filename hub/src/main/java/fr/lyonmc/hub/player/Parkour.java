@@ -288,14 +288,15 @@ public final class Parkour implements Listener, CommandExecutor {
         if (!restart) giveItems(p);
     }
 
+    /** Objets du parkour à la place de ceux du hub (les objets reçus au hub ne sont jamais effacés). */
     private void giveItems(Player p) {
         PlayerInventory inv = p.getInventory();
-        inv.clear();
-        inv.setItem(3, players.hubItem(Material.HEAVY_WEIGHTED_PRESSURE_PLATE, "<#9fffe0><bold>Dernière étape</bold> <gray>(clic droit)",
+        players.removeHubItems(p);
+        players.placeHubItem(p, 3, players.hubItem(Material.HEAVY_WEIGHTED_PRESSURE_PLATE, "<#9fffe0><bold>Dernière étape</bold> <gray>(clic droit)",
                 List.of("<gray>Revenir à la dernière étape atteinte"), "parkour:etape"));
-        inv.setItem(4, players.hubItem(Material.OAK_DOOR, "<white><bold>Recommencer</bold> <gray>(clic droit)",
+        players.placeHubItem(p, 4, players.hubItem(Material.OAK_DOOR, "<white><bold>Recommencer</bold> <gray>(clic droit)",
                 List.of("<gray>Retour au départ, chrono remis à zéro"), "parkour:recommencer"));
-        inv.setItem(5, players.hubItem(Material.RED_BED, "<red><bold>Quitter le parkour</bold> <gray>(clic droit)",
+        players.placeHubItem(p, 5, players.hubItem(Material.RED_BED, "<red><bold>Quitter le parkour</bold> <gray>(clic droit)",
                 List.of("<gray>Retrouver les objets du hub"), "parkour:quitter"));
         inv.setHeldItemSlot(3);
     }
@@ -334,7 +335,7 @@ public final class Parkour implements Listener, CommandExecutor {
         runs.remove(p.getUniqueId());
         if (message != null) p.sendMessage(MM.deserialize(message));
         if (worlds.isHub(p.getWorld()) && !players.building(p)) {
-            p.getInventory().clear();
+            players.removeHubItems(p);
             players.giveHubItems(p);
         }
     }

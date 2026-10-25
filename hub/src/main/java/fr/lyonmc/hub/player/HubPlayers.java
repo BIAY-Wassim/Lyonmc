@@ -114,10 +114,63 @@ public final class HubPlayers implements Listener {
                 p.sendMessage(Component.text("Ton inventaire n'a pas pu être mis de côté : il reste avec toi.", net.kyori.adventure.text.format.NamedTextColor.RED));
                 return;
             }
-        } else if (returnPoint != null) {
-            updateReturnPoint(f, returnPoint);
+        } else {
+            // Déjà de côté (déconnexion au hub) : ce qui avait été reçu au hub rejoint l'inventaire de survie
+            YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
+            if (returnPoint != null) writeLocation(y, returnPoint);
+            stashReceived(p, y);
+            try {
+                y.save(f);
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.SEVERE, "Impossible d'enregistrer " + f.getName(), e);
+                p.sendMessage(Component.text("Ton inventaire n'a pas pu être mis de côté : il reste avec toi.", net.kyori.adventure.text.format.NamedTextColor.RED));
+                return;
+            }
         }
         applyHubState(p);
+    }
+
+    /**
+     * Range dans le fichier de survie les objets et l'XP reçus pendant un passage au hub (récompenses, achats...),
+     * pour qu'ils soient rendus en repartant. Rien en créatif ou spectateur (mode construction).
+     */
+    private void stashReceived(Player p, YamlConfiguration y) {
+        GameMode gm = p.getGameMode();
+        if (gm == GameMode.CREATIVE || gm == GameMode.SPECTATOR || building(p)) return;
+        List<String> rec = new ArrayList<>(y.getStringList("recus"));
+        for (ItemStack it : p.getInventory().getContents()) {
+            if (it != null && !it.getType().isAir() && !isHubItem(it)) rec.add(Base64.getEncoder().encodeToString(it.serializeAsBytes()));
+        }
+        y.set("recus", rec);
+        int xp = p.calculateTotalExperiencePoints();
+        if (xp > 0) y.set("xp-recue", y.getInt("xp-recue") + xp);
+    }
+
+    /** Range tout de suite un objet reçu au hub qui n'a plus de place (rendu en repartant en survie). */
+    private void stashItem(Player p, ItemStack it) {
+        File f = file(p.getUniqueId());
+        if (!f.exists()) {
+            p.getWorld().dropItemNaturally(p.getLocation(), it);
+            return;
+        }
+        YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
+        List<String> rec = new ArrayList<>(y.getStringList("recus"));
+        rec.add(Base64.getEncoder().encodeToString(it.serializeAsBytes()));
+        y.set("recus", rec);
+        try {
+            y.save(f);
+        } catch (IOException e) {
+            p.getWorld().dropItemNaturally(p.getLocation(), it);
+        }
+    }
+
+    /** Pose un objet du hub dans une case, en déplaçant ce qui s'y trouvait (un objet reçu n'est jamais écrasé). */
+    public void placeHubItem(Player p, int slot, ItemStack it) {
+        PlayerInventory inv = p.getInventory();
+        ItemStack old = inv.getItem(slot);
+        inv.setItem(slot, it);
+        if (old == null || old.getType().isAir() || isHubItem(old)) return;
+        for (ItemStack left : inv.addItem(old).values()) stashItem(p, left);
     }
 
     /** Rend l'inventaire de survie (si le joueur en avait un de côté). */
@@ -156,6 +209,14 @@ public final class HubPlayers implements Listener {
         inv.setContents(contents);
         p.setLevel(y.getInt("niveau"));
         p.setExp((float) y.getDouble("experience"));
+        for (String r : y.getStringList("recus")) {
+            try {
+                received.add(ItemStack.deserializeBytes(Base64.getDecoder().decode(r)));
+            } catch (RuntimeException e) {
+                plugin.getLogger().log(Level.WARNING, "Objet reçu illisible dans " + f.getName(), e);
+            }
+        }
+        receivedXp += y.getInt("xp-recue");
         if (receivedXp > 0) p.giveExp(receivedXp);
         if (!received.isEmpty()) giveBack(p, received);
         var max = p.getAttribute(Attribute.MAX_HEALTH);
@@ -290,7 +351,7 @@ public final class HubPlayers implements Listener {
         return it == null || !it.hasItemMeta() ? null : it.getItemMeta().getPersistentDataContainer().get(itemKey, PersistentDataType.STRING);
     }
 
-    private void removeHubItems(Player p) {
+    public void removeHubItems(Player p) {
         PlayerInventory inv = p.getInventory();
         for (int i = 0; i < inv.getSize(); i++) if (isHubItem(inv.getItem(i))) inv.setItem(i, null);
     }
@@ -325,7 +386,7 @@ public final class HubPlayers implements Listener {
                 it.setItemMeta(skull);
             }
             int slot = c.getInt("case", 0);
-            if (slot >= 0 && slot < 36) p.getInventory().setItem(slot, it);
+            if (slot >= 0 && slot < 36) placeHubItem(p, slot, it);
         }
         p.getInventory().setHeldItemSlot(Math.max(0, Math.min(8, plugin.getConfig().getInt("case-en-main", 4))));
     }
@@ -340,6 +401,16 @@ public final class HubPlayers implements Listener {
             applyHubState(p);
             p.sendMessage(MM.deserialize("<gray>Mode construction <red>désactivé</red>."));
         } else {
+            File f = file(p.getUniqueId());
+            if (f.exists()) {
+                YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
+                stashReceived(p, y);
+                try {
+                    y.save(f);
+                } catch (IOException e) {
+                    plugin.getLogger().log(Level.WARNING, "Impossible d'enregistrer " + f.getName(), e);
+                }
+            }
             builders.add(p.getUniqueId());
             applyHubState(p);
             p.sendMessage(MM.deserialize("<gray>Mode construction <green>activé</green> : créatif, inventaire libre. Ton inventaire de survie reste de côté."));

@@ -82,7 +82,7 @@
     return cache[name];
   }
   async function loadFr() {
-    try { FR = await (await fetch("/assets/fr.json")).json(); } catch (e) { FR = {}; }
+    try { FR = await (await fetch("/assets/fr.json?v=10")).json(); } catch (e) { FR = {}; }
   }
 
   function bundle(b) {
