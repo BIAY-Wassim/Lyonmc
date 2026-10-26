@@ -81,20 +81,25 @@ accueil:
       - "<bold>Les règles</bold>\n\nRespect, pas de triche, pas de vol.\n<click:run_command:'/regles'><u>/regles</u></click>\n\nUne question ?\n<click:run_command:'/aide'><u>/aide</u></click>\n\n<dark_gray>Bon jeu !"
 
 # ───────────────────────── Votes ─────────────────────────
-# Il faut installer NuVotifier et inscrire le serveur sur les sites de vote.
+# Inscris le serveur sur des sites de vote, puis mets-les dans « sites » : lien de la page de vote (+ « cle: » si le site
+# en demande une). Les joueurs les retrouvent dans /vote et sur la page « Voter » du site.
+#
+# Le plugin vérifie lui-même les votes sur ces sites (pas besoin de NuVotifier) : quand un joueur se connecte,
+# ouvre /vote ou clique sur [J'ai voté], il demande au site si ce joueur a voté.
+#   Rien d'autre à mettre (le lien suffit) : serveurs-minecraft.org, serveur-minecraft-vote.fr, serveurs-mc.net,
+#                                            serveur-minecraft.com, serveur-minecraft.fr, liste-serveurs.fr, liste-serv-minecraft.fr
+#   Ajoute « cle: » (à copier depuis le panneau de ton serveur sur le site) :
+#                                            serveur-prive.net (clé API), top-serveurs.net (token), liste-serveurs-minecraft.org (id),
+#                                            serveurliste.com (clé API), minecraft.fr (clé API), minecraft-mp.com (clé API)
+# Les autres sites envoient les votes par NuVotifier (plugin à installer, port 8192, clé publique à donner au site) :
+# mets juste leur lien. Pour un site qui a sa propre adresse de vérification, ajoute « verification: » avec cette
+# adresse ({ip} = IP du joueur, {pseudo} = son pseudo). « verifier: false » = votes reçus par NuVotifier seulement.
 votes:
   enabled: true
-  # Les sites où tu as inscrit le serveur : nom affiché + lien de la page de vote.
-  # Deux façons de recevoir les votes :
-  #  - par NuVotifier (le site envoie le vote au serveur) : rien de plus à mettre ici ;
-  #  - par vérification de l'IP (sites sans NuVotifier, comme serveurs-minecraft.org) : le joueur clique
-  #    sur [J'ai voté] dans /vote (ou se connecte après avoir voté) et le plugin demande au site si son IP a voté.
-  #    Pour serveurs-minecraft.org c'est automatique. Pour un autre site, ajoute « verification: » avec
-  #    l'adresse de son API, où {ip} sera remplacé par l'IP du joueur.
   sites: []
   #  - { nom: "serveurs-minecraft.org", lien: "https://www.serveurs-minecraft.org/vote.php?id=00000" }
-  #  - { nom: "serveur-prive.net", lien: "https://serveur-prive.net/minecraft/lyonmc/vote" }
-  #  - { nom: "autre-site", lien: "https://...", verification: "https://.../api?ip={ip}" }
+  #  - { nom: "serveur-prive.net", lien: "https://serveur-prive.net/minecraft/lyonmc/vote", cle: "TA_CLE_API" }
+  #  - { nom: "top-serveurs.net", lien: "https://top-serveurs.net/minecraft/lyonmc", cle: "TON_TOKEN" }
   recompense: { coins: 150, season-points: 15 }
   annonce: "<#9be37c>✦</#9be37c> <white><player></white> <gray>a voté pour le serveur<dark_gray> (<site>)</dark_gray>. <click:run_command:'/vote'><hover:show_text:'<gray>Voter toi aussi'><#9be37c><u>/vote</u></#9be37c></hover></click>"
   # Série : voter plusieurs jours d'affilée

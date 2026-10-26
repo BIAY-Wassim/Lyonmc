@@ -80,6 +80,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         pm.registerEvents(reports, this);
         pm.registerEvents(moderation, this);
         votes.hookVotifier();
+        votes.logSites();
 
         // LyonAchievements affiche « AFK » dans TAB et un panneau « Communauté » sur le grand écran du hub
         getServer().getServicesManager().register(fr.lyonmc.achievements.api.AfkProvider.class, loyalty, this, ServicePriority.Normal);
@@ -372,6 +373,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             case "reload" -> {
                 reloadConfig();
                 addMissingSections();
+                votes.logSites();
                 happyHours.reload();
                 msg(s, "<gray>COMMUNAUTE rechargé.");
             }
