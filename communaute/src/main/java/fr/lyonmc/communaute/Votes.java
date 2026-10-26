@@ -139,15 +139,25 @@ public final class Votes implements Listener {
                 .replace("{pseudo}", java.net.URLEncoder.encode(c.name(), java.nio.charset.StandardCharsets.UTF_8));
         java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder(java.net.URI.create(url)).timeout(Duration.ofSeconds(8))
                 .header("User-Agent", "LyonMC-COMMUNAUTE").GET().build();
+        boolean debug = plugin.getConfig().getBoolean("votes.debug", false);
         http.sendAsync(req, java.net.http.HttpResponse.BodyHandlers.ofString()).whenComplete((res, err) -> {
-            if (err != null || res == null) return;
-            int status = res.statusCode();
-            String body = res.body() == null ? "" : res.body().trim();
-            if ((status == 401 || status == 403) && warned.add("cle:" + c.site().name())) {
-                plugin.getLogger().warning("Votes : " + c.site().name() + " refuse la vérification (code " + status + ") : vérifie la clé « cle: » dans config.yml.");
+            try {
+                if (err != null || res == null) {
+                    if (debug) plugin.getLogger().info("[Votes] " + c.site().name() + " injoignable : " + err);
+                    return;
+                }
+                int status = res.statusCode();
+                String body = res.body() == null ? "" : res.body().trim();
+                if ((status == 401 || status == 403) && warned.add("cle:" + c.site().name())) {
+                    plugin.getLogger().warning("Votes : " + c.site().name() + " refuse la vérification (code " + status + ") : vérifie la clé « cle: » dans config.yml.");
+                }
+                VoteSites.Result r = VoteSites.read(c.site().answer(), status, body);
+                if (debug) plugin.getLogger().info("[Votes] " + c.site().name() + " pour " + c.name() + " : code " + status + " → " + r
+                        + " (" + (body.length() > 160 ? body.substring(0, 160) + "…" : body) + ")");
+                Bukkit.getScheduler().runTask(plugin, () -> checked(c, r, body));
+            } catch (Throwable t) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING, "Vérification du vote sur " + c.site().name() + " impossible", t);
             }
-            VoteSites.Result r = VoteSites.read(c.site().answer(), status, body);
-            Bukkit.getScheduler().runTask(plugin, () -> checked(c, r, body));
         });
     }
 
