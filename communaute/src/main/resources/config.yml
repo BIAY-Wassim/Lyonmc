@@ -85,7 +85,7 @@ accueil:
 # en demande une). Les joueurs les retrouvent dans /vote et sur la page « Voter » du site.
 #
 # Le plugin vérifie lui-même les votes sur ces sites (pas besoin de NuVotifier) : quand un joueur se connecte,
-# ouvre /vote ou clique sur [J'ai voté], il demande au site si ce joueur a voté.
+# ouvre /vote ou clique sur [Vérifier], il demande au site si ce joueur a voté.
 #   Rien d'autre à mettre (le lien suffit) : serveurs-minecraft.org, serveur-minecraft-vote.fr, serveurs-mc.net,
 #                                            serveur-minecraft.com, serveur-minecraft.fr, liste-serveurs.fr, liste-serv-minecraft.fr
 #   Ajoute « cle: » (à copier depuis le panneau de ton serveur sur le site) :

@@ -823,12 +823,12 @@
     const left = g.endsAt ? until(g.endsAt) : "";
     app.innerHTML = `
       <div class="page-head"><div class="wrap"><h1>Voter pour LyonMC</h1>
-        <p>Chaque vote fait monter le serveur dans les classements, ce qui amène de nouveaux joueurs. Et chaque vote te rapporte <strong>${num(v.reward || 0)} pièces</strong>${v.rewardSeason ? ` et ${num(v.rewardSeason)} points de saison` : ""}, même si tu n'es pas connecté.</p></div></div>
+        <p>Chaque vote fait monter le serveur dans les classements, ce qui amène de nouveaux joueurs. Et chaque vote te rapporte <strong>${num(v.reward || 0)} pièces</strong>${v.rewardSeason ? ` et ${num(v.rewardSeason)} points de saison` : ""}. Vote sur un des sites, puis connecte-toi au serveur dans l'heure qui suit : ta récompense arrive toute seule.</p></div></div>
       <div class="wrap vote-page">
         <section class="card vote-main">
           <div class="panel-h"><h3>Voter</h3><span class="muted">une fois par jour sur chaque site</span></div>
           <div class="vote-sites">${sites}</div>
-          <p class="small muted">Tape ton pseudo exact sur le site de vote. En jeu, <code class="cmd">/vote</code> donne les mêmes liens.</p>
+          <p class="small muted">Tape ton pseudo exact sur le site de vote et va jusqu'au message de confirmation. Le plus simple : vote pendant que tu joues, depuis <code class="cmd">/vote</code> en jeu.</p>
           <div class="panel-h" style="margin-top:22px"><h3>Vote party</h3><span class="muted">${num(v.party || 0)} / ${num(v.partyTarget || 0)} votes</span></div>
           <div class="progress" role="img" aria-label="${v.party || 0} votes sur ${v.partyTarget || 0}"><i style="width:${pct(v.party, v.partyTarget)}%"></i></div>
           <p class="small muted">À chaque palier, tous les joueurs connectés reçoivent un cadeau et le serveur passe en bonus x2.</p>
