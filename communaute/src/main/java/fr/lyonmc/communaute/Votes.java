@@ -27,11 +27,17 @@ import java.util.UUID;
  */
 public final class Votes implements Listener {
 
-    /** Un site de vote : nom, lien de vote et, s'il n'envoie pas les votes par NuVotifier, l'adresse qui vérifie un vote par IP. */
-    public record Site(String name, String url, String check) {
+    /**
+     * Un site de vote : nom, lien de vote et, s'il n'envoie pas les votes par NuVotifier, l'adresse qui vérifie
+     * un vote (par IP ou par pseudo) et la façon de lire sa réponse.
+     */
+    public record Site(String name, String url, String check, VoteSites.Answer answer) {
+        boolean byName() {
+            return check != null && check.contains("{pseudo}");
+        }
     }
 
-    /** Vérification par IP en attente : joueur, site, adresse IP. */
+    /** Vérification en attente : joueur, site, adresse IP. */
     private record Check(UUID uuid, String name, Site site, String ip) {
     }
 
@@ -53,22 +59,46 @@ public final class Votes implements Listener {
         return plugin.getConfig().getBoolean("votes.enabled", true);
     }
 
+    private final java.util.Set<String> warned = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Résumé dans la console : quels sites sont vérifiés tout seuls. */
+    void logSites() {
+        warned.clear();
+        List<String> checked = new ArrayList<>(), votifier = new ArrayList<>();
+        for (Site s : sites()) (s.check() != null ? checked : votifier).add(s.name());
+        if (!checked.isEmpty()) plugin.getLogger().info("Votes vérifiés directement auprès de : " + String.join(", ", checked));
+        if (!votifier.isEmpty()) plugin.getLogger().info("Votes attendus par NuVotifier pour : " + String.join(", ", votifier));
+    }
+
     public List<Site> sites() {
         List<Site> out = new ArrayList<>();
         for (Map<?, ?> m : plugin.getConfig().getMapList("votes.sites")) {
-            Object n = m.get("nom"), l = m.get("lien"), v = m.get("verification");
-            if (n == null || l == null) continue;
-            String check = v == null ? autoCheck(String.valueOf(l)) : String.valueOf(v);
-            out.add(new Site(String.valueOf(n), String.valueOf(l), check == null || check.isBlank() ? null : check));
+            Object l = m.get("lien");
+            if (l == null) continue;
+            String link = String.valueOf(l).trim();
+            VoteSites.Provider prov = VoteSites.find(link);
+            Object n = m.get("nom");
+            String name = n != null ? String.valueOf(n) : prov != null ? prov.domain() : link;
+            Object v = m.get("verification"), key = m.get("cle"), off = m.get("verifier");
+            String check = null;
+            VoteSites.Answer answer = null;
+            if (off != null && !Boolean.parseBoolean(String.valueOf(off))) {
+                check = null; // votes reçus par NuVotifier seulement
+            } else if (v != null && !String.valueOf(v).isBlank()) {
+                check = String.valueOf(v);
+            } else if (prov != null) {
+                String id = key != null && !String.valueOf(key).isBlank() ? String.valueOf(key).trim() : VoteSites.idFromLink(prov, link);
+                if (id != null) {
+                    check = prov.url().replace("{id}", java.net.URLEncoder.encode(id, java.nio.charset.StandardCharsets.UTF_8));
+                    answer = prov.answer();
+                } else if (prov.keyLabel() != null && warned.add(name)) {
+                    plugin.getLogger().info("Votes : pour vérifier les votes sur " + prov.domain() + ", ajoute « cle: » avec " + prov.keyLabel()
+                            + " (ou utilise NuVotifier si le site le propose).");
+                }
+            }
+            out.add(new Site(name, link, check, answer));
         }
         return out;
-    }
-
-    /** Sites connus qui vérifient les votes par IP (sans NuVotifier) : l'adresse de vérification est trouvée toute seule. */
-    static String autoCheck(String link) {
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile("serveurs-minecraft\\.org/vote\\.php\\?id=(\\d+)").matcher(link);
-        if (m.find()) return "https://www.serveurs-minecraft.org/api/is_valid_vote.php?id=" + m.group(1) + "&ip={ip}&duration=600&format=json";
-        return null;
     }
 
     // ───────────────────────────── Vérification par IP (sites sans NuVotifier) ─────────────────────────────
@@ -103,38 +133,57 @@ public final class Votes implements Listener {
             c = queue.poll();
         }
         if (c == null) return;
-        if (http == null) http = java.net.http.HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
-        String url = c.site().check().replace("{ip}", java.net.URLEncoder.encode(c.ip(), java.nio.charset.StandardCharsets.UTF_8));
+        if (http == null) http = java.net.http.HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5))
+                .followRedirects(java.net.http.HttpClient.Redirect.NORMAL).build();
+        String url = c.site().check().replace("{ip}", java.net.URLEncoder.encode(c.ip(), java.nio.charset.StandardCharsets.UTF_8))
+                .replace("{pseudo}", java.net.URLEncoder.encode(c.name(), java.nio.charset.StandardCharsets.UTF_8));
         java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder(java.net.URI.create(url)).timeout(Duration.ofSeconds(8))
                 .header("User-Agent", "LyonMC-COMMUNAUTE").GET().build();
         http.sendAsync(req, java.net.http.HttpResponse.BodyHandlers.ofString()).whenComplete((res, err) -> {
-            if (err != null || res == null || res.statusCode() != 200) return;
-            String body = res.body().trim();
-            Bukkit.getScheduler().runTask(plugin, () -> checked(c, body));
+            if (err != null || res == null) return;
+            int status = res.statusCode();
+            String body = res.body() == null ? "" : res.body().trim();
+            if ((status == 401 || status == 403) && warned.add("cle:" + c.site().name())) {
+                plugin.getLogger().warning("Votes : " + c.site().name() + " refuse la vérification (code " + status + ") : vérifie la clé « cle: » dans config.yml.");
+            }
+            VoteSites.Result r = VoteSites.read(c.site().answer(), status, body);
+            Bukkit.getScheduler().runTask(plugin, () -> checked(c, r, body));
         });
     }
 
-    /** Réponse d'un site : « 1 » ou du JSON avec « votes » et « lastVoteDate ». */
-    private void checked(Check c, String body) {
-        int votes;
-        String date = null;
-        if (body.startsWith("{")) {
-            java.util.regex.Matcher v = java.util.regex.Pattern.compile("\"votes\"\\s*:\\s*\"?(\\d+)").matcher(body);
-            votes = v.find() ? Integer.parseInt(v.group(1)) : 0;
-            java.util.regex.Matcher d = java.util.regex.Pattern.compile("\"lastVoteDate\"\\s*:\\s*\"([^\"]+)\"").matcher(body);
-            if (d.find()) date = d.group(1);
-        } else {
-            votes = body.equals("1") ? 1 : 0;
+    /**
+     * Réponse d'un site. Un vote ne compte qu'une fois, même si plusieurs joueurs partagent l'IP :
+     * si le site donne la date du vote, chaque date ne compte qu'une fois ; sinon on compte quand le site passe
+     * de « pas voté » à « a voté » (et au plus une fois par 24 h s'il répond « a voté » sans arrêt).
+     */
+    private void checked(Check c, VoteSites.Result r, String body) {
+        if (r == VoteSites.Result.UNKNOWN) return;
+        String who = c.site().byName() ? "pseudo:" + c.name().toLowerCase(java.util.Locale.ROOT) : c.ip();
+        String stateKey = "votes.etat." + Integer.toHexString((c.site().name() + "|" + who).hashCode()).replace('-', 'n');
+        var state = plugin.store().state();
+        if (r == VoteSites.Result.NOT_VOTED) {
+            if (state.getBoolean(stateKey + ".a-vote", false)) {
+                state.set(stateKey + ".a-vote", false);
+                plugin.store().saveState();
+            }
+            return;
         }
-        if (votes < 1) return;
-        // Un même vote (site + IP + heure du vote) ne compte qu'une fois, même si plusieurs joueurs partagent l'IP
-        if (date == null) date = "h" + (System.currentTimeMillis() / (3 * 3_600_000L));
-        String key = c.site().name() + "|" + c.ip() + "|" + date;
-        List<String> seen = new ArrayList<>(plugin.store().state().getStringList("votes.ip-recus"));
-        if (seen.contains(key)) return;
-        seen.add(key);
-        if (seen.size() > 1000) seen = new ArrayList<>(seen.subList(seen.size() - 1000, seen.size()));
-        plugin.store().state().set("votes.ip-recus", seen);
+        long now = System.currentTimeMillis();
+        String date = VoteSites.voteDate(body);
+        if (date != null) {
+            String key = c.site().name() + "|" + who + "|" + date;
+            List<String> seen = new ArrayList<>(state.getStringList("votes.ip-recus"));
+            if (seen.contains(key)) return;
+            seen.add(key);
+            if (seen.size() > 1000) seen = new ArrayList<>(seen.subList(seen.size() - 1000, seen.size()));
+            state.set("votes.ip-recus", seen);
+        } else {
+            boolean was = state.getBoolean(stateKey + ".a-vote", false);
+            long lastReward = state.getLong(stateKey + ".recompense", 0);
+            if (was && now - lastReward < 24 * 3_600_000L) return;
+        }
+        state.set(stateKey + ".a-vote", true);
+        state.set(stateKey + ".recompense", now);
         plugin.store().saveState();
         handleVote(c.name(), c.site().name());
     }
