@@ -47,7 +47,7 @@ jobs:
           cp hub/build/libs/HUB-*.jar srv/plugins/
           cp communaute/build/libs/COMMUNAUTE-*.jar srv/plugins/
           mkdir -p srv/plugins/COMMUNAUTE
-          printf 'anti-triche:\n  meme-ip-autorise: true\nparrainage:\n  heures-requises: 0.01\nvotes:\n  sites:\n    - { nom: "site-test", lien: "https://example.org/vote" }\n    - { nom: "serveurs-minecraft.org", lien: "http://www.serveurs-minecraft.org/vote.php?id=64115" }\n    - { nom: "site-ip-test", lien: "https://example.org/vote2", verification: "https://raw.githubusercontent.com/BIAY-Wassim/Lyonmc/main/communaute/test/vote-ok.json?ip={ip}" }\n  vote-party:\n    votes: 2\n' > srv/plugins/COMMUNAUTE/config.yml
+          printf 'anti-triche:\n  meme-ip-autorise: true\nparrainage:\n  heures-requises: 0.01\nvotes:\n  debug: true\n  sites:\n    - { nom: "site-test", lien: "https://example.org/vote" }\n    - { nom: "serveurs-minecraft.org", lien: "http://www.serveurs-minecraft.org/vote.php?id=64115" }\n    - { nom: "site-ip-test", lien: "https://example.org/vote2", verification: "https://raw.githubusercontent.com/BIAY-Wassim/Lyonmc/main/communaute/test/vote-ok.json?ip={ip}" }\n  vote-party:\n    votes: 2\n' > srv/plugins/COMMUNAUTE/config.yml
           python3 hub/test/old_configs.py . srv
           pip install -q nbtlib numpy
           mkdir -p srv/plugins/HUB/schematics
