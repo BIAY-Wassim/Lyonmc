@@ -163,9 +163,11 @@ public final class WebExportService implements Listener {
         bedrock.put("port", cfg().getInt("bedrock.port", 19132));
         m.put("bedrock", bedrock);
         Map<String, Object> legal = new LinkedHashMap<>();
-        for (String k : List.of("editeur", "contact", "directeur", "hebergeur", "hebergeur-adresse", "hebergeur-telephone", "mise-a-jour")) {
+        for (String k : List.of("editeur", "contact", "directeur", "hebergeur", "hebergeur-adresse", "hebergeur-telephone", "mise-a-jour",
+                "texte-mentions", "texte-confidentialite")) {
             legal.put(k, cfg().getString("mentions-legales." + k, ""));
         }
+        legal.put("remplacer", cfg().getBoolean("mentions-legales.remplacer", false));
         m.put("legal", legal);
         m.put("online", Bukkit.getOnlinePlayers().size());
         m.put("max", Bukkit.getMaxPlayers());
