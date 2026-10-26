@@ -47,7 +47,7 @@ jobs:
           cp hub/build/libs/HUB-*.jar srv/plugins/
           cp communaute/build/libs/COMMUNAUTE-*.jar srv/plugins/
           mkdir -p srv/plugins/COMMUNAUTE
-          printf 'anti-triche:\n  meme-ip-autorise: true\nparrainage:\n  heures-requises: 0.01\nvotes:\n  sites:\n    - { nom: "site-test", lien: "https://example.org/vote" }\n  vote-party:\n    votes: 2\n' > srv/plugins/COMMUNAUTE/config.yml
+          printf 'anti-triche:\n  meme-ip-autorise: true\nparrainage:\n  heures-requises: 0.01\nvotes:\n  sites:\n    - { nom: "site-test", lien: "https://example.org/vote" }\n    - { nom: "serveurs-minecraft.org", lien: "http://www.serveurs-minecraft.org/vote.php?id=64115" }\n    - { nom: "site-ip-test", lien: "https://example.org/vote2", verification: "https://raw.githubusercontent.com/BIAY-Wassim/Lyonmc/main/communaute/test/vote-ok.json?ip={ip}" }\n  vote-party:\n    votes: 2\n' > srv/plugins/COMMUNAUTE/config.yml
           python3 hub/test/old_configs.py . srv
           pip install -q nbtlib numpy
           mkdir -p srv/plugins/HUB/schematics
@@ -106,7 +106,7 @@ jobs:
             await cmd('Acheteur regarde mon [objet] !', 2000)
             await cmd('/menu'); await click(22); await click(10); await close()
             await cmd('/menu'); await click(19); await close()
-            await cmd('/premierspas'); await cmd('/vote'); await cmd('/objectif'); await cmd('/bienvenue'); await cmd('/parrain')
+            await cmd('/premierspas'); await cmd('/vote'); await cmd('/vote verifier', 12000); await cmd('/vote verifier', 12000); await cmd('/objectif'); await cmd('/bienvenue'); await cmd('/parrain')
             await cmd('/aide'); await click(19); await close()
             await cmd('/help'); await close()
             await cmd('/regles', 2000); await cmd('/aide faq', 2000)
@@ -264,7 +264,7 @@ jobs:
             sleep 20; echo "deop Acheteur"; sleep 2; echo "say test-filtre"; sleep 14
             echo "mute Acheteur 2m test du mute"; sleep 1; echo "say test-muet"; sleep 6
             echo "unmute Acheteur"; sleep 1; echo "avertir Acheteur test d'avertissement"; sleep 1; echo "sanctions Acheteur"; sleep 1; echo "op Acheteur"
-            sleep 675
+            sleep 700
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
             echo "say test-chat-grade"; sleep 30
@@ -279,7 +279,7 @@ jobs:
           echo "=== BOT ==="; cat bot.log bot2.log | head -300
           cd srv
           echo "=== LyonAchievements ==="; grep -n "LyonAchievements" logs/latest.log | head -60
-          echo "=== Nouveautés ==="; grep -nE "installé|HUB FAIT|PARKOUR DEPART|Métier|Mineur|Parkour|parkour|Signalement|MP\]|ami|Lot|lot|Astuce|Centre|Règlement" ../bot.log ../bot2.log logs/latest.log | head -80 || true
+          echo "=== Nouveautés ==="; grep -nE "vote|Vérification|installé|HUB FAIT|PARKOUR DEPART|Métier|Mineur|Parkour|parkour|Signalement|MP\]|ami|Lot|lot|Astuce|Centre|Règlement" ../bot.log ../bot2.log logs/latest.log | head -80 || true
           echo "=== Erreurs ==="; grep -nE "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -80 || true
           grep -E "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -10 | while IFS= read -r l; do echo "::error::$l"; done
           grep -E "BOT|KICKED|BOTERR|NOWINDOW|CLICKERR" ../bot.log | head -10 | while IFS= read -r l; do echo "::notice::$l"; done

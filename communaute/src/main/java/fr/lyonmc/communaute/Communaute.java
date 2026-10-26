@@ -124,6 +124,8 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             friends.tick();
         }, 100L, 600L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, export::export, 200L, 1200L));
+        tasks.add(Bukkit.getScheduler().runTaskTimer(this, votes::tickChecks, 40L, 30L));
+        tasks.add(Bukkit.getScheduler().runTaskTimer(this, votes::tickWatch, 600L, 600L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, () -> store.save(true), 2400L, 2400L));
     }
 
@@ -343,7 +345,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             return true;
         }
         switch (name) {
-            case "vote" -> votes.command(p);
+            case "vote" -> votes.command(p, args);
             case "premierspas" -> welcome.command(p, args);
             case "parrain" -> referral.command(p, args);
             case "objectif" -> goals.command(p);

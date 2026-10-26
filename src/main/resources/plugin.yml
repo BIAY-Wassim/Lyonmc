@@ -31,7 +31,7 @@ commands:
     permission: lyonmc.succes.use
   titres:
     description: Choisir son titre
-    aliases: [titre, title, titles]
+    aliases: [titre, titles]
     permission: lyonmc.succes.use
   cosmetiques:
     description: Couleur de pseudo et traînées
