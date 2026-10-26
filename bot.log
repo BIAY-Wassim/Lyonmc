@@ -1,0 +1,735 @@
+Testeur CHAT [+] Testeur
+Testeur CHAT ✦ Bienvenue à Testeur sur lyonmc.fr !
+Testeur spawned 1.21.8
+Testeur CHAT ✦ Nouvel objectif de la semaine : Miner 20 000 blocs à la mine (/objectif)
+Testeur CHAT   ✦ LYONMC · Survie 1.21.8
+Testeur CHAT   Content de te revoir, Testeur.
+Testeur CHAT   ★ 0/146 succès   ♛ #-/0   ✦ 0/31 défis
+Testeur CHAT   |||||||||||||||||||| 0,0%
+Testeur CHAT   Leader : - (★ 0)
+Testeur CHAT   Dernier exploit : personne · -
+Testeur CHAT   ⛁ 100 pièces   ✔ missions du jour 0/3   série 0 j
+Testeur CHAT   ➤ /menu tout le serveur en un clic
+Testeur CHAT   ➤ /missions tes missions du jour
+Testeur CHAT   ➤ lyonmc.fr pour voir la Dynmap en direct
+Testeur CHAT ★ · ✔ Rejoins la survie : clic droit avec la boussole · ⛁ 50 ⛁, 1× Stone Sword, 1× Stone Pickaxe, 1× Stone Axe, 1× Stone Shovel, 16× Bread, 16× Torch, 1× White Bed, 16× Oak Log
+Testeur BOSSBAR Premiers pas 2/8  Récupère ta récompense du jour : /recompense
+Testeur CHAT ★ Acheteur a obtenu Getting an Upgrade 1/146
+Testeur CHAT ★ Testeur a obtenu Getting an Upgrade 1/146
+Testeur CHAT ➤ Tu passes #2 au classement des succès.
+Testeur CHAT ✦ Acheteur arrive sur LyonMC pour la première fois ! [Souhaiter la bienvenue]
+Testeur CHAT ★ · Bienvenue ! Suis les premiers pas en haut de l'écran : chaque étape te rapporte des pièces.
+Testeur CHAT ★ · Une question ? Tout est expliqué dans /aide.
+Testeur CHAT ★ · Ta récompense du jour t'attend : /recompense (série 0)
+Testeur CHAT ✦ VOTE PARTY ! Le serveur a atteint son objectif de votes : cadeau pour tous les joueurs connectés !
+Testeur CHAT ✦ HEURE BONUS ! Pièces x2 et points de saison x2 jusqu'à 22h28.
+Testeur CHAT [Server: Made Testeur a server operator]
+Testeur CHAT ★ · Tu n'as pas encore voté aujourd'hui : chaque vote te rapporte ⛁ 150 ⛁, ✦ 15 points de saison /vote
+Testeur CHAT [Server: Made Acheteur a server operator]
+Testeur CHAT ★ Testeur a obtenu Diamonds! 3/146
+Testeur CHAT ♛ Testeur prend la première place avec 3 succès !
+Testeur CHAT [Server: Gave 5 [Diamond] to Testeur]
+Testeur CHAT ★ Testeur a obtenu Fortune 5/146
+Testeur CHAT ★ Testeur a obtenu Stone Age 5/146
+Testeur CHAT [Server: Granted the advancement [Stone Age] to Testeur]
+Testeur CHAT ★ · ✦ Palier Premiers pas débloqué ! (/parcours)
+Testeur CHAT    ⛁ 150 ⛁
+Testeur CHAT    3 niveaux d'expérience
+Testeur CHAT ★ Testeur a obtenu Monster Hunter 6/146
+Testeur CHAT [Server: Granted the advancement [Monster Hunter] to Testeur]
+Testeur CHAT ★ Acheteur a obtenu Premier salaire 3/146
+Testeur CHAT ✦ Acheteur a gagné un concours !
+Testeur CHAT ★ · Acheteur t'a choisi comme parrain ! Récompense quand il aura joué 0,0 h : 
+Testeur CHAT    ⛁ 1 000 ⛁, ✦ 100 points de saison
+Testeur CMD /ami ajouter Acheteur
+Testeur CHAT ★ · Demande d'ami envoyée à Acheteur.
+Testeur CMD salut tout le monde
+Testeur CHAT salut tout le monde
+Testeur CHAT bonjour tout le monde
+Testeur CHAT ★ · ✔ Dis bonjour aux autres joueurs dans le chat · ⛁ 25 ⛁
+Testeur CMD Acheteur regarde mon [objet] !
+Testeur CHAT Acheteur regarde mon [objet] !
+Testeur CMD /menu
+Testeur WINDOW {"type":"string","value":"LyonMC"}
+Testeur CLICK 22 chest
+Testeur WINDOW {"type":"string","value":"Récompense du jour"}
+Testeur CHAT ★ · ✦ Acheteur a accepté ta demande d'ami !
+Testeur CLICK 10 chest
+Testeur CHAT ★ · Récompense du jour 1/7 récupérée · série de 1 jour
+Testeur WINDOW {"type":"string","value":"Récompense du jour"}
+Testeur CHAT ★ Testeur a obtenu Premier salaire 7/146
+Testeur CHAT ★ · ✔ Récupère ta récompense du jour : /recompense · ⛁ 50 ⛁
+Testeur CHAT [Acheteur → Toi] coucou
+Testeur CMD /menu
+Testeur WINDOW {"type":"string","value":"LyonMC"}
+Testeur CLICK 19 writable_book
+Testeur WINDOW {"type":"string","value":"Missions  ·  0 / 3 aujourd'hui"}
+Testeur CHAT [Server: Made Acheteur no longer a server operator]
+Testeur CMD /premierspas
+Testeur CHAT   ✦ Premiers pas
+Testeur CHAT   ✔ Rejoins la survie : clic droit avec la boussole · ⛁ 50 ⛁, 1× Stone Sword, 1× Stone Pickaxe, 1× Stone Axe, 1× Stone Shovel, 16× Bread, 16× Torch, 1× White Bed, 16× Oak Log
+Testeur CHAT   ✔ Récupère ta récompense du jour : /recompense · ⛁ 50 ⛁
+Testeur CHAT   ✘ Pose ton home près de ta maison : /sethome maison · ⛁ 75 ⛁
+Testeur CHAT   ✘ Termine une mission du jour : /missions · ⛁ 100 ⛁
+Testeur CHAT   ✘ Va miner à la mine, ça rapporte des pièces : /mine · ⛁ 75 ⛁
+Testeur CHAT   ✔ Dis bonjour aux autres joueurs dans le chat · ⛁ 25 ⛁
+Testeur CHAT   ✘ Passe un niveau de métier (mine, coupe du bois...) : /metiers · ⛁ 75 ⛁
+Testeur CHAT   ✘ Obtiens 10 succès (/succes pour voir ta progression) · ⛁ 150 ⛁, ✦ 50 points de saison
+Testeur CHAT   À la fin : ⛁ 500 ⛁, Titre Lyonnais
+Testeur CHAT   /premierspas cacher : masquer la barre
+Testeur CHAT [Server] test-filtre
+Testeur CHAT ⚑ Pub bloquée de Acheteur : venez sur monserveur.fr c est mieux
+Testeur CMD /vote
+Testeur CHAT   ✦ Voter pour LyonMC
+Testeur CHAT   Chaque vote fait monter le serveur dans les classements et te rapporte ⛁ 150 ⛁, ✦ 15 points de saison
+Testeur CHAT   1. Clique sur un site : sa page de vote s'ouvre dans ton navigateur.
+Testeur CHAT   2. Vote sur la page (ton pseudo, le captcha, puis « Voter »).
+Testeur CHAT   3. Reviens en jeu : ta récompense arrive toute seule.
+Testeur CHAT   ➤ site-test
+Testeur CHAT   ➤ serveurs-minecraft.org [Vérifier]
+Testeur CHAT   ➤ site-ip-test [Vérifier]
+Testeur CHAT   Tes votes ce mois : 0   série : 0 jour(s)   vote party : 1/2
+Testeur CHAT   1er voteur du mois : ⛁ 5 000 ⛁, Titre Voteur assidu
+Testeur CHAT SALUT TOUT LE MONDE COMMENT CA VA
+Testeur CHAT spam numero 0
+Testeur CHAT spam numero 1
+Testeur CMD /vote verifier
+Testeur CHAT ★ · Je demande aux sites de vote si tu as voté… (quelques secondes)
+Testeur CHAT ⚑ Message bloqué de Acheteur : espece de connard
+Testeur CHAT ★ · Ton vote sur site-ip-test a déjà été récompensé. Tu pourras revoter quand le site le permettra.
+Testeur CHAT ★ · Récompense : ⛁ 1 000 ⛁, ✦ 100 points de saison
+Testeur CHAT ✦ Testeur a fait venir Acheteur sur LyonMC. Merci ! (/parrain)
+Testeur CHAT ⚑ Acheteur réduit au silence 2 min par CONSOLE : test du mute
+Testeur CHAT [Server] test-muet
+Testeur CMD /vote verifier
+Testeur CHAT ★ · Je demande aux sites de vote si tu as voté… (quelques secondes)
+Testeur CHAT ★ · Ton vote sur site-ip-test a déjà été récompensé. Tu pourras revoter quand le site le permettra.
+Testeur CHAT ⚑ Acheteur averti par CONSOLE (1e avertissement) : test d'avertissement
+Testeur CHAT [Server: Made Acheteur a server operator]
+Testeur CMD /objectif
+Testeur CHAT   ✦ Objectif de la semaine
+Testeur CHAT   Miner 20 000 blocs à la mine
+Testeur CHAT   |||||||||||||||||||| 0/20 000 (0 %)
+Testeur CHAT   Fin dans 6 j 2 h
+Testeur CHAT   Ta participation : 0 (150 minimum pour la récompense)
+Testeur CHAT   Récompense pour chaque participant : ⛁ 400 ⛁, ✦ 60 points de saison
+Testeur CMD /bienvenue
+Testeur CHAT ✦ Testeur souhaite la bienvenue à Acheteur !
+Testeur CMD /parrain
+Testeur CHAT   ✦ Parrainage
+Testeur CHAT   Invite tes amis : à leur arrivée, ils tapent /parrain Testeur.
+Testeur CHAT   Quand ils ont joué 0,0 h, tu reçois ⛁ 1 000 ⛁, ✦ 100 points de saison
+Testeur CHAT   et eux ⛁ 500 ⛁
+Testeur CHAT   Tes filleuls : 1 (3 pour le titre Ambassadeur)
+Testeur CHAT   Un ami t'a fait venir ? /parrain <son pseudo>
+Testeur CHAT   /parrain top : les meilleurs parrains
+Testeur CMD /aide
+Testeur WINDOW {"type":"string","value":"Centre d'aide · LyonMC"}
+Testeur CLICK 19 oak_sapling
+Testeur CMD /help
+Testeur WINDOW {"type":"string","value":"Centre d'aide · LyonMC"}
+Testeur CMD /regles
+Testeur CMD /aide faq
+Testeur CMD /metiers
+Testeur WINDOW {"type":"string","value":"Métiers  ·  5 niveaux"}
+Testeur CLICK 20 iron_pickaxe
+Testeur WINDOW {"type":"string","value":"Métier : Mineur"}
+Testeur CMD /metiers top
+Testeur WINDOW {"type":"string","value":"Classement des métiers"}
+Testeur CMD /msg Acheteur salut toi
+Testeur CHAT [Toi → Acheteur] salut toi
+Testeur CMD /r merci !
+Testeur CHAT [Toi → Acheteur] merci !
+Testeur CMD /report Acheteur test de signalement
+Testeur CHAT ★ · ✔ Signalement #1 envoyé au staff. Merci !
+Testeur CHAT ⚑ Signalement #1 Testeur signale Acheteur : test de signalement [Y aller] [Traité]
+Testeur CMD /signalements
+Testeur CHAT   ⚑ Signalements en attente (1)
+Testeur CHAT   #1 26/10 21:59 Testeur → Acheteur : test de signalement (world 4 -60 10) [Traité]
+Testeur CMD /astuces
+Testeur CHAT ★ · Astuces désactivées. /astuces pour les revoir.
+Testeur CMD /astuces
+Testeur CHAT ★ · Astuces activées.
+Testeur CMD /ignorer
+Testeur CHAT ★ · Tu n'ignores personne. /ignorer <joueur> : ne plus voir ses messages.
+Testeur CMD /lmc donner Testeur soutien
+Testeur CHAT ★ · ✦ Merci pour ton soutien ! Tu as reçu le Pack Soutien.
+Testeur CHAT    Titre Soutien ♥
+Testeur CHAT    Couleur Aurore
+Testeur CHAT    Traînée Cœurs
+Testeur CHAT ♥ Testeur soutient le serveur, merci à lui !
+Testeur CHAT ★ · Lot soutien donné à Testeur.
+Testeur CMD /lmc actu Test du site | Ceci est une actualité de test.
+Testeur CHAT ✦ Nouvelle actualité : Test du site (lyonmc.fr/actualites)
+Testeur CHAT ★ · Actualité ajoutée et annoncée.
+Testeur CMD /ami
+Testeur WINDOW {"type":"string","value":"Amis · 1 / 50"}
+Testeur CMD /menu
+Testeur WINDOW {"type":"string","value":"LyonMC"}
+Testeur CLICK 47 book
+Testeur CHAT   ✦ Commandes de LyonMC (clique pour lancer)
+Testeur CHAT   Se déplacer
+Testeur CHAT     /hub Le hub (spawn)
+Testeur CHAT     /survie Retour en survie
+Testeur CHAT     /mine La mine (monde ressources)
+Testeur CHAT     /home Tes homes
+Testeur CHAT     /sethome maison Poser un home ici
+Testeur CHAT     /back Position précédente
+Testeur CHAT     /rtp Aventure au hasard
+Testeur CHAT     /tpa Rejoindre un joueur
+Testeur CHAT   Progresser
+Testeur CHAT     /missions Missions du jour
+Testeur CHAT     /metiers Tes métiers
+Testeur CHAT     /succes Tes succès
+Testeur CHAT     /recompense Récompense du jour
+Testeur CHAT     /parcours Paliers
+Testeur CHAT     /saison Saison du mois
+Testeur CHAT     /classement Classements
+Testeur CHAT     /boss Boss mondial
+Testeur CHAT   Communauté
+Testeur CHAT     /vote Voter pour le serveur
+Testeur CHAT     /premierspas Premiers pas
+Testeur CHAT     /parrain Parrainage
+Testeur CHAT     /objectif Objectif de la semaine
+Testeur CHAT     /bienvenue Souhaiter la bienvenue au dernier arrivé
+Testeur CHAT     /ami Tes amis
+Testeur CHAT     /msg Message privé à un joueur
+Testeur CHAT     /report Signaler un joueur ou un problème
+Testeur CHAT     <hover:show_text:'Le centre d'aide'>/aide</hover> Le centre d'aide
+Testeur CHAT     /regles Le règlement
+Testeur CHAT   Style et échanges
+Testeur CHAT     /titres Titres et grade
+Testeur CHAT     /cosmetiques Cosmétiques
+Testeur CHAT     /boutique Boutique
+Testeur CHAT     /hdv Hôtel des ventes
+Testeur CHAT     /equipe Équipe
+Testeur CHAT     /money Ton solde
+Testeur CHAT     /pay Donner des pièces
+Testeur CMD /menu
+Testeur WINDOW {"type":"string","value":"LyonMC"}
+Testeur CLICK 34 lead
+Testeur WINDOW {"type":"string","value":"Rejoindre un joueur"}
+Testeur CLICK 0 player_head
+Testeur CHAT ★ · Demande envoyée à Acheteur. (expire dans 60 s)
+Testeur CMD /succes
+Testeur CHAT Testeur   #1 sur 2
+Testeur CHAT ─────────────────────────────
+Testeur CHAT Succès        7 / 146   ||||||||||||||||||||||||||||||  4,8 %
+Testeur CHAT Types         progrès 6/98   objectifs 1/17   défis 0/31
+Testeur CHAT Minecraft     ||||||||||||||||||||  3 / 16
+Testeur CHAT Nether        ||||||||||||||||||||  0 / 23
+Testeur CHAT The End       ||||||||||||||||||||  0 / 9
+Testeur CHAT Aventure      ||||||||||||||||||||  1 / 46
+Testeur CHAT Agriculture   ||||||||||||||||||||  0 / 30
+Testeur CHAT LyonMC        ||||||||||||||||||||  3 / 22
+Testeur CHAT Dernier       Premier salaire  il y a 1 min
+Testeur CHAT Plus rare     Stone Age  50,0 % des joueurs
+Testeur CHAT Temps de jeu  2 min   un succès toutes les 0 min
+Testeur CHAT ─────────────────────────────
+Testeur CHAT Ouvrir le menu des missions
+Testeur CMD /succes menu
+Testeur WINDOW {"type":"string","value":"Succès  ·  7 / 146"}
+Testeur CLICK 19 grass_block
+Testeur WINDOW {"type":"string","value":"Minecraft  ·  manquants"}
+Testeur CMD /classement
+Testeur WINDOW {"type":"string","value":"♛ Classement des succès"}
+Testeur CMD /titres
+Testeur WINDOW {"type":"string","value":"Titres  ·  1 / 41"}
+Testeur CLICK 10 name_tag
+Testeur CHAT ★ · Titre équipé : Soutien ♥
+Testeur WINDOW {"type":"string","value":"Titres  ·  1 / 41"}
+Testeur CMD /cosmetiques
+Testeur WINDOW {"type":"string","value":"Cosmétiques"}
+Testeur CMD /boutique
+Testeur WINDOW {"type":"string","value":"Boutique  ·  53 180 ⛁"}
+Testeur CLICK 11 name_tag
+Testeur WINDOW {"type":"string","value":"Acheter pour 2 500 ⛁"}
+Testeur CLICK 11 lime_concrete
+Testeur CHAT ★ · Achat effectué : Noctambule
+Testeur WINDOW {"type":"string","value":"Boutique  ·  50 680 ⛁"}
+Testeur CMD /cosmetiques
+Testeur WINDOW {"type":"string","value":"Cosmétiques"}
+Testeur CLICK 10 gray_dye
+Testeur CMD /parcours
+Testeur WINDOW {"type":"string","value":"Parcours  ·  1 / 26"}
+Testeur CMD /saison
+Testeur WINDOW {"type":"string","value":"Saison 1 · Octobre"}
+Testeur CMD /sethome base
+Testeur CHAT ★ · Home base défini (1/2)
+Testeur CHAT ★ · ✔ Pose ton home près de ta maison : /sethome maison · ⛁ 75 ⛁
+Testeur CMD /homes
+Testeur WINDOW {"type":"string","value":"Homes  ·  1 / 2"}
+Testeur CMD /home base
+Testeur CHAT Testeur was slain by Slime
+Testeur CMD /setspawn
+Testeur CHAT ★ · Spawn défini ici.
+Testeur CMD /spawn
+Testeur HAND stone_sword x1
+Testeur CMD /hdv vendre 100 2
+Testeur CHAT ★ · Mis en vente pour 100 ⛁ (taxe 5 % à la vente)
+Testeur CHAT [HDV] Testeur vend 1× Stone Sword pour 100 ⛁ (/hdv)
+Testeur CMD /hdv
+Testeur WINDOW {"type":"string","value":"Hôtel des ventes  ·  1"}
+Testeur CMD /equipe creer Testeurs TST
+Testeur CHAT ★ Testeur a obtenu Esprit d'équipe 9/146
+Testeur CHAT ✦ Testeur a fondé l'équipe [TST] Testeurs
+Testeur CMD /equipe inviter Acheteur
+Testeur CHAT ★ · Invitation envoyée à Acheteur.
+Testeur CMD /tpaccept
+Testeur CHAT ★ · Aucune demande de téléportation en attente.
+Testeur CHAT ★ Acheteur a obtenu Esprit d'équipe 4/146
+Testeur CHAT [TST] Acheteur a rejoint l'équipe !
+Testeur CMD /lmc holo creer podium
+Testeur CHAT ★ · Hologramme podium (podium) créé ici.
+Testeur CMD /lmc holo creer saison classement-saison
+Testeur CHAT ★ · Hologramme classement-saison (saison) créé ici.
+Testeur CMD /lmc holo creer serveur
+Testeur CHAT ★ · Hologramme serveur (serveur) créé ici.
+Testeur CMD /lmc holo creer bienvenue
+Testeur CHAT ★ · Hologramme bienvenue (bienvenue) créé ici.
+Testeur CMD /lmc holo creer fortune
+Testeur CHAT ★ · Hologramme fortune (fortune) créé ici.
+Testeur CMD /lmc holo creer missions
+Testeur CHAT ★ · Hologramme missions (missions) créé ici.
+Testeur CMD /lmc holo creer grades
+Testeur CHAT ★ · Hologramme grades (grades) créé ici.
+Testeur CMD /lmc holo liste
+Testeur CHAT ★ · Hologrammes : 
+Testeur CHAT   podium podium · world 8 -60 -6
+Testeur CHAT   classement-saison saison · world 8 -60 -6
+Testeur CHAT   serveur serveur · world 8 -60 -6
+Testeur CHAT   bienvenue bienvenue · world 8 -60 -6
+Testeur CHAT   fortune fortune · world 8 -60 -6
+Testeur CHAT   missions missions · world 8 -60 -6
+Testeur CHAT   grades grades · world 8 -60 -6
+Testeur CHAT ★ · /lmc holo creer <type> [id] · /lmc holo suppr <id>
+Testeur CHAT ★ · Acheteur souhaite se téléporter à toi.  [Accepter] [Refuser]
+Testeur CMD /hub
+Testeur CMD /lobby
+Testeur CMD /titres
+Testeur WINDOW {"type":"string","value":"Titres  ·  2 / 41"}
+Testeur CHAT ★ · Acheteur t'a envoyé 500 ⛁.
+Testeur CMD /gamemode creative
+Testeur CHAT Set own game mode to Creative Mode
+Testeur CMD /boss arene
+Testeur CHAT ★ · Arène du boss définie ici.
+Testeur CMD /boss lancer
+Testeur CHAT [Boss] Le Colosse est apparu ! Rejoins le combat : /boss
+Testeur BOSSBAR Le Colosse
+Testeur CMD /item replace entity Testeur weapon.mainhand with minecraft:netherite_sword[enchantments={sharpness:255}]
+Testeur CHAT Replaced a slot on Testeur with [Netherite Sword]
+Testeur CHAT [Boss] Le Colosse a été vaincu !
+Testeur CHAT   ♛ 1 Testeur 100 % des dégâts
+Testeur CHAT ★ Testeur a obtenu Chasseur de Colosse 10/146
+Testeur CHAT ★ · Ta part : 100,0 % des dégâts.
+Testeur CHAT ✦ Testeur a relevé le défi Coup de grâce 11/146
+Testeur CHAT   Coup de grâce : Testeur
+Testeur CHAT ★ · ✔ Obtiens 10 succès (/succes pour voir ta progression) · ⛁ 150 ⛁, ✦ 50 points de saison
+Testeur BOSS introuvable
+Testeur CMD /gamemode survival
+Testeur CHAT Set own game mode to Survival Mode
+Testeur CMD /money
+Testeur CHAT ★ · Ton solde : 55 470 ⛁ · gagnées au total 8 370
+Testeur CMD /parcours
+Testeur WINDOW {"type":"string","value":"Parcours  ·  1 / 26"}
+Testeur CMD /rtp
+Testeur CHAT ★ · Recherche d'un endroit sûr...
+Testeur CMD /ressources
+Testeur CHAT ★ · Recherche d'un endroit sûr...
+Testeur CHAT ✦ Pour revenir là où tu étais en survie : /survie
+Testeur CHAT ★ · ✔ Va miner à la mine, ça rapporte des pièces : /mine · ⛁ 75 ⛁
+Testeur EFFETS {"2":{"id":2,"amplifier":0,"duration":260}}
+Testeur CMD /give Testeur iron_pickaxe
+Testeur CHAT ★ Testeur a obtenu Isn't It Iron Pick 12/146
+Testeur CHAT Gave 1 [Iron Pickaxe] to Testeur
+Testeur CMD /lmc metier Testeur mineur 1
+Testeur CHAT ★ · Mineur de Testeur mis au niveau 1 (sans récompenses).
+Testeur CMD /setblock ~1 ~ ~ minecraft:diamond_ore
+Testeur CHAT Changed the block at 1448, 66, 1666
+Testeur MINERAI diamond_ore
+Testeur BOSSBAR ⛏ Mineur  niv. 1  ·  30 / 115 XP  +30
+Testeur CMD /setblock ~1 ~ ~ minecraft:diamond_ore
+Testeur CHAT Changed the block at 1448, 66, 1666
+Testeur MINERAI diamond_ore
+Testeur BOSSBAR ⛏ Mineur  niv. 1  ·  60 / 115 XP  +30
+Testeur CMD /setblock ~1 ~ ~ minecraft:diamond_ore
+Testeur CHAT Changed the block at 1448, 66, 1666
+Testeur MINERAI diamond_ore
+Testeur BOSSBAR ⛏ Mineur  niv. 1  ·  90 / 115 XP  +30
+Testeur CMD /setblock ~1 ~ ~ minecraft:diamond_ore
+Testeur CHAT Changed the block at 1448, 66, 1666
+Testeur MINERAI diamond_ore
+Testeur CHAT ★ · ✦ Métier ⛏ Mineur : niveau 2 ! (+40 ⛁, récolte double 1 %)
+Testeur BOSSBAR ⛏ Mineur  niv. 2  ·  5 / 145 XP  +30
+Testeur CHAT ★ · ✔ Passe un niveau de métier (mine, coupe du bois...) : /metiers · ⛁ 75 ⛁
+Testeur CMD /money
+Testeur CHAT ★ · Ton solde : 56 000 ⛁ · gagnées au total 8 900
+Testeur CMD /back
+Testeur CMD /lmc saison fin
+Testeur CHAT ✦ Testeur a relevé le défi Sur le podium 13/146
+Testeur CHAT ✦ Acheteur a relevé le défi Sur le podium 5/146
+Testeur CHAT ✦ Fin de la Saison 1 · Octobre ✦
+Testeur CHAT   ♛ 1 Testeur 1 340 pts
+Testeur CHAT   ✧ 2 Acheteur 260 pts
+Testeur CHAT La Saison 2 · Octobre commence. Bonne chance à tous !
+Testeur CHAT ★ · Saison terminée, récompenses distribuées.
+Testeur CMD /saison
+Testeur WINDOW {"type":"string","value":"Saison 2 · Octobre"}
+Testeur CMD /lyonhub monde
+Testeur CHAT ✦ · Création du monde vide hub…
+Testeur CHAT ✦ · Tu es dans le monde hub. Construis le hub, puis tape /setspawn à l'endroit où les joueurs doivent arriver.
+Testeur CMD /setspawn
+Testeur CHAT ★ · Spawn défini ici.
+Testeur CMD /lyonhub coller
+Testeur CHAT ✦ · Usage : /lyonhub coller <fichier>
+Testeur CHAT ✦ · Fichiers dans plugins/HUB/schematics : hub-medieval, test-hub
+Testeur CMD /lyonhub coller test-hub
+Testeur CHAT ✦ · Schematic test-hub : 161 × 40 × 161 blocs, 447 894 blocs à poser.
+Testeur CHAT ✦ · Il sera collé autour de toi : la place centrale arrive sous tes pieds. Aucune annulation possible : fais-le dans le monde vide du hub.
+Testeur CHAT ✦ · Pour lancer : /lyonhub coller test-hub confirmer
+Testeur CMD /lyonhub coller test-hub confirmer
+Testeur CHAT ✦ · Collage lancé, le serveur continue de tourner pendant ce temps…
+Testeur CHAT ✦ Collage terminé : 447 894 blocs. Mets-toi au point d'arrivée et tape /setspawn.
+Testeur CHAT Acheteur was slain by Slime
+Testeur BLOCS sol andesite{} | plateforme andesite{} | clôture oak_fence{"west":true,"waterlogged":false,"south":false,"north":false,"east":true} | muret cobblestone_wall{"west":"low","waterlogged":false,"up":false,"south":"none","north":"none","east":"low"} | vitre glass_pane{"west":true,"waterlogged":false,"south":false,"north":false,"east":true} | escalier oak_stairs{"waterlogged":false,"shape":"straight","half":"bottom","facing":"east"}
+Testeur CMD /lmc holo creer serveur hub-serveur
+Testeur CHAT ★ · Hologramme hub-serveur (serveur) créé ici.
+Testeur CHAT Teleported Testeur to 0.500000, 65.000000, 12.500000
+Testeur CMD /lmc holo creer ecran
+Testeur CHAT ★ · Hologramme ecran (ecran) créé ici.
+Testeur ECRAN 7 textes
+Testeur CHAT Teleported Testeur to 0.500000, 65.000000, -2.500000
+Testeur CMD /lyonhub podium succes 1
+Testeur CHAT ✦ · PNJ succes-1 créé : 1er du classement Succès.
+Testeur CMD /lyonhub podium succes 2
+Testeur CHAT ✦ · PNJ succes-2 créé : 2e du classement Succès.
+Testeur CHAT Astuce › Tape /menu pour retrouver tout le serveur au même endroit.
+Testeur CHAT Teleported Testeur to 3.500000, 65.000000, -2.500000
+Testeur CMD /lyonhub pnj jouer Acheteur menu
+Testeur CHAT ✦ · PNJ jouer créé avec le skin de Acheteur, clic : /menu.
+Testeur CMD /lyonhub texte jouer <green>Jouer|<gray>clic droit
+Testeur CHAT ✦ · Texte du PNJ modifié.
+Testeur CMD /lyonhub liste
+Testeur CHAT ✦ · PNJ : 
+Testeur CHAT   podium succes #1 · hub 1 65 -3
+Testeur CHAT   podium succes #2 · hub 1 65 -3
+Testeur CHAT   skin Acheteur · /menu · hub 4 65 -3
+Testeur CHAT Teleported Testeur to 1.500000, 65.000000, 2.500000
+Testeur NPCS 3 npcf2b814@(0.5, 65, -2.5) npcf2b815@(0.5, 65, -2.5) npc9f47d@(3.5, 65, -2.5)
+Testeur WINDOW {"type":"string","value":"LyonMC"}
+Testeur CHAT Teleported Testeur to 12.500000, 65.000000, 0.500000
+Testeur CMD /lyonhub parkour depart
+Testeur CHAT Départ du parkour placé ici. Ajoute les étapes avec /lyonhub parkour etape, puis l'arrivée.
+Testeur CHAT Teleported Testeur to 14.500000, 65.000000, 0.500000
+Testeur CMD /lyonhub parkour etape
+Testeur CHAT Étape 1 placée ici.
+Testeur CHAT Teleported Testeur to 16.500000, 65.000000, 0.500000
+Testeur CMD /lyonhub parkour arrivee
+Testeur CHAT Arrivée du parkour placée ici. Le parkour est prêt !
+Testeur CHAT Teleported Testeur to 18.500000, 65.000000, 3.500000
+Testeur CMD /lyonhub parkour classement
+Testeur CHAT Classement du parkour affiché ici (mis à jour tout seul).
+Testeur CHAT Teleported Testeur to 9.500000, 65.000000, 0.500000
+Testeur CHAT ✦ Étape 1/1 en 0,50 s
+Testeur PARKOUR INV heavy_weighted_pressure_plate, oak_door, red_bed
+Testeur CHAT ✦ Parkour terminé en 0,95 s.
+Testeur CHAT ✦ Testeur bat le record du parkour du hub en 0,95 s !
+Testeur CHAT ✦ Première fois : 250 pièces et le titre Acrobate !
+Testeur APRES PARKOUR (21, 65, 0) compass, player_head, nether_star, blaze_powder, gold_ingot
+Testeur CMD /parkour top
+Testeur CHAT ✦ Parkour · meilleurs temps
+Testeur CHAT   1. Testeur · 0,95 s
+Testeur CHAT   Ton record : 0,95 s
+Testeur CHAT mon grade est visible ?
+Testeur PARKOUR TEXTE 1
+Testeur CMD /give Testeur diamond 3
+Testeur CHAT Gave 3 [Diamond] to Testeur
+Testeur CMD /hdv vendre 100
+Testeur CHAT ★ · Au hub, ton inventaire de survie est rangé : mets en vente depuis le monde survie (/survie).
+Testeur CMD /missions
+Testeur WINDOW {"type":"string","value":"Missions  ·  0 / 3 aujourd'hui"}
+Testeur CHAT ✦ Ton ami Acheteur s'est déconnecté.
+Testeur CHAT [-] Acheteur
+Testeur HUB INV adventure compass x1, diamond x3, player_head x1, nether_star x1, blaze_powder x1, gold_ingot x1
+Testeur CMD /lyonhub installer
+Testeur CHAT ✦ · Hub médiéval de LyonMC, tout prêt
+Testeur CHAT   Ajoute au hub médiéval : le spawn sur la grande place, le grand écran, les hologrammes,
+Testeur CHAT   le podium des succès et des métiers et les PNJ (jouer, aide).
+Testeur CHAT   Si ton hub médiéval est déjà collé, il est gardé tel quel. Sinon, il est collé au centre du monde du hub.
+Testeur CHAT   Les anciens hologrammes et PNJ du hub sont remplacés. Les joueurs et leurs inventaires ne sont pas touchés.
+Testeur CHAT   Pour lancer : /lyonhub installer confirmer (ajoute un pseudo à la fin pour choisir le skin des PNJ)
+Testeur CMD /lyonhub installer confirmer
+Testeur CHAT ✦ · Je ne retrouve pas ton hub médiéval à sa place habituelle.
+Testeur CHAT   1. Va exactement à l'endroit où tu étais quand tu l'as collé, puis retape /lyonhub installer confirmer : il sera gardé tel quel.
+Testeur CHAT   2. Ou recolle-le proprement au centre : /lyonhub installer recoller (efface tout à moins de 150 blocs du centre du hub)
+Testeur CMD /lyonhub installer recoller
+Testeur CHAT ✦ · Installation du hub dans hub : nettoyage de la zone…
+Testeur CHAT ✦ · Collage du hub médiéval (hub-medieval)… (une à deux minutes)
+Testeur CHAT ★ · Hologramme hub-ecran (ecran) créé ici.
+Testeur CHAT ★ · Hologramme hub-bienvenue (bienvenue) créé ici.
+Testeur CHAT ★ · Hologramme hub-succes (succes) créé ici.
+Testeur CHAT ★ · Hologramme hub-saison (saison) créé ici.
+Testeur CHAT ★ · Hologramme hub-missions (missions) créé ici.
+Testeur CHAT ★ · Hologramme hub-fortune (fortune) créé ici.
+Testeur CHAT ★ · Hologramme hub-grades (grades) créé ici.
+Testeur CHAT ★ · Spawn défini ici.
+Testeur CHAT ✦ · Hub médiéval installé ! 7 hologrammes, 8 PNJ (3 anciens PNJ et 2 anciens hologrammes retirés).
+Testeur CHAT   Tu es au spawn. Les classements des podiums se remplissent en une minute.
+Testeur CMD /tp Testeur 30 70 30
+Testeur CHAT Teleported Testeur to 30.500000, 70.000000, 30.500000
+Testeur CMD /lyonhub installer confirmer
+Testeur CHAT ✦ · Ton hub médiéval est déjà en place : je le garde et j'ajoute les podiums, l'écran, les hologrammes et les PNJ…
+Testeur CHAT ★ · Hologramme hub-ecran (ecran) créé ici.
+Testeur CHAT ★ · Hologramme hub-bienvenue (bienvenue) créé ici.
+Testeur CHAT ★ · Hologramme hub-succes (succes) créé ici.
+Testeur CHAT ★ · Hologramme hub-saison (saison) créé ici.
+Testeur CHAT ★ · Hologramme hub-missions (missions) créé ici.
+Testeur CHAT ★ · Hologramme hub-fortune (fortune) créé ici.
+Testeur CHAT ★ · Hologramme hub-grades (grades) créé ici.
+Testeur CHAT ★ · Spawn défini ici.
+Testeur CHAT ✦ · Hub médiéval installé ! 7 hologrammes, 8 PNJ (8 anciens PNJ et 7 anciens hologrammes retirés).
+Testeur CHAT   Tu es au spawn. Les classements des podiums se remplissent en une minute.
+Testeur HUB FAIT (0, 65, 0) textes 21 pnj 7
+Testeur CMD /lyonhub liste
+Testeur CHAT ✦ · PNJ : 
+Testeur CHAT   podium succes #1 · hub -12 68 22
+Testeur CHAT   podium succes #2 · hub -9 67 22
+Testeur CHAT   podium succes #3 · hub -15 66 22
+Testeur CHAT   podium metiers #1 · hub -12 68 -12
+Testeur CHAT   podium metiers #2 · hub -15 67 -12
+Testeur CHAT   podium metiers #3 · hub -9 66 -12
+Testeur CHAT   skin Testeur · /survie · hub -5 65 -4
+Testeur CHAT   skin Testeur · /aide · hub -5 64 5
+Testeur CMD /lmc holo liste
+Testeur CHAT ★ · Hologrammes : 
+Testeur CHAT   podium podium · world 8 -60 -6
+Testeur CHAT   classement-saison saison · world 8 -60 -6
+Testeur CHAT   serveur serveur · world 8 -60 -6
+Testeur CHAT   bienvenue bienvenue · world 8 -60 -6
+Testeur CHAT   fortune fortune · world 8 -60 -6
+Testeur CHAT   missions missions · world 8 -60 -6
+Testeur CHAT   grades grades · world 8 -60 -6
+Testeur CHAT   hub-ecran ecran · hub -27 65 0
+Testeur CHAT   hub-bienvenue bienvenue · hub -8 64 -8
+Testeur CHAT   hub-succes succes · hub -6 65 19
+Testeur CHAT   hub-saison saison · hub 12 64 -9
+Testeur CHAT   hub-missions missions · hub 12 64 9
+Testeur CHAT   hub-fortune fortune · hub 22 63 -9
+Testeur CHAT   hub-grades grades · hub 22 63 9
+Testeur CHAT ★ · /lmc holo creer <type> [id] · /lmc holo suppr <id>
+Testeur CMD /parkour
+Testeur CHAT Le parkour n'est pas encore ouvert.
+Testeur PARKOUR DEPART (0, 65, 0)
+Testeur CHAT Teleported Testeur to 0.500000, 65.000000, 0.500000
+Testeur CMD /advancement grant Testeur only minecraft:adventure/sleep_in_bed
+Testeur CHAT Granted the advancement [Sweet Dreams] to Testeur
+Testeur WINDOW {"type":"compound","value":{"color":{"type":"string","value":"dark_gray"},"text":{"type":"string","v
+Testeur CLICK 10 grass_block
+Testeur CHAT ✦ Les objets reçus au hub sont dans ton inventaire.
+Testeur SURVIE INV survival overworld diamond x13, netherite_scrap x2, netherite_sword x1, iron_pickaxe x1, stone_pickaxe x1, stone_axe x1, stone_shovel x1, bread x16, torch x16, white_bed x1, oak_log x16, written_book x1
+Testeur CMD /ressources
+Testeur CHAT ★ · Recherche d'un endroit sûr...
+Testeur CHAT ✦ Pour revenir là où tu étais en survie : /survie
+Testeur RESSOURCES (317, 63, -717)
+Testeur CMD /survie
+Testeur CHAT Retour en survie dans 3 secondes, ne bouge pas…
+Testeur SURVIE avant (361, -60, -663) après (361, -60, -663)
+Testeur CMD /advancement grant Testeur only minecraft:adventure/sleep_in_bed
+Testeur CHAT ★ Testeur a obtenu Sweet Dreams 14/146
+Testeur CHAT Granted the advancement [Sweet Dreams] to Testeur
+Testeur CHAT ★ Testeur a obtenu Who is Cutting Onions? 15/146
+Testeur CHAT ★ Testeur a obtenu You've Got a Friend in Me 16/146
+Testeur CHAT ✦ Testeur a relevé le défi With Our Powers Combined! 17/146
+Testeur CHAT ★ Testeur a obtenu Oh Shiny 18/146
+Testeur CHAT ★ Testeur a obtenu Country Lode, Take Me Home 19/146
+Testeur CHAT ★ Testeur a obtenu Good as New 20/146
+Testeur CHAT ★ Testeur a obtenu Suit Up 21/146
+Testeur CHAT ✦ Testeur a relevé le défi Smithing with Style 22/146
+Testeur CHAT ★ Testeur a obtenu Very Very Frightening 23/146
+Testeur CHAT ★ Testeur a obtenu Hot Stuff 24/146
+Testeur CHAT ★ Testeur a obtenu Stay Hydrated! 25/146
+Testeur CHAT ★ Testeur a obtenu Minecraft: Trial(s) Edition 26/146
+Testeur CHAT ★ Testeur a obtenu Whatever Floats Your Goat! 27/146
+Testeur CHAT ★ Testeur a obtenu Free the End 28/146
+Testeur CHAT ★ Testeur a obtenu Surge Protector 29/146
+Testeur CHAT ✦ Testeur a relevé le défi A Furious Cocktail 30/146
+Testeur CHAT ★ Testeur a obtenu Best Friends Forever 31/146
+Testeur CHAT ★ Testeur a obtenu Careful Restoration 32/146
+Testeur CHAT ★ Testeur a obtenu Glow and Behold! 33/146
+Testeur CHAT ★ Testeur a obtenu Bring Home the Beacon 34/146
+Testeur CHAT ★ Testeur a obtenu Not Today, Thank You 35/146
+Testeur CHAT ★ Testeur a obtenu When the Squad Hops into Town 36/146
+Testeur CHAT ✦ Testeur a relevé le défi The Whole Pack 37/146
+Testeur CHAT ★ Testeur a atteint 25 % des succès !
+Testeur CHAT ★ Testeur a obtenu Local Brewery 38/146
+Testeur CHAT ★ Testeur a obtenu The Next Generation 39/146
+Testeur CHAT ✦ Testeur a relevé le défi It Spreads 40/146
+Testeur CHAT ★ Testeur a obtenu Fishy Business 41/146
+Testeur CHAT ✦ Testeur a relevé le défi Hot Tourist Destinations 42/146
+Testeur CHAT ★ Testeur a obtenu Caves & Cliffs 43/146
+Testeur CHAT ✦ Testeur a relevé le défi Over-Overkill 44/146
+Testeur CHAT ★ Testeur a obtenu Shear Brilliance 45/146
+Testeur CHAT ★ Testeur a obtenu This Boat Has Legs 46/146
+Testeur CHAT ✦ Testeur a relevé le défi Sniper Duel 47/146
+Testeur CHAT ✦ Testeur a relevé le défi Great View From Up Here 49/146
+Testeur CHAT ✦ Testeur a relevé le défi How Did We Get Here? 50/146
+Testeur CHAT ✦ Testeur a relevé le défi Bullseye 51/146
+Testeur CHAT ★ Testeur a obtenu Spooky Scary Skeleton 52/146
+Testeur CHAT ✦ Testeur a relevé le défi Two by Two 53/146
+Testeur CHAT ✦ Testeur a relevé le défi Two Birds, One Arrow 54/146
+Testeur CHAT ★ Testeur a obtenu We Need to Go Deeper 55/146
+Testeur CHAT ★ Testeur a obtenu Who's the Pillager Now? 56/146
+Testeur CHAT ★ Testeur a obtenu Light as a Rabbit 57/146
+Testeur CHAT ★ Testeur a obtenu Tactical Fishing 58/146
+Testeur CHAT ★ Testeur a obtenu Respecting the Remnants 59/146
+Testeur CHAT ★ Testeur a obtenu Zombie Doctor 60/146
+Testeur CHAT ★ Testeur a obtenu Little Sniffs 61/146
+Testeur CHAT ★ Testeur a obtenu The City at the End of the Game 62/146
+Testeur CHAT ★ Testeur a obtenu Ice Bucket Challenge 63/146
+Testeur CHAT ★ Testeur a obtenu Remote Getaway 64/146
+Testeur CHAT ★ Testeur a obtenu Into Fire 65/146
+Testeur CHAT ★ Testeur a obtenu War Pigs 66/146
+Testeur CHAT ★ Testeur a obtenu Take Aim 67/146
+Testeur CHAT ★ Testeur a obtenu Total Beelocation 68/146
+Testeur CHAT ★ Testeur a obtenu Lighten Up 69/146
+Testeur CHAT ✦ Testeur a relevé le défi Arbalistic 70/146
+Testeur CHAT ★ Testeur a obtenu Under Lock and Key 71/146
+Testeur CHAT ★ Testeur a obtenu The End... Again... 72/146
+Testeur CHAT ★ Testeur a obtenu Acquire Hardware 73/146
+Testeur CHAT ★ Testeur a atteint 50 % des succès !
+Testeur CHAT ★ Testeur a obtenu Not Quite "Nine" Lives 74/146
+Testeur CHAT ★ Testeur a obtenu Revaulting 75/146
+Testeur CHAT ★ Testeur a obtenu Cover Me with Diamonds 76/146
+Testeur CHAT ★ Testeur a obtenu Sky's the Limit 77/146
+Testeur CHAT ★ Testeur a obtenu Bukkit Bukkit 78/146
+Testeur CHAT ★ Testeur a obtenu Wax Off 79/146
+Testeur CHAT ★ Testeur a obtenu Hired Help 80/146
+Testeur CHAT ★ Testeur a obtenu Sneak 100 81/146
+Testeur CHAT ✦ Testeur a relevé le défi Return to Sender 82/146
+Testeur CHAT ★ Testeur a obtenu You Need a Mint 83/146
+Testeur CHAT ✦ Testeur a relevé le défi Monsters Hunted 84/146
+Testeur CHAT ★ Testeur a obtenu Heart Transplanter 85/146
+Testeur CHAT ★ Testeur a obtenu Enchanter 86/146
+Testeur CHAT ★ Testeur a obtenu Smells Interesting 87/146
+Testeur CHAT ★ Testeur a obtenu Voluntary Exile 88/146
+Testeur CHAT ★ Testeur a obtenu Eye Spy 89/146
+Testeur CHAT ★ Testeur a obtenu Is It a Bird? 91/146
+Testeur CHAT ✦ Testeur a relevé le défi Serious Dedication 92/146
+Testeur CHAT ★ Testeur a obtenu Postmortal 93/146
+Testeur CHAT ★ Testeur a obtenu Isn't It Scute? 94/146
+Testeur CHAT ★ Testeur a obtenu Planting the Past 95/146
+Testeur CHAT ✦ Testeur a relevé le défi Adventuring Time 96/146
+Testeur CHAT ★ Testeur a obtenu A Seedy Place 97/146
+Testeur CHAT ★ Testeur a obtenu Those Were the Days 98/146
+Testeur CHAT ★ Testeur a obtenu The Cutest Predator 99/146
+Testeur CHAT ★ Testeur a obtenu Birthday Song 100/146
+Testeur CHAT ★ Testeur a obtenu Is It a Plane? 101/146
+Testeur CHAT ★ Testeur a obtenu Feels Like Home 102/146
+Testeur CHAT ★ Testeur a obtenu Star Trader 103/146
+Testeur CHAT ★ Testeur a obtenu Wax On 104/146
+Testeur CHAT ★ Testeur a obtenu Sound of Music 105/146
+Testeur CHAT ✦ Testeur a relevé le défi Hero of the Village 106/146
+Testeur CHAT ★ Testeur a obtenu Hidden in the Depths 107/146
+Testeur CHAT ★ Testeur a obtenu Beaconator 108/146
+Testeur CHAT ★ Testeur a obtenu Withering Heights 109/146
+Testeur CHAT ✦ Testeur a relevé le défi A Balanced Diet 110/146
+Testeur CHAT ★ Testeur a atteint 75 % des succès !
+Testeur CHAT ✦ Testeur a relevé le défi Subspace Bubble 111/146
+Testeur CHAT ★ Testeur a obtenu The Power of Books 112/146
+Testeur CHAT ★ Testeur a obtenu Bee Our Guest 114/146
+Testeur CHAT ★ Testeur a obtenu What a Deal! 115/146
+Testeur CHAT ★ Testeur a obtenu Is It a Balloon? 116/146
+Testeur CHAT ★ Testeur a obtenu Crafting a New Look 117/146
+Testeur CHAT ✦ Testeur a relevé le défi Uneasy Alliance 118/146
+Testeur CHAT ★ Testeur a obtenu The Healing Power of Friendship! 119/146
+Testeur CHAT ★ Testeur a obtenu A Terrible Fortress 120/146
+Testeur CHAT ★ Testeur a obtenu A Throwaway Joke 121/146
+Testeur CHAT ★ Testeur a obtenu Crafters Crafting Crafters 122/146
+Testeur CHAT ★ Testeur a obtenu Sticky Situation 124/146
+Testeur CHAT ★ Testeur a obtenu Ol' Betsy 125/146
+Testeur CHAT ✦ Testeur a relevé le défi Cover Me in Debris 126/146
+Testeur CHAT ★ Testeur a obtenu The End? 127/146
+Testeur CHAT ★ Testeur a obtenu The Parrots and the Bats 128/146
+Testeur CHAT ✦ Testeur a relevé le défi Blowback 129/146
+Testeur CHAT ✦ Testeur a relevé le défi A Complete Catalogue 130/146
+Testeur CHAT ★ Testeur a obtenu Who Needs Rockets? 131/146
+Testeur CHAT ★ Testeur a obtenu Au travail 132/146
+Testeur CHAT ★ Testeur a atteint 90 % des succès !
+Testeur CHAT ★ Testeur a obtenu Routine 133/146
+Testeur CHAT ★ Testeur a obtenu Régulier 134/146
+Testeur CHAT ✦ Testeur a relevé le défi Machine 135/146
+Testeur CHAT ★ Testeur a obtenu Semaine chargée 136/146
+Testeur CHAT ✦ Testeur a relevé le défi Infatigable 137/146
+Testeur CHAT ★ Testeur a obtenu Fidèle 138/146
+Testeur CHAT ★ Testeur a obtenu Commerçant 139/146
+Testeur CHAT ★ Testeur a obtenu Avec style 140/146
+Testeur CHAT ★ Testeur a obtenu Collectionneur 141/146
+Testeur CHAT ★ Testeur a obtenu Marathonien 142/146
+Testeur CHAT ★ Testeur a obtenu Exterminateur 143/146
+Testeur CHAT ★ Testeur a obtenu Mineur acharné 144/146
+Testeur CHAT ✦ Testeur a relevé le défi Survivant 145/146
+Testeur CHAT ✦ Testeur a relevé le défi Pilier du serveur 146/146
+Testeur CHAT ✦ Testeur a obtenu l'intégralité des succès du serveur ! ✦
+Testeur CHAT [Server: Granted 1542 advancements to Testeur]
+Testeur CHAT ★ · ✦ Palier Aventurier débloqué ! (/parcours)
+Testeur CHAT    ⛁ 300 ⛁
+Testeur CHAT    Couleur Menthe
+Testeur CHAT ★ · ✦ Palier Explorateur débloqué ! (/parcours)
+Testeur CHAT    ⛁ 600 ⛁
+Testeur CHAT    +1 home
+Testeur CHAT    3× Diamond
+Testeur CHAT ★ · ✦ Palier Pionnier débloqué ! (/parcours)
+Testeur CHAT    ⛁ 500 ⛁
+Testeur CHAT    Titre Pionnier
+Testeur CHAT ★ · ✦ Palier Téméraire débloqué ! (/parcours)
+Testeur CHAT    ⛁ 800 ⛁
+Testeur CHAT    Titre Téméraire
+Testeur CHAT ★ · ✦ Palier Vétéran débloqué ! (/parcours)
+Testeur CHAT    ⛁ 1 500 ⛁
+Testeur CHAT    Couleur Lavande
+Testeur CHAT    +1 home
+Testeur CHAT ✦ Testeur a débloqué le palier Vétéran !
+Testeur CHAT ★ · ✦ Palier Seigneur du Nether débloqué ! (/parcours)
+Testeur CHAT    ⛁ 1 200 ⛁
+Testeur CHAT    Titre Seigneur du Nether
+Testeur CHAT ★ · ✦ Palier Fermier émérite débloqué ! (/parcours)
+Testeur CHAT    ⛁ 1 500 ⛁
+Testeur CHAT    Titre Fermier émérite
+Testeur CHAT ★ · ✦ Palier Globe-trotteur débloqué ! (/parcours)
+Testeur CHAT    ⛁ 1 500 ⛁
+Testeur CHAT    Titre Globe-trotteur
+Testeur CHAT ★ · ✦ Palier Conquérant de l'End débloqué ! (/parcours)
+Testeur CHAT    ⛁ 1 500 ⛁
+Testeur CHAT    Titre Conquérant de l'End
+Testeur CHAT ★ · ✦ Palier Collectionneur débloqué ! (/parcours)
+Testeur CHAT    ⛁ 2 000 ⛁
+Testeur CHAT ★ · ✦ Palier Maître débloqué ! (/parcours)
+Testeur CHAT    ⛁ 3 000 ⛁
+Testeur CHAT    +1 home
+Testeur CHAT    1× Netherite Ingot
+Testeur CHAT ✦ Testeur a débloqué le palier Maître !
+Testeur CHAT ★ · ✦ Palier Grand Maître débloqué ! (/parcours)
+Testeur CHAT    ⛁ 5 000 ⛁
+Testeur CHAT    Traînée Lueur
+Testeur CHAT ✦ Testeur a débloqué le palier Grand Maître !
+Testeur CHAT ★ · ✦ Palier Invincible débloqué ! (/parcours)
+Testeur CHAT    ⛁ 10 000 ⛁
+Testeur CHAT    Titre Invincible
+Testeur CHAT ✦ Testeur a débloqué le palier Invincible !
+Testeur CHAT ★ · ✦ Palier Légende débloqué ! (/parcours)
+Testeur CHAT    ⛁ 20 000 ⛁
+Testeur CHAT    Couleur Arc-en-ciel
+Testeur CHAT    Traînée Totem
+Testeur CHAT ✦ Testeur a débloqué le palier Légende !
+Testeur CHAT ✦ Testeur est maintenant Légende !
+Testeur CHAT [Server] test-chat-grade
+Testeur CMD /titres
+Testeur WINDOW {"type":"string","value":"Titres  ·  11 / 41"}
+Testeur CLICK 47 experience_bottle
+Testeur WINDOW {"type":"string","value":"Grade affiché"}
+Testeur CLICK 10 name_tag
+Testeur CHAT ★ · Grade affiché : Aventurier
+Testeur WINDOW {"type":"string","value":"Grade affiché"}
+Testeur CMD je suis légende ?
+Testeur CHAT je suis légende ?
+Testeur done
