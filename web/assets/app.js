@@ -966,6 +966,22 @@
 
   // ───────────── Pages légales (modèles à compléter) ─────────────
   const TODO = (t) => `<span class="todo">[À compléter : ${t}]</span>`;
+  /** Paragraphes écrits par l'admin dans config.yml : « ## » = titre, **gras**, [texte](lien). */
+  function ownText(raw) {
+    if (!raw || !String(raw).trim()) return "";
+    const inline = (t) => esc(t)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^)\s]+)\)/g, (m, txt, url) => `<a href="${url}" rel="noopener">${txt}</a>`);
+    return String(raw).replace(/\r/g, "").split(/\n\s*\n/).map((block) => {
+      const b = block.trim();
+      if (!b) return "";
+      if (b.startsWith("## ")) {
+        const [first, ...rest] = b.split("\n");
+        return `<h2>${inline(first.slice(3).trim())}</h2>` + (rest.length ? `<p>${rest.map((l) => inline(l.trim())).join("<br>")}</p>` : "");
+      }
+      return `<p>${b.split("\n").map((l) => inline(l.trim())).join("<br>")}</p>`;
+    }).join("");
+  }
   async function legal(kind) {
     const s = await data("serveur");
     const site = esc(s?.ip || "lyonmc.fr");
@@ -974,8 +990,14 @@
     const v = (key, label) => (L[key] ? esc(L[key]) : TODO(label));
     if (kind === "mentions") {
       setTitle("Mentions légales");
+      const own = ownText(L["texte-mentions"]);
+      const head = `<div class="page-head"><div class="wrap"><h1>Mentions légales</h1><p>Informations sur l'éditeur et l'hébergeur du site ${site}.</p></div></div>`;
+      if (L.remplacer && own) {
+        app.innerHTML = `${head}<div class="wrap prose-page">${own}</div>`;
+        return;
+      }
       app.innerHTML = `
-        <div class="page-head"><div class="wrap"><h1>Mentions légales</h1><p>Informations sur l'éditeur et l'hébergeur du site ${site}.</p></div></div>
+        ${head}
         <div class="wrap prose-page">
           <h2>Éditeur du site</h2>
           <p>Le site ${site} et le serveur Minecraft LyonMC sont édités par ${v("editeur", "nom et prénom, ou nom de l'association")}.<br>
@@ -987,12 +1009,19 @@
           <h2>Propriété intellectuelle</h2>
           <p>Minecraft est une marque de Mojang Synergies AB. LyonMC n'est pas un produit officiel Minecraft et n'est ni approuvé ni associé à Mojang ou Microsoft. Les textures et images issues du jeu appartiennent à leurs auteurs.</p>
           <p>Les polices Geologica et Tiny5 sont distribuées sous licence SIL Open Font License.</p>
+          ${own}
         </div>`;
       return;
     }
     setTitle("Confidentialité");
+    const own = ownText(L["texte-confidentialite"]);
+    const head = `<div class="page-head"><div class="wrap"><h1>Confidentialité</h1><p>Ce que LyonMC enregistre sur toi, pourquoi, et comment le faire supprimer.</p></div></div>`;
+    if (L.remplacer && own) {
+      app.innerHTML = `${head}<div class="wrap prose-page">${own}</div>`;
+      return;
+    }
     app.innerHTML = `
-      <div class="page-head"><div class="wrap"><h1>Confidentialité</h1><p>Ce que LyonMC enregistre sur toi, pourquoi, et comment le faire supprimer.</p></div></div>
+      ${head}
       <div class="wrap prose-page">
         <h2>Sur le serveur Minecraft</h2>
         <p>Quand tu joues, le serveur enregistre : ton pseudo et ton identifiant Minecraft (UUID), tes statistiques de jeu (succès, missions, métiers, pièces, temps de jeu, dates de connexion), tes paramètres (amis, joueurs ignorés, préférences) et tes positions (homes, dernière position en survie).</p>
@@ -1002,6 +1031,7 @@
         <p>Le site ne dépose aucun cookie et n'utilise aucun outil de mesure d'audience. Pour afficher les skins, il charge des images depuis <strong>mc-heads.net</strong>, et l'icône du serveur depuis <strong>api.mcstatus.io</strong> : ces services reçoivent donc ton adresse IP, comme pour toute image chargée sur Internet. Les polices sont hébergées sur le site lui-même.</p>
         <h2>Durée et suppression</h2>
         <p>Les données sont gardées tant que le serveur existe. Tu peux demander à les consulter ou à les faire supprimer (droits prévus par le RGPD) en écrivant à ${v("contact", "adresse e-mail de contact")}. Tu peux aussi saisir la CNIL (cnil.fr).</p>
+        ${own}
         <p class="small muted">Responsable du traitement : ${v("editeur", "nom du responsable")}. Dernière mise à jour : ${v("mise-a-jour", "date")}.</p>
       </div>`;
   }

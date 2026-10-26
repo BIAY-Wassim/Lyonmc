@@ -159,6 +159,19 @@ web:
     hebergeur-adresse: ""
     hebergeur-telephone: ""
     mise-a-jour: ""        # date de la dernière mise à jour de la page Confidentialité
+    # Tes propres paragraphes sur ces deux pages. Écris après le « | », en décalant chaque ligne de 6 espaces.
+    # Une ligne vide sépare deux paragraphes. Une ligne qui commence par « ## » devient un titre.
+    # **mot** écrit en gras, [texte](https://lien) fait un lien.
+    # Exemple :
+    #   texte-confidentialite: |
+    #     ## Discord
+    #     Notre Discord est géré par **l'équipe LyonMC**.
+    #
+    #     Pour toute question : [écris-nous](mailto:contact@lyonmc.fr).
+    texte-mentions: ""
+    texte-confidentialite: ""
+    # false = tes paragraphes s'ajoutent à la fin des pages ; true = ils remplacent tout le texte des pages
+    remplacer: false
 
 # Annonces sur Discord (laisser vide pour désactiver)
 # Discord : Paramètres du salon > Intégrations > Webhooks > Copier l'URL
