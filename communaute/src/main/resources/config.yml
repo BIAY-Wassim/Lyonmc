@@ -84,10 +84,17 @@ accueil:
 # Il faut installer NuVotifier et inscrire le serveur sur les sites de vote.
 votes:
   enabled: true
-  # Les sites où tu as inscrit le serveur : nom affiché + lien de la page de vote
+  # Les sites où tu as inscrit le serveur : nom affiché + lien de la page de vote.
+  # Deux façons de recevoir les votes :
+  #  - par NuVotifier (le site envoie le vote au serveur) : rien de plus à mettre ici ;
+  #  - par vérification de l'IP (sites sans NuVotifier, comme serveurs-minecraft.org) : le joueur clique
+  #    sur [J'ai voté] dans /vote (ou se connecte après avoir voté) et le plugin demande au site si son IP a voté.
+  #    Pour serveurs-minecraft.org c'est automatique. Pour un autre site, ajoute « verification: » avec
+  #    l'adresse de son API, où {ip} sera remplacé par l'IP du joueur.
   sites: []
-  #  - { nom: "serveur-prive.net", lien: "https://serveur-prive.net/minecraft/lyonmc/vote" }
   #  - { nom: "serveurs-minecraft.org", lien: "https://www.serveurs-minecraft.org/vote.php?id=00000" }
+  #  - { nom: "serveur-prive.net", lien: "https://serveur-prive.net/minecraft/lyonmc/vote" }
+  #  - { nom: "autre-site", lien: "https://...", verification: "https://.../api?ip={ip}" }
   recompense: { coins: 150, season-points: 15 }
   annonce: "<#9be37c>✦</#9be37c> <white><player></white> <gray>a voté pour le serveur<dark_gray> (<site>)</dark_gray>. <click:run_command:'/vote'><hover:show_text:'<gray>Voter toi aussi'><#9be37c><u>/vote</u></#9be37c></hover></click>"
   # Série : voter plusieurs jours d'affilée
