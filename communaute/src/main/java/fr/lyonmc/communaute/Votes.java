@@ -113,15 +113,44 @@ public final class Votes implements Listener {
     }
 
     /** Met en file les vérifications de ce joueur (une par site qui vérifie par IP). */
-    void queueChecks(Player p) {
+    int queueChecks(Player p) {
         String ip = ip(p);
-        if (ip == null) return;
+        if (ip == null) return 0;
+        int added = 0;
         synchronized (queue) {
             for (Site s : sites()) {
                 if (s.check() == null) continue;
                 boolean already = queue.stream().anyMatch(c -> c.uuid().equals(p.getUniqueId()) && c.site().name().equals(s.name()));
-                if (!already) queue.add(new Check(p.getUniqueId(), p.getName(), s, ip));
+                if (!already) {
+                    queue.add(new Check(p.getUniqueId(), p.getName(), s, ip));
+                    added++;
+                }
             }
+        }
+        return added;
+    }
+
+    /** Vérifications demandées avec « Vérifier » : restantes, votes récompensés, votes déjà récompensés (sites). */
+    private final Map<UUID, Object[]> manual = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Résultat d'une vérification : 0 = pas de vote, 1 = vote récompensé, 2 = vote déjà récompensé. */
+    private void manualResult(Check c, int outcome) {
+        Object[] m = manual.get(c.uuid());
+        if (m == null) return;
+        if (outcome == 1) m[1] = (int) m[1] + 1;
+        if (outcome == 2) ((List<String>) m[2]).add(c.site().name());
+        m[0] = (int) m[0] - 1;
+        if ((int) m[0] > 0) return;
+        manual.remove(c.uuid());
+        Player p = Bukkit.getPlayer(c.uuid());
+        if (p == null || (int) m[1] > 0) return;
+        @SuppressWarnings("unchecked") List<String> done = (List<String>) m[2];
+        if (!done.isEmpty()) {
+            p.sendMessage(plugin.lyon().prefixed("<gray>Ton vote sur <white>" + String.join(", ", done)
+                    + "</white> a déjà été récompensé. Tu pourras revoter quand le site le permettra."));
+        } else {
+            p.sendMessage(plugin.lyon().prefixed("<gray>Aucun nouveau vote trouvé pour l'instant. Clique sur un site dans <white>/vote</white>, "
+                    + "vote sur sa page jusqu'au message de confirmation, puis reviens : la récompense arrive toute seule."));
         }
     }
 
@@ -144,6 +173,7 @@ public final class Votes implements Listener {
             try {
                 if (err != null || res == null) {
                     if (debug) plugin.getLogger().info("[Votes] " + c.site().name() + " injoignable : " + err);
+                    Bukkit.getScheduler().runTask(plugin, () -> manualResult(c, 0));
                     return;
                 }
                 int status = res.statusCode();
@@ -167,7 +197,11 @@ public final class Votes implements Listener {
      * de « pas voté » à « a voté » (et au plus une fois par 24 h s'il répond « a voté » sans arrêt).
      */
     private void checked(Check c, VoteSites.Result r, String body) {
-        if (r == VoteSites.Result.UNKNOWN) return;
+        manualResult(c, checkedOutcome(c, r, body));
+    }
+
+    private int checkedOutcome(Check c, VoteSites.Result r, String body) {
+        if (r == VoteSites.Result.UNKNOWN) return 0;
         String who = c.site().byName() ? "pseudo:" + c.name().toLowerCase(java.util.Locale.ROOT) : c.ip();
         String stateKey = "votes.etat." + Integer.toHexString((c.site().name() + "|" + who).hashCode()).replace('-', 'n');
         var state = plugin.store().state();
@@ -176,26 +210,27 @@ public final class Votes implements Listener {
                 state.set(stateKey + ".a-vote", false);
                 plugin.store().saveState();
             }
-            return;
+            return 0;
         }
         long now = System.currentTimeMillis();
         String date = VoteSites.voteDate(body);
         if (date != null) {
             String key = c.site().name() + "|" + who + "|" + date;
             List<String> seen = new ArrayList<>(state.getStringList("votes.ip-recus"));
-            if (seen.contains(key)) return;
+            if (seen.contains(key)) return 2;
             seen.add(key);
             if (seen.size() > 1000) seen = new ArrayList<>(seen.subList(seen.size() - 1000, seen.size()));
             state.set("votes.ip-recus", seen);
         } else {
             boolean was = state.getBoolean(stateKey + ".a-vote", false);
             long lastReward = state.getLong(stateKey + ".recompense", 0);
-            if (was && now - lastReward < 24 * 3_600_000L) return;
+            if (was && now - lastReward < 24 * 3_600_000L) return 2;
         }
         state.set(stateKey + ".a-vote", true);
         state.set(stateKey + ".recompense", now);
         plugin.store().saveState();
         handleVote(c.name(), c.site().name());
+        return 1;
     }
 
     /** Toutes les 30 s : on revérifie les joueurs qui ont ouvert /vote il y a moins de 15 minutes. */
@@ -417,9 +452,9 @@ public final class Votes implements Listener {
             }
             lastManual.put(p.getUniqueId(), now);
             watching.put(p.getUniqueId(), now);
-            queueChecks(p);
-            p.sendMessage(plugin.lyon().prefixed("<gray>Je vérifie ton vote… La récompense arrive dès que le site l'a reçu"
-                    + " <dark_gray>(ça peut prendre une minute)</dark_gray>."));
+            int n = queueChecks(p);
+            if (n > 0) manual.put(p.getUniqueId(), new Object[]{n, 0, new ArrayList<String>()});
+            p.sendMessage(plugin.lyon().prefixed("<gray>Je demande aux sites de vote si tu as voté… <dark_gray>(quelques secondes)"));
             return;
         }
         if (hasChecks()) watching.put(p.getUniqueId(), System.currentTimeMillis());
@@ -429,14 +464,19 @@ public final class Votes implements Listener {
         p.sendMessage(plugin.parse("  <#9be37c>✦</#9be37c> <white><bold>Voter pour LyonMC</bold></white>"));
         p.sendMessage(plugin.parse("  <gray>Chaque vote fait monter le serveur dans les classements et te rapporte ").append(plugin.describe("votes.recompense")));
         List<Site> sites = sites();
+        if (!sites.isEmpty()) {
+            p.sendMessage(plugin.parse("  <white>1.</white> <gray>Clique sur un site : sa page de vote s'ouvre dans ton navigateur."));
+            p.sendMessage(plugin.parse("  <white>2.</white> <gray>Vote sur la page (ton pseudo, le captcha, puis « Voter »)."));
+            p.sendMessage(plugin.parse("  <white>3.</white> <gray>Reviens en jeu : ta récompense arrive toute seule."));
+        }
         if (sites.isEmpty()) {
             p.sendMessage(plugin.parse("  <dark_gray>Les liens de vote arrivent bientôt."));
         } else {
             for (Site s : sites) {
-                p.sendMessage(plugin.parse("  <#9be37c>➤</#9be37c> <click:open_url:'" + s.url().replace("'", "") + "'><hover:show_text:'<gray>Ouvrir la page de vote'><white><u>"
-                        + s.name().replace("<", "") + "</u></white></hover></click>"
-                        + (s.check() != null ? " <click:run_command:'/vote verifier'><hover:show_text:'<gray>Clique après avoir voté pour recevoir ta récompense'>"
-                        + "<dark_gray>[</dark_gray><#9be37c>J'ai voté</#9be37c><dark_gray>]</dark_gray></hover></click>" : "")));
+                p.sendMessage(plugin.parse("  <#9be37c>➤</#9be37c> <click:open_url:'" + s.url().replace("'", "") + "'><hover:show_text:'<gray>Ouvrir la page de vote de "
+                        + s.name().replace("<", "").replace("'", "") + "'><white><u>" + s.name().replace("<", "") + "</u></white></hover></click>"
+                        + (s.check() != null ? " <click:run_command:'/vote verifier'><hover:show_text:'<gray>Tu as voté mais rien reçu ?\n<gray>Clique pour vérifier tout de suite.'>"
+                        + "<dark_gray>[</dark_gray><gray>Vérifier</gray><dark_gray>]</dark_gray></hover></click>" : "")));
             }
         }
         p.sendMessage(plugin.parse("  <gray>Tes votes ce mois : <white>" + d.votesIn(month) + "</white>   <gray>série : <white>" + d.streak
