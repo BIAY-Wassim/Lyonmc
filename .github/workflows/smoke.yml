@@ -284,6 +284,7 @@ jobs:
       - name: Analyse des journaux
         if: always()
         run: |
+          echo "=== CONSOLE ==="; tail -60 srv/console.log || true; ls -la srv srv/logs || true
           echo "=== BOT ==="; cat bot.log bot2.log | head -300
           cd srv
           echo "=== LyonAchievements ==="; grep -n "LyonAchievements" logs/latest.log | head -60
