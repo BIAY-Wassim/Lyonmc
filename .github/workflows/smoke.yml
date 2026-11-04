@@ -33,12 +33,19 @@ jobs:
       - name: Préparer le serveur de test
         run: |
           mkdir -p srv/plugins
-          URL=$(curl -s https://fill.papermc.io/v3/projects/paper/versions/1.21.8/builds/latest | python3 -c "import sys,json;print(json.load(sys.stdin)['downloads']['server:default']['url'])" || true)
-          if [ -z "$URL" ]; then
-            B=$(curl -s https://api.papermc.io/v2/projects/paper/versions/1.21.8/builds | python3 -c "import sys,json;print(json.load(sys.stdin)['builds'][-1]['build'])")
-            URL=https://api.papermc.io/v2/projects/paper/versions/1.21.8/builds/$B/downloads/paper-1.21.8-$B.jar
+          ok() { python3 -c "import sys,zipfile;sys.exit(0 if zipfile.is_zipfile('srv/paper.jar') else 1)"; }
+          # 1) Purpur (comme sur le vrai serveur), 2) Paper (API fill v3), 3) Paper (ancienne API v2)
+          curl -sL -o srv/paper.jar https://api.purpurmc.org/v2/purpur/1.21.8/latest/download || true
+          if ! ok; then
+            URL=$(curl -s https://fill.papermc.io/v3/projects/paper/versions/1.21.8/builds | python3 -c "import sys,json;b=json.load(sys.stdin);print(b[0]['downloads']['server:default']['url'])" || true)
+            [ -n "$URL" ] && curl -sL -o srv/paper.jar "$URL" || true
           fi
-          curl -sL -o srv/paper.jar "$URL"
+          if ! ok; then
+            B=$(curl -s https://api.papermc.io/v2/projects/paper/versions/1.21.8/builds | python3 -c "import sys,json;print(json.load(sys.stdin)['builds'][-1]['build'])" || true)
+            curl -sL -o srv/paper.jar "https://api.papermc.io/v2/projects/paper/versions/1.21.8/builds/$B/downloads/paper-1.21.8-$B.jar" || true
+          fi
+          ok || { echo "::error::Impossible de télécharger le serveur de test"; exit 1; }
+          ls -la srv/paper.jar
           for P in viaversion viabackwards; do
             V=$(curl -s "https://api.modrinth.com/v2/project/$P/version?loaders=%5B%22paper%22%5D" | python3 -c "import sys,json;print(json.load(sys.stdin)[0]['files'][0]['url'])")
             curl -sL -o srv/plugins/$P.jar "$V"
