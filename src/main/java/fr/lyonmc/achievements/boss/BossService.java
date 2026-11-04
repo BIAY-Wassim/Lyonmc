@@ -159,6 +159,21 @@ public final class BossService implements Listener {
 
     // ───────────────────────────── Combat ─────────────────────────────
 
+    /** Réglage du boss (les valeurs absentes de evenements.yml viennent du fichier du plugin). */
+    private double num(String key) {
+        return plugin.configs().events().getDouble("boss." + key);
+    }
+
+    /** Vie du boss : elle est comptée à part (la vie de Minecraft est limitée à 1024). */
+    private double hp, maxHp;
+    /** Phase actuelle (0 = début) et bouclier en cours (gardiens à tuer). */
+    private int phase;
+    private boolean shield;
+    private final List<Entity> guardians = new ArrayList<>();
+    /** Dernier coup porté par le boss à un joueur (pour savoir s'il est coincé). */
+    private long lastBossHit;
+    private int players;
+
     public boolean start(Location override) {
         if (active()) return false;
         Location at = override != null ? override : arena();
@@ -177,8 +192,11 @@ public final class BossService implements Listener {
 
         int nearby = 0;
         for (Player p : at.getWorld().getPlayers()) if (p.getLocation().distanceSquared(at) < 128 * 128) nearby++;
-        int online = Math.max(nearby, Math.min(Bukkit.getOnlinePlayers().size(), 10));
-        double health = Math.min(1024, cfg().getDouble("health-base", 400) + cfg().getDouble("health-per-player", 150) * Math.max(1, online));
+        players = Math.max(1, Math.max(nearby, Math.min(Bukkit.getOnlinePlayers().size(), 10)));
+        maxHp = Math.max(100, num("vie-base") + num("vie-par-joueur") * players);
+        hp = maxHp;
+        phase = 0;
+        shield = false;
 
         Component name = plugin.text().parse(cfg().getString("name", "Le Colosse"));
         Entity e = at.getWorld().spawn(at, cls, ent -> {
@@ -188,13 +206,14 @@ public final class BossService implements Listener {
             le.setCustomNameVisible(true);
             le.setRemoveWhenFarAway(false);
             le.setPersistent(false);
-            set(le, Attribute.MAX_HEALTH, health);
+            set(le, Attribute.MAX_HEALTH, 1024);
             set(le, Attribute.SCALE, cfg().getDouble("scale", 2.6));
-            set(le, Attribute.ATTACK_DAMAGE, cfg().getDouble("damage", 12));
-            set(le, Attribute.ARMOR, cfg().getDouble("armor", 12));
+            set(le, Attribute.ATTACK_DAMAGE, num("damage"));
+            set(le, Attribute.ARMOR, num("armor"));
             set(le, Attribute.KNOCKBACK_RESISTANCE, 1.0);
             set(le, Attribute.FOLLOW_RANGE, 48);
-            le.setHealth(health);
+            set(le, Attribute.MOVEMENT_SPEED, 0.3);
+            le.setHealth(1024);
             if (le.getEquipment() != null) {
                 le.getEquipment().setItemInMainHand(new org.bukkit.inventory.ItemStack(Material.NETHERITE_SWORD));
                 le.getEquipment().setItemInMainHandDropChance(0f);
@@ -206,6 +225,7 @@ public final class BossService implements Listener {
         boss = (LivingEntity) e;
         damage.clear();
         startedAt = System.currentTimeMillis();
+        lastBossHit = startedAt;
         tickCount = 0;
         bar = BossBar.bossBar(name, 1f, BossBar.Color.RED, BossBar.Overlay.NOTCHED_10);
 
@@ -235,14 +255,15 @@ public final class BossService implements Listener {
             return;
         }
         tickCount++;
-        long duration = cfg().getLong("duration-minutes", 15) * 60_000L;
+        long duration = cfg().getLong("duration-minutes", 20) * 60_000L;
         if (System.currentTimeMillis() - startedAt > duration) {
             end(false, "<gray>Le boss s'est enfui... Il reviendra plus fort.");
             return;
         }
-        double max = maxHealth();
-        float progress = (float) Math.max(0, Math.min(1, boss.getHealth() / max));
-        bar.progress(progress);
+        guardians.removeIf(g -> !g.isValid() || g.isDead());
+        minions.removeIf(m -> !m.isValid() || m.isDead());
+        if (shield && guardians.isEmpty()) breakShield();
+        updateBar();
         Set<UUID> now = new HashSet<>();
         for (Player p : boss.getWorld().getPlayers()) {
             if (p.getLocation().distanceSquared(boss.getLocation()) < 64 * 64) {
@@ -257,18 +278,63 @@ public final class BossService implements Listener {
                 viewers.remove(u);
             }
         }
-        if (boss instanceof Mob mob && (mob.getTarget() == null || !(mob.getTarget() instanceof Player))) {
-            Player nearest = nearest(24);
+        Player nearest = nearest(32);
+        if (boss instanceof Mob mob && (mob.getTarget() == null || !(mob.getTarget() instanceof Player) || mob.getTarget().isDead())) {
             if (nearest != null) mob.setTarget(nearest);
         }
-        boolean enraged = progress < 0.5f;
-        int every = enraged ? 5 : 8;
-        if (tickCount % every == 0) ability(enraged);
+        // Personne autour : il reprend des forces
+        if (nearest == null && hp < maxHp && tickCount % 5 == 0) hp = Math.min(maxHp, hp + maxHp * 0.01);
+        antiCheese();
+        int every = switch (phase) {
+            case 0 -> 7;
+            case 1 -> 5;
+            default -> 4;
+        };
+        if (tickCount % every == 0) ability();
+    }
+
+    private void updateBar() {
+        float progress = (float) Math.max(0, Math.min(1, hp / maxHp));
+        bar.progress(progress);
+        Component name = plugin.text().parse(cfg().getString("name", "Le Colosse"));
+        if (shield) {
+            bar.color(BossBar.Color.PURPLE);
+            bar.name(name.append(plugin.text().parse(" <dark_gray>·</dark_gray> <light_purple>bouclier : " + guardians.size() + " gardien(s) à vaincre")));
+        } else {
+            bar.color(phase >= 2 ? BossBar.Color.RED : phase == 1 ? BossBar.Color.YELLOW : BossBar.Color.RED);
+            bar.name(name.append(plugin.text().parse(" <dark_gray>·</dark_gray> <gray>phase " + (phase + 1) + "/" + (phases().size() + 1)
+                    + " <dark_gray>·</dark_gray> <white>" + String.format(Locale.FRANCE, "%,.0f", Math.ceil(hp)) + "</white> <red>❤")));
+        }
+        // La vie affichée au-dessus de lui suit sa vraie vie
+        boss.setHealth(Math.max(1, Math.min(1024, 1024 * hp / maxHp)));
+    }
+
+    private List<Integer> phases() {
+        List<Integer> out = plugin.configs().events().getIntegerList("boss.phases");
+        if (out.isEmpty() && !plugin.configs().events().isSet("boss.phases")) out = List.of(66, 33);
+        return out;
+    }
+
+    /** Il bloque ou on le tape de loin : il revient au contact. */
+    private void antiCheese() {
+        if (!(boss instanceof Mob mob) || !(mob.getTarget() instanceof Player t) || shield) return;
+        double dy = t.getLocation().getY() - boss.getLocation().getY();
+        double d2 = t.getLocation().distanceSquared(boss.getLocation());
+        boolean stuck = System.currentTimeMillis() - lastBossHit > 15_000L;
+        if ((dy > 4 && d2 < 30 * 30) || stuck || d2 > 40 * 40) {
+            Location to = t.getLocation().clone().add(t.getLocation().getDirection().setY(0).normalize().multiply(-2));
+            if (!to.getBlock().isPassable()) to = t.getLocation();
+            World w = boss.getWorld();
+            w.spawnParticle(Particle.PORTAL, boss.getLocation().add(0, 2, 0), 60, 1, 2, 1, 0.3);
+            boss.teleport(to);
+            w.playSound(to, Sound.ENTITY_ENDERMAN_TELEPORT, 1.5f, 0.6f);
+            lastBossHit = System.currentTimeMillis();
+            say("<gray>surgit derrière <white>" + t.getName() + "</white> !");
+        }
     }
 
     private double maxHealth() {
-        AttributeInstance a = boss.getAttribute(Attribute.MAX_HEALTH);
-        return a == null ? boss.getHealth() : a.getValue();
+        return maxHp;
     }
 
     private Player nearest(double radius) {
@@ -294,47 +360,149 @@ public final class BossService implements Listener {
         return out;
     }
 
-    private void ability(boolean enraged) {
-        int choice = ThreadLocalRandom.current().nextInt(4);
+    // ───────────────────────────── Phases et bouclier ─────────────────────────────
+
+    private void checkPhase() {
+        List<Integer> ph = phases();
+        if (phase >= ph.size() || shield) return;
+        if (hp / maxHp * 100 <= ph.get(phase)) {
+            phase++;
+            raiseShield();
+        }
+    }
+
+    private void raiseShield() {
+        shield = true;
         Location loc = boss.getLocation();
         World w = loc.getWorld();
+        int n = (int) Math.min(num("gardiens-max"), Math.max(2, num("gardiens-par-joueur") * Math.max(players, around(48).size())));
+        for (int i = 0; i < n; i++) {
+            double ang = Math.PI * 2 * i / n;
+            Location l = loc.clone().add(Math.cos(ang) * 7, 0.5, Math.sin(ang) * 7);
+            if (!l.getBlock().isPassable()) l = loc.clone().add(0, 0.5, 0);
+            Entity g = w.spawn(l, WitherSkeleton.class, this::tagGuardian);
+            guardians.add(g);
+            w.spawnParticle(Particle.SOUL_FIRE_FLAME, l.clone().add(0, 1, 0), 25, 0.4, 0.8, 0.4, 0.02);
+        }
+        boss.setGlowing(true);
+        boss.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 20 * 600, 3, false, false));
+        w.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 2f, 0.6f);
+        w.playSound(loc, Sound.ENTITY_WITHER_AMBIENT, 2f, 0.5f);
+        Component name = plugin.text().parse(cfg().getString("name", "Le Colosse"));
+        for (Player p : around(64)) {
+            p.showTitle(Title.title(plugin.text().parse("<light_purple>Bouclier !"),
+                    plugin.text().parse("<gray>Tuez les <white>" + n + "</white> gardiens pour le briser"),
+                    Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(3), Duration.ofMillis(500))));
+        }
+        Bukkit.broadcast(plugin.text().parse("<dark_gray>[<red>Boss</red>]</dark_gray> ").append(name)
+                .append(plugin.text().parse(" <gray>passe en <white>phase " + (phase + 1) + "</white> et s'entoure de ses gardiens !")));
+    }
+
+    private void breakShield() {
+        shield = false;
+        boss.setGlowing(false);
+        boss.removePotionEffect(PotionEffectType.SLOWNESS);
+        if (phase >= 2) {
+            boss.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, PotionEffect.INFINITE_DURATION, 0, false, false));
+            boss.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, PotionEffect.INFINITE_DURATION, 0, false, false));
+        }
+        World w = boss.getWorld();
+        w.playSound(boss.getLocation(), Sound.BLOCK_GLASS_BREAK, 2f, 0.5f);
+        w.spawnParticle(Particle.EXPLOSION_EMITTER, boss.getLocation(), 1);
+        for (Player p : around(64)) {
+            p.showTitle(Title.title(plugin.text().parse("<white>Bouclier brisé !"),
+                    plugin.text().parse(phase >= 2 ? "<red>Il est fou de rage..." : "<gray>Frappez-le !"),
+                    Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(500))));
+        }
+    }
+
+    private void tagGuardian(Entity ent) {
+        ent.getPersistentDataContainer().set(minionKey, PersistentDataType.BYTE, (byte) 2);
+        ent.setPersistent(false);
+        if (!(ent instanceof LivingEntity le)) return;
+        le.customName(plugin.text().parse("<light_purple>Gardien du Colosse"));
+        le.setCustomNameVisible(true);
+        le.setGlowing(true);
+        set(le, Attribute.MAX_HEALTH, num("gardien-vie"));
+        le.setHealth(num("gardien-vie"));
+        set(le, Attribute.ARMOR, 14);
+        set(le, Attribute.ATTACK_DAMAGE, 9);
+        set(le, Attribute.KNOCKBACK_RESISTANCE, 0.6);
+        set(le, Attribute.SCALE, 1.25);
+        if (le.getEquipment() != null) {
+            org.bukkit.inventory.EntityEquipment eq = le.getEquipment();
+            eq.setItemInMainHand(new org.bukkit.inventory.ItemStack(Material.NETHERITE_AXE));
+            eq.setChestplate(new org.bukkit.inventory.ItemStack(Material.NETHERITE_CHESTPLATE));
+            eq.setHelmet(new org.bukkit.inventory.ItemStack(Material.WITHER_SKELETON_SKULL));
+            eq.setItemInMainHandDropChance(0f);
+            eq.setChestplateDropChance(0f);
+            eq.setHelmetDropChance(0f);
+        }
+        le.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, PotionEffect.INFINITE_DURATION, 0, false, false));
+    }
+
+    private void tagMinion(Entity ent) {
+        ent.getPersistentDataContainer().set(minionKey, PersistentDataType.BYTE, (byte) 1);
+        ent.setPersistent(false);
+        if (!(ent instanceof LivingEntity le)) return;
+        double hpM = num("sbire-vie");
+        set(le, Attribute.MAX_HEALTH, hpM);
+        le.setHealth(hpM);
+        if (le.getEquipment() != null && !(le instanceof Vex) && !(le instanceof Blaze)) {
+            org.bukkit.inventory.EntityEquipment eq = le.getEquipment();
+            eq.setHelmet(new org.bukkit.inventory.ItemStack(Material.IRON_HELMET));
+            eq.setChestplate(new org.bukkit.inventory.ItemStack(phase >= 1 ? Material.DIAMOND_CHESTPLATE : Material.IRON_CHESTPLATE));
+            eq.setHelmetDropChance(0f);
+            eq.setChestplateDropChance(0f);
+            if (le instanceof Zombie || le instanceof WitherSkeleton) {
+                eq.setItemInMainHand(new org.bukkit.inventory.ItemStack(phase >= 1 ? Material.DIAMOND_SWORD : Material.IRON_SWORD));
+                eq.setItemInMainHandDropChance(0f);
+            }
+        }
+        if (le instanceof Zombie z) z.setShouldBurnInDay(false);
+        if (le instanceof AbstractSkeleton sk) sk.setShouldBurnInDay(false);
+        le.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, PotionEffect.INFINITE_DURATION, 0, false, false));
+    }
+
+    // ───────────────────────────── Capacités ─────────────────────────────
+
+    private void ability() {
+        List<Integer> pool = new ArrayList<>(List.of(0, 1, 2, 3));      // onde de choc, sbires, foudre, bond
+        if (phase >= 1) pool.addAll(List.of(4, 5));                     // crocs, pluie de feu
+        if (phase >= 2) pool.addAll(List.of(6, 7));                     // ténèbres, attraction
+        if (shield) pool.removeAll(List.of(1, 3, 7));                   // pendant le bouclier, il reste au centre
+        int choice = pool.get(ThreadLocalRandom.current().nextInt(pool.size()));
+        Location loc = boss.getLocation();
+        World w = loc.getWorld();
+        double power = 1 + phase * 0.35;
         switch (choice) {
             case 0 -> { // Onde de choc
                 w.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1.5f, 0.6f);
-                w.spawnParticle(Particle.EXPLOSION, loc, 6, 2, 0.5, 2, 0);
-                for (Player p : around(9)) {
+                w.spawnParticle(Particle.EXPLOSION, loc, 8, 2.5, 0.5, 2.5, 0);
+                for (Player p : around(10)) {
                     Vector push = p.getLocation().toVector().subtract(loc.toVector()).setY(0);
                     if (push.lengthSquared() < 0.01) push = new Vector(0.1, 0, 0);
-                    p.setVelocity(push.normalize().multiply(1.6).setY(0.7));
-                    p.damage(enraged ? 8 : 6, boss);
+                    p.setVelocity(push.normalize().multiply(1.7).setY(0.75));
+                    p.damage(7 * power, boss);
                 }
                 say("<gray>déclenche une onde de choc !");
             }
-            case 1 -> { // Invocation
-                int n = enraged ? 5 : 3;
-                for (int i = 0; i < n; i++) {
-                    Location l = loc.clone().add(ThreadLocalRandom.current().nextDouble(-4, 4), 0, ThreadLocalRandom.current().nextDouble(-4, 4));
-                    Entity m = enraged ? w.spawn(l, WitherSkeleton.class, this::tagMinion) : w.spawn(l, Skeleton.class, this::tagMinion);
-                    minions.add(m);
-                    w.spawnParticle(Particle.LARGE_SMOKE, l, 10, 0.3, 0.6, 0.3, 0.01);
-                }
-                say("<gray>invoque des renforts !");
-            }
+            case 1 -> summon(w, loc);
             case 2 -> { // Foudre
-                List<Player> targets = around(20);
+                List<Player> targets = around(24);
                 Collections.shuffle(targets);
-                for (int i = 0; i < Math.min(enraged ? 4 : 2, targets.size()); i++) {
+                for (int i = 0; i < Math.min(2 + phase, targets.size()); i++) {
                     Player t = targets.get(i);
                     w.strikeLightningEffect(t.getLocation());
-                    t.damage(enraged ? 7 : 5, boss);
-                    t.setFireTicks(60);
+                    t.damage(6 * power, boss);
+                    t.setFireTicks(80);
                 }
                 say("<gray>appelle la foudre !");
             }
-            default -> { // Bond vers le joueur le plus éloigné
+            case 3 -> { // Bond vers le joueur le plus éloigné
                 Player far = null;
                 double best = 0;
-                for (Player p : around(24)) {
+                for (Player p : around(28)) {
                     double d = p.getLocation().distanceSquared(loc);
                     if (d > best) {
                         best = d;
@@ -348,14 +516,95 @@ public final class BossService implements Listener {
                     say("<gray>bondit sur <white>" + far.getName() + "</white> !");
                 }
             }
+            case 4 -> { // Crocs : une ligne de crocs vers chaque joueur proche
+                for (Player p : around(16)) {
+                    Vector dir = p.getLocation().toVector().subtract(loc.toVector()).setY(0);
+                    if (dir.lengthSquared() < 0.01) continue;
+                    dir.normalize();
+                    for (int i = 1; i <= 14; i++) {
+                        Location f = loc.clone().add(dir.clone().multiply(i * 1.1));
+                        f.setY(ground(f));
+                        int delay = i;
+                        Bukkit.getScheduler().runTaskLater(plugin, () -> w.spawn(f, EvokerFangs.class, fang -> fang.setOwner(boss)), delay);
+                    }
+                }
+                w.playSound(loc, Sound.ENTITY_EVOKER_PREPARE_ATTACK, 1.5f, 0.7f);
+                say("<gray>fait jaillir des crocs du sol !");
+            }
+            case 5 -> { // Pluie de feu au-dessus des joueurs
+                for (Player p : around(24)) {
+                    for (int i = 0; i < 3 + phase; i++) {
+                        Location from = p.getLocation().clone().add(ThreadLocalRandom.current().nextDouble(-3, 3), 14, ThreadLocalRandom.current().nextDouble(-3, 3));
+                        int delay = i * 6;
+                        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                            if (boss == null) return;
+                            w.spawn(from, SmallFireball.class, fb -> {
+                                fb.setShooter(boss);
+                                fb.setDirection(new Vector(0, -1, 0));
+                                fb.setIsIncendiary(false);
+                            });
+                        }, delay);
+                    }
+                }
+                w.playSound(loc, Sound.ENTITY_BLAZE_SHOOT, 1.5f, 0.5f);
+                say("<gray>fait pleuvoir le feu !");
+            }
+            case 6 -> { // Ténèbres
+                for (Player p : around(30)) {
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 20 * 6, 0, false, false));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 20 * 4, 1, false, true));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 20 * 5, 0, false, true));
+                }
+                w.playSound(loc, Sound.ENTITY_WARDEN_SONIC_CHARGE, 1.5f, 0.6f);
+                say("<gray>plonge l'arène dans les ténèbres !");
+            }
+            default -> { // Attraction puis explosion
+                for (Player p : around(18)) {
+                    Vector pull = loc.toVector().subtract(p.getLocation().toVector());
+                    if (pull.lengthSquared() < 0.01) continue;
+                    p.setVelocity(pull.normalize().multiply(1.4).setY(0.35));
+                }
+                w.playSound(loc, Sound.ENTITY_WARDEN_SONIC_BOOM, 1.5f, 0.6f);
+                say("<red>attire tout le monde à lui... ÉLOIGNEZ-VOUS !");
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    if (boss == null || !active()) return;
+                    Location l = boss.getLocation();
+                    w.spawnParticle(Particle.EXPLOSION_EMITTER, l, 2);
+                    w.playSound(l, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.5f);
+                    for (Player p : around(6)) p.damage(14, boss);
+                }, 50L);
+            }
         }
-        minions.removeIf(m -> !m.isValid());
     }
 
-    private void tagMinion(Entity ent) {
-        ent.getPersistentDataContainer().set(minionKey, PersistentDataType.BYTE, (byte) 1);
-        ent.setPersistent(false);
-        if (ent instanceof LivingEntity le) set(le, Attribute.MAX_HEALTH, 20);
+    private static double ground(Location l) {
+        Location c = l.clone();
+        for (int i = 0; i < 6 && c.getBlock().isPassable(); i++) c.add(0, -1, 0);
+        for (int i = 0; i < 6 && !c.getBlock().isPassable(); i++) c.add(0, 1, 0);
+        return c.getBlockY();
+    }
+
+    private void summon(World w, Location loc) {
+        int max = (int) num("sbires-max");
+        if (minions.size() >= max) return;
+        int n = Math.min(max - minions.size(), 2 + phase * 2 + Math.min(4, players / 2));
+        for (int i = 0; i < n; i++) {
+            Location l = loc.clone().add(ThreadLocalRandom.current().nextDouble(-5, 5), 0.5, ThreadLocalRandom.current().nextDouble(-5, 5));
+            if (!l.getBlock().isPassable()) l = loc.clone().add(0, 0.5, 0);
+            Class<? extends Entity> kind = switch (phase) {
+                case 0 -> i % 2 == 0 ? Zombie.class : Skeleton.class;
+                case 1 -> i % 3 == 0 ? Vex.class : (i % 2 == 0 ? WitherSkeleton.class : Skeleton.class);
+                default -> i % 3 == 0 ? Blaze.class : (i % 3 == 1 ? WitherSkeleton.class : Vex.class);
+            };
+            Entity m = w.spawn(l, kind, this::tagMinion);
+            if (m instanceof Mob mob) {
+                Player t = nearest(32);
+                if (t != null) mob.setTarget(t);
+            }
+            minions.add(m);
+            w.spawnParticle(Particle.LARGE_SMOKE, l, 10, 0.3, 0.6, 0.3, 0.01);
+        }
+        say("<gray>invoque des renforts !");
     }
 
     private void say(String mini) {
@@ -375,16 +624,49 @@ public final class BossService implements Listener {
         }, 100L);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onDamage(EntityDamageByEntityEvent event) {
+    /** Les coups des joueurs entament la vraie vie du boss ; le reste ne lui fait rien. */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onBossDamaged(org.bukkit.event.entity.EntityDamageEvent event) {
         if (boss == null || !event.getEntity().equals(boss)) return;
         Player attacker = null;
-        if (event.getDamager() instanceof Player p) attacker = p;
-        else if (event.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player p) attacker = p;
-        else if (event.getDamager() instanceof Tameable tame && tame.getOwner() instanceof Player p) attacker = p;
-        if (attacker == null) return;
-        double dealt = Math.min(event.getFinalDamage(), boss.getHealth());
+        boolean ranged = false;
+        if (event instanceof EntityDamageByEntityEvent by) {
+            if (by.getDamager() instanceof Player p) attacker = p;
+            else if (by.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player p) {
+                attacker = p;
+                ranged = true;
+            } else if (by.getDamager() instanceof Tameable tame && tame.getOwner() instanceof Player p) attacker = p;
+            else if (by.getDamager() instanceof TNTPrimed tnt && tnt.getSource() instanceof Player p) attacker = p;
+        }
+        if (attacker == null) {
+            event.setCancelled(true);
+            return;
+        }
+        if (shield) {
+            event.setCancelled(true);
+            attacker.playSound(attacker.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 0.6f);
+            attacker.sendActionBar(plugin.text().parse("<light_purple>Bouclier actif</light_purple> <gray>: tue d'abord les gardiens !"));
+            return;
+        }
+        double dealt = event.getFinalDamage();
+        if (ranged) dealt *= num("degats-distance") / 100.0;
+        dealt = Math.min(dealt, hp);
         damage.merge(attacker.getUniqueId(), dealt, Double::sum);
+        hp -= dealt;
+        if (hp <= 0.5) {
+            hp = 0;
+            event.setDamage(boss.getHealth() + 1000); // coup fatal : la mort normale crédite le tueur
+            return;
+        }
+        boss.setHealth(Math.max(1, Math.min(1024, 1024 * hp / maxHp)));
+        event.setDamage(0);
+        checkPhase();
+    }
+
+    /** Le boss a touché un joueur : il n'est pas coincé. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBossHits(EntityDamageByEntityEvent event) {
+        if (boss != null && event.getDamager().equals(boss) && event.getEntity() instanceof Player) lastBossHit = System.currentTimeMillis();
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -401,9 +683,10 @@ public final class BossService implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onDeath(EntityDeathEvent event) {
         LivingEntity dead = event.getEntity();
-        if (dead.getPersistentDataContainer().has(minionKey, PersistentDataType.BYTE)) {
+        Byte kind = dead.getPersistentDataContainer().get(minionKey, PersistentDataType.BYTE);
+        if (kind != null) {
             event.getDrops().clear();
-            event.setDroppedExp(0);
+            event.setDroppedExp(dead.getKiller() != null ? (int) num(kind == 2 ? "xp-gardien" : "xp-sbire") : 0);
             return;
         }
         if (boss == null || !dead.equals(boss)) return;
@@ -411,6 +694,7 @@ public final class BossService implements Listener {
         event.setDroppedExp(0);
         Player killer = dead.getKiller();
         Location loc = dead.getLocation();
+        dropXp(loc, (int) num("xp-boss"));
         reward(killer);
         firework(loc);
         end(true, null);
@@ -473,6 +757,18 @@ public final class BossService implements Listener {
         }
     }
 
+    /** Une pluie d'orbes d'expérience autour du corps du boss. */
+    private void dropXp(Location loc, int total) {
+        if (total <= 0) return;
+        World w = loc.getWorld();
+        int orbs = Math.min(60, Math.max(1, total / 60));
+        int each = total / orbs;
+        for (int i = 0; i < orbs; i++) {
+            Location l = loc.clone().add(ThreadLocalRandom.current().nextDouble(-3, 3), 1, ThreadLocalRandom.current().nextDouble(-3, 3));
+            w.spawn(l, ExperienceOrb.class, o -> o.setExperience(each));
+        }
+    }
+
     private void firework(Location loc) {
         World w = loc.getWorld();
         for (int i = 0; i < 4; i++) {
@@ -497,6 +793,9 @@ public final class BossService implements Listener {
         viewers.clear();
         for (Entity m : minions) if (m.isValid()) m.remove();
         minions.clear();
+        for (Entity g : guardians) if (g.isValid()) g.remove();
+        guardians.clear();
+        shield = false;
         if (boss != null && boss.isValid() && !killed) boss.remove();
         boss = null;
         bar = null;

@@ -32,22 +32,37 @@ boss:
   name: "<#ff6b6b><bold>Le Colosse</bold>"
   entity: WITHER_SKELETON
   scale: 2.6
-  # Vie : base + par joueur présent (maximum 1024)
-  health-base: 400
-  health-per-player: 150
-  damage: 12
-  armor: 12
+  # Vie du boss : base + par joueur présent au début (pas de limite)
+  vie-base: 4000
+  vie-par-joueur: 2000
+  damage: 14
+  armor: 16
+  # Les dégâts à distance (arcs, arbalètes, tridents) ne comptent qu'à ce pourcentage
+  degats-distance: 60
+  # Phases : à ces pourcentages de vie, le boss devient invulnérable et appelle ses gardiens.
+  # Il faut tous les tuer pour briser son bouclier. Il devient plus dangereux à chaque phase.
+  phases: [66, 33]
+  gardiens-par-joueur: 2
+  gardiens-max: 12
+  gardien-vie: 90
+  # Sbires invoqués pendant le combat : vie et nombre maximum en même temps
+  sbire-vie: 40
+  sbires-max: 25
+  # XP lâchée (en points d'expérience) : à la mort du boss, par gardien et par sbire tué
+  xp-boss: 4000
+  xp-gardien: 150
+  xp-sbire: 30
   # Jours en anglais (MONDAY ... SUNDAY), heure de Paris
   schedule:
     - "WEDNESDAY 21:00"
     - "SATURDAY 21:00"
   warnings-minutes: [15, 5, 1]
-  duration-minutes: 15
+  duration-minutes: 20
   # Pourcentage minimum des dégâts pour être récompensé
   min-damage-percent: 2
   rewards:
-    participation: { coins: 400, season-points: 60, xp-levels: 5 }
-    top1: { coins: 1500, season-points: 200, items: ["NETHERITE_SCRAP:2"] }
-    top2: { coins: 1000, season-points: 140, items: ["DIAMOND:6"] }
-    top3: { coins: 700, season-points: 100, items: ["DIAMOND:3"] }
-    last-hit: { coins: 300 }
+    participation: { coins: 600, season-points: 80, xp-levels: 10 }
+    top1: { coins: 2500, season-points: 250, items: ["NETHERITE_INGOT:1"] }
+    top2: { coins: 1600, season-points: 170, items: ["NETHERITE_SCRAP:2"] }
+    top3: { coins: 1000, season-points: 120, items: ["DIAMOND:6"] }
+    last-hit: { coins: 500 }
