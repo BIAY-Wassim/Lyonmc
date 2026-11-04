@@ -280,7 +280,7 @@ jobs:
             sleep 8
             echo "stop"
           ) > in &
-          timeout 1140 java -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
+          timeout 1140 "$JAVA_HOME/bin/java" -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
       - name: Analyse des journaux
         if: always()
         run: |
