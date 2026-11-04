@@ -1,5 +1,6 @@
 package fr.lyonmc.achievements.core;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -77,10 +78,36 @@ public final class Configs {
         mergeChildren(rewards, "titles", "colors", "trails", "paliers", "grades");
         mergeChildren(missions, "daily.easy", "daily.medium", "daily.hard", "weekly");
         events = loadOrCreate("evenements.yml");
+        upgradeBoss();
         jobs = loadOrCreate("metiers.yml");
         news = loadOrCreate("actualites.yml");
         mergeChildren(jobs, "metiers");
         state = stateFile.exists() ? YamlConfiguration.loadConfiguration(stateFile) : new YamlConfiguration();
+    }
+
+    /**
+     * Boss plus dur (7.1) : ajoute les nouveaux réglages du boss dans evenements.yml (avec leurs commentaires)
+     * et retire les anciens (vie limitée à 1024).
+     */
+    private void upgradeBoss() {
+        org.bukkit.configuration.Configuration def = events.getDefaults();
+        ConfigurationSection boss = events.getConfigurationSection("boss");
+        if (def == null || boss == null || events.isSet("boss.vie-base")) return;
+        for (String k : new String[]{"vie-base", "vie-par-joueur", "degats-distance", "phases", "gardiens-par-joueur", "gardiens-max",
+                "gardien-vie", "sbire-vie", "sbires-max", "xp-boss", "xp-gardien", "xp-sbire"}) {
+            String path = "boss." + k;
+            if (events.isSet(path) || !def.isSet(path)) continue;
+            events.set(path, def.get(path));
+            if (def instanceof YamlConfiguration y) events.setComments(path, y.getComments(path));
+        }
+        events.set("boss.health-base", null);
+        events.set("boss.health-per-player", null);
+        try {
+            events.save(new File(plugin.getDataFolder(), "evenements.yml"));
+            plugin.getLogger().info("Boss mondial : nouveaux réglages ajoutés à evenements.yml (vie, phases, gardiens, XP).");
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Impossible de mettre à jour evenements.yml", e);
+        }
     }
 
     private YamlConfiguration loadOrCreate(String name) {
