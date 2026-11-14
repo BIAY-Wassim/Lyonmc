@@ -175,6 +175,13 @@ settings:
   include-custom-advancements: true
   import-on-startup: true
 
+# Œuf de l'End (succès « La nouvelle génération ») : normalement, un seul joueur peut l'avoir.
+# reapparition : un nouvel œuf apparaît sur le portail de sortie à chaque dragon tué (s'il n'y en a pas déjà un).
+# retour-apres-succes : l'œuf d'un joueur qui a déjà le succès retourne sur le portail, pour le suivant.
+oeuf-dragon:
+  reapparition: true
+  retour-apres-succes: true
+
 # Site / carte en direct (dynmap)
 map:
   url: "https://lyonmc.fr/carte"

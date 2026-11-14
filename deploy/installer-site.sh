@@ -2,7 +2,7 @@
 # Installe ou met à jour le site lyonmc.fr dans le dossier siteweb du serveur.
 # À lancer avec l'utilisateur du serveur Minecraft (sans sudo) :
 #   bash installer-site.sh [dossier]
-# Le dossier data/ (écrit par le plugin) n'est jamais touché.
+# Les dossiers data/ (écrit par le plugin) et pages/ (tes textes des pages légales) ne sont jamais touchés.
 set -euo pipefail
 
 DEST="${1:-/home/serveur/SSDM2/Event/LyonMc/siteweb}"
@@ -20,8 +20,8 @@ SRC=$(find "$TMP" -mindepth 2 -maxdepth 2 -type d -name web | head -1)
 [ -n "$SRC" ] && [ -f "$SRC/index.html" ] || { echo "Archive incomplète, rien n'a été modifié."; exit 1; }
 
 mkdir -p "$DEST/data"
-# Remplace tout sauf data/
-find "$DEST" -mindepth 1 -maxdepth 1 ! -name data -exec rm -rf {} +
+# Remplace tout sauf data/ et pages/
+find "$DEST" -mindepth 1 -maxdepth 1 ! -name data ! -name pages -exec rm -rf {} +
 cp -r "$SRC"/. "$DEST"/
 # Apache (www-data) doit pouvoir lire le site
 find "$DEST" -type d -exec chmod 755 {} +

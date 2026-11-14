@@ -26,7 +26,8 @@ final class WebExport {
         this.plugin = plugin;
     }
 
-    private Path folder() {
+    /** Dossier des données du site (siteweb/data), ou null si l'export est coupé. */
+    Path folder() {
         if (!plugin.lyon().getConfig().getBoolean("web.enabled", true)) return null;
         String p = plugin.lyon().getConfig().getString("web.export-path", "siteweb/data");
         Path path = Path.of(p);

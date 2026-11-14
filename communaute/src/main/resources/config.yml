@@ -428,6 +428,26 @@ signalements:
 # Commandes du staff (permission communaute.staff, les op l'ont) :
 #   /mute <joueur> [durée] [raison] · /unmute <joueur> · /avertir <joueur> <raison>
 #   /tempban <joueur> <durée> [raison] · /sanctions <joueur> (historique)
+# Site lyonmc.fr : les joueurs s'y connectent avec /site en jeu (lien ou code valable 10 minutes).
+# Le plugin répond sur api.adresse:api.port, et Apache relaie lyonmc.fr/api/ vers cette adresse
+# (voir deploy/lyonmc.conf). Après un changement : /communaute reload.
+site:
+  adresse: "https://lyonmc.fr"
+  api:
+    enabled: true
+    adresse: "127.0.0.1"
+    port: 8135
+
+# Page Suggestions du site : les joueurs connectés proposent des idées et votent pour celles des autres.
+# Le staff (permission communaute.staff) change les statuts, répond et supprime, directement sur le site.
+# Les filtres du chat (pub, mots interdits) et les sanctions (mute, ban) s'appliquent aussi.
+suggestions:
+  enabled: true
+  # Idées par joueur et par 24 heures (le staff n'a pas de limite)
+  par-jour: 3
+  titre-max: 80
+  texte-max: 700
+
 # Durées : 30m, 2h, 1j, 1sem. Tout est noté dans plugins/COMMUNAUTE/sanctions.yml
 moderation:
   filtre:

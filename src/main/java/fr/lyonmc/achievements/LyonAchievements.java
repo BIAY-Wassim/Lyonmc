@@ -73,6 +73,7 @@ public final class LyonAchievements extends JavaPlugin {
     private fr.lyonmc.achievements.jobs.JobMenu jobMenu;
     private fr.lyonmc.achievements.shop.LotService lots;
     private fr.lyonmc.achievements.world.ResourceBonusService resourceBonus;
+    private fr.lyonmc.achievements.world.DragonEggService dragonEgg;
     private fr.lyonmc.achievements.teleport.HubService spawnHub;
     private fr.lyonmc.achievements.rewards.GradeService grades;
     private MotdListener motd;
@@ -169,6 +170,7 @@ public final class LyonAchievements extends JavaPlugin {
         holograms.cleanup();
         holograms.load();
         resourceBonus = new fr.lyonmc.achievements.world.ResourceBonusService(this);
+        dragonEgg = new fr.lyonmc.achievements.world.DragonEggService(this);
         resources = new ResourceWorldService(this);
         try {
             resources.init();
@@ -186,7 +188,7 @@ public final class LyonAchievements extends JavaPlugin {
 
         listen(placed, new AdvancementListener(this, registry, stats, boards, text), chat, new MenuListener(this), heads, motd,
                 missionListener, custom, teamCommand, teleporter, teleportCommands, spawnHub, resourceBonus, boss, web,
-                new fr.lyonmc.achievements.jobs.JobListener(this));
+                new fr.lyonmc.achievements.jobs.JobListener(this), dragonEgg, new fr.lyonmc.achievements.listener.VanillaFixes(this));
 
         SuccesCommand succes = new SuccesCommand(this, registry, stats, boards, achievementsMenu, text);
         command(succes, "succes", "classement", "carte");
@@ -260,6 +262,8 @@ public final class LyonAchievements extends JavaPlugin {
             chat.refreshAll();
         }, 2L, 100L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, motd::refresh, 20L, 100L));
+        // Toutes les 10 secondes : l'œuf de dragon des joueurs qui ont déjà le succès retourne sur le portail
+        tasks.add(Bukkit.getScheduler().runTaskTimer(this, dragonEgg::tick, 200L, 200L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this,
                 () -> heads.preload(stats.ranking().subList(0, Math.min(10, stats.ranking().size()))), 200L, 12000L));
 
@@ -304,9 +308,10 @@ public final class LyonAchievements extends JavaPlugin {
         var cfg = getConfig();
         var def = cfg.getDefaults();
         if (def == null) return;
-        boolean changed = false;
+        java.util.Set<String> added = new java.util.LinkedHashSet<>();
         for (String key : def.getKeys(true)) {
             if (cfg.isSet(key) || def.isConfigurationSection(key)) continue;
+            added.add(key.contains(".") ? key.substring(0, key.indexOf('.')) : key);
             cfg.set(key, def.get(key));
             cfg.setComments(key, def.getComments(key));
             cfg.setInlineComments(key, def.getInlineComments(key));
@@ -316,11 +321,10 @@ public final class LyonAchievements extends JavaPlugin {
                 String parent = key.substring(0, dot);
                 if (cfg.getComments(parent).isEmpty()) cfg.setComments(parent, def.getComments(parent));
             }
-            changed = true;
         }
-        if (changed) {
+        if (!added.isEmpty()) {
             saveConfig();
-            getLogger().info("Nouveaux réglages ajoutés à config.yml (métiers, chat, page Rejoindre et pages légales du site).");
+            getLogger().info("Nouveaux réglages ajoutés à config.yml : " + String.join(", ", added) + ".");
         }
     }
 

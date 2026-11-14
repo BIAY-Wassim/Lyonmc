@@ -172,7 +172,18 @@ public final class BossService implements Listener {
     private final List<Entity> guardians = new ArrayList<>();
     /** Dernier coup porté par le boss à un joueur (pour savoir s'il est coincé). */
     private long lastBossHit;
+    /** Combattants comptés (arrondi) : nombre de gardiens et de sbires. */
     private int players;
+    /** Combattants comptés pour la difficulté : joueurs de l'arène + une part des joueurs connectés. */
+    private double fighters = 1;
+    /** Multiplicateur des attaques du boss, et de la vie et des attaques de ses renforts. */
+    private double strength = 1;
+    /** Joueurs dans l'arène au dernier calcul, et dernier message « se renforce / s'affaiblit ». */
+    private int inArena;
+    private long lastScaleNotice;
+    /** Morts de chaque joueur dans l'arène pendant ce combat, et ce qu'on lui dira à sa réapparition. */
+    private final Map<UUID, Integer> deaths = new HashMap<>();
+    private final Map<UUID, long[]> afterDeath = new HashMap<>();
 
     public boolean start(Location override) {
         if (active()) return false;
@@ -190,13 +201,23 @@ public final class BossService implements Listener {
         Class<? extends Entity> cls = type.getEntityClass();
         if (cls == null || !LivingEntity.class.isAssignableFrom(cls)) cls = WitherSkeleton.class;
 
+        // Difficulté de départ : joueurs autour de l'arène + une part des connectés (recalculée pendant le combat)
         int nearby = 0;
-        for (Player p : at.getWorld().getPlayers()) if (p.getLocation().distanceSquared(at) < 128 * 128) nearby++;
-        players = Math.max(1, Math.max(nearby, Math.min(Bukkit.getOnlinePlayers().size(), 10)));
-        maxHp = Math.max(100, num("vie-base") + num("vie-par-joueur") * players);
+        for (Player p : at.getWorld().getPlayers()) if (fighting(p) && p.getLocation().distanceSquared(at) < 128 * 128) nearby++;
+        inArena = nearby;
+        fighters = fighters(nearby);
+        players = Math.max(1, (int) Math.round(fighters));
+        strength = strength(fighters);
+        maxHp = targetHp(fighters);
         hp = maxHp;
         phase = 0;
         shield = false;
+        deaths.clear();
+        afterDeath.clear();
+        lastScaleNotice = 0;
+        plugin.getLogger().info("Boss : " + nearby + " joueur(s) près de l'arène, " + Bukkit.getOnlinePlayers().size() + " connecté(s) -> "
+                + String.format(Locale.FRANCE, "%.2f", fighters) + " combattant(s), " + String.format(Locale.FRANCE, "%.0f", maxHp)
+                + " PV, attaque x" + String.format(Locale.FRANCE, "%.2f", strength));
 
         Component name = plugin.text().parse(cfg().getString("name", "Le Colosse"));
         Entity e = at.getWorld().spawn(at, cls, ent -> {
@@ -208,7 +229,7 @@ public final class BossService implements Listener {
             le.setPersistent(false);
             set(le, Attribute.MAX_HEALTH, 1024);
             set(le, Attribute.SCALE, cfg().getDouble("scale", 2.6));
-            set(le, Attribute.ATTACK_DAMAGE, num("damage"));
+            set(le, Attribute.ATTACK_DAMAGE, num("damage") * strength);
             set(le, Attribute.ARMOR, num("armor"));
             set(le, Attribute.KNOCKBACK_RESISTANCE, 1.0);
             set(le, Attribute.FOLLOW_RANGE, 48);
@@ -263,6 +284,7 @@ public final class BossService implements Listener {
         guardians.removeIf(g -> !g.isValid() || g.isDead());
         minions.removeIf(m -> !m.isValid() || m.isDead());
         if (shield && guardians.isEmpty()) breakShield();
+        if (tickCount % 5 == 0) rescale();
         updateBar();
         Set<UUID> now = new HashSet<>();
         for (Player p : boss.getWorld().getPlayers()) {
@@ -303,10 +325,124 @@ public final class BossService implements Listener {
         } else {
             bar.color(phase >= 2 ? BossBar.Color.RED : phase == 1 ? BossBar.Color.YELLOW : BossBar.Color.RED);
             bar.name(name.append(plugin.text().parse(" <dark_gray>·</dark_gray> <gray>phase " + (phase + 1) + "/" + (phases().size() + 1)
-                    + " <dark_gray>·</dark_gray> <white>" + String.format(Locale.FRANCE, "%,.0f", Math.ceil(hp)) + "</white> <red>❤")));
+                    + " <dark_gray>·</dark_gray> <white>" + String.format(Locale.FRANCE, "%,.0f", Math.ceil(hp)) + "</white> <red>❤</red>"
+                    + " <dark_gray>·</dark_gray> <gray>" + inArena + " combattant" + (inArena > 1 ? "s" : ""))));
         }
         // La vie affichée au-dessus de lui suit sa vraie vie
         boss.setHealth(Math.max(1, Math.min(1024, 1024 * hp / maxHp)));
+    }
+
+    // ───────────────────────────── Difficulté selon les joueurs ─────────────────────────────
+
+    /** Joueur qui compte pour la difficulté : vivant, en survie ou en aventure. */
+    private static boolean fighting(Player p) {
+        return !p.isDead() && (p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE);
+    }
+
+    /** Combattants comptés : les joueurs de l'arène, plus une part (poids-connectes) des autres joueurs connectés. */
+    private double fighters(int arena) {
+        int online = 0;
+        for (Player p : Bukkit.getOnlinePlayers()) if (fighting(p)) online++;
+        double f = arena + Math.max(0, num("poids-connectes")) * Math.max(0, online - arena);
+        double cap = num("combattants-max");
+        if (cap >= 1) f = Math.min(cap, f);
+        return Math.max(1, f);
+    }
+
+    private double targetHp(double f) {
+        return Math.max(100, num("vie-base") + num("vie-par-joueur") * f);
+    }
+
+    /** Multiplicateur des attaques : +force-par-joueur par combattant en plus du premier, au plus force-max. */
+    private double strength(double f) {
+        double s = 1 + Math.max(0, num("force-par-joueur")) * (f - 1);
+        double max = num("force-max");
+        if (max >= 1) s = Math.min(max, s);
+        return Math.max(1, s);
+    }
+
+    /**
+     * Toutes les 5 secondes : la vie et la force du boss suivent le nombre de combattants.
+     * La vie change par petites étapes et garde le même pourcentage : aucune phase n'est sautée.
+     */
+    private void rescale() {
+        int arena = 0;
+        for (Player p : boss.getWorld().getPlayers()) {
+            if (fighting(p) && p.getLocation().distanceSquared(boss.getLocation()) < 48 * 48) arena++;
+        }
+        double f = fighters(arena);
+        double target = targetHp(f);
+        if (Math.abs(target - maxHp) >= 1) {
+            double step = Math.max(-maxHp * 0.15, Math.min(maxHp * 0.15, target - maxHp));
+            double ratio = maxHp <= 0 ? 1 : hp / maxHp;
+            maxHp = Math.max(100, maxHp + step);
+            hp = Math.max(1, Math.min(maxHp, ratio * maxHp));
+        }
+        fighters = f;
+        players = Math.max(1, (int) Math.round(f));
+        strength = strength(f);
+        set(boss, Attribute.ATTACK_DAMAGE, num("damage") * strength);
+        if (arena == inArena) return;
+        boolean more = arena > inArena;
+        inArena = arena;
+        plugin.getLogger().info("Boss : " + arena + " joueur(s) dans l'arène, " + Bukkit.getOnlinePlayers().size() + " connecté(s) -> "
+                + String.format(Locale.FRANCE, "%.2f", f) + " combattant(s), vie max visée " + String.format(Locale.FRANCE, "%.0f", target)
+                + ", attaque x" + String.format(Locale.FRANCE, "%.2f", strength));
+        long now = System.currentTimeMillis();
+        if (now - lastScaleNotice < 15_000L) return;
+        lastScaleNotice = now;
+        say(more ? "<red>se renforce</red> <gray>: <white>" + arena + "</white> combattant" + (arena > 1 ? "s" : "") + " dans l'arène."
+                : "<gray>s'affaiblit : <white>" + arena + "</white> combattant" + (arena > 1 ? "s" : "") + " dans l'arène.");
+    }
+
+    // ───────────────────────────── Morts dans l'arène ─────────────────────────────
+
+    /** Près de l'arène ou du boss (rayon de protection). */
+    private boolean protects(Location l) {
+        if (l == null || l.getWorld() == null) return false;
+        double r = Math.max(8, num("protection.rayon"));
+        Location a = arena();
+        if (a != null && l.getWorld().equals(a.getWorld()) && a.distanceSquared(l) <= r * r) return true;
+        return boss != null && l.getWorld().equals(boss.getWorld()) && boss.getLocation().distanceSquared(l) <= r * r;
+    }
+
+    /**
+     * Mort dans l'arène pendant un combat : le joueur garde son stuff et son XP, contre quelques pièces.
+     * À partir de la 2e mort du même combat, il revient un peu ralenti (un peu plus longtemps à chaque fois).
+     */
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerDeath(org.bukkit.event.entity.PlayerDeathEvent event) {
+        Player p = event.getEntity();
+        if (!active() || !plugin.configs().events().getBoolean("boss.protection.enabled") || !protects(p.getLocation())) return;
+        // Règle keepInventory déjà active : rien à protéger, donc pas de pénalité
+        if (Boolean.TRUE.equals(p.getWorld().getGameRuleValue(GameRule.KEEP_INVENTORY))) return;
+        event.setKeepInventory(true);
+        event.getDrops().clear();
+        event.setKeepLevel(true);
+        event.setDroppedExp(0);
+        int n = deaths.merge(p.getUniqueId(), 1, Integer::sum);
+        long malus = Math.max(0, (long) num("protection.malus-pieces"));
+        long taken = Math.min(malus, plugin.economy().balance(p.getUniqueId()));
+        if (taken > 0 && !plugin.economy().withdraw(p.getUniqueId(), taken)) taken = 0;
+        int from = Math.max(1, (int) num("protection.lenteur-a-partir-de"));
+        long seconds = n < from ? 0 : Math.min((long) num("protection.lenteur-max-secondes"), (long) num("protection.lenteur-secondes") * (n - from + 1));
+        afterDeath.put(p.getUniqueId(), new long[]{taken, Math.max(0, seconds)});
+        plugin.getLogger().info("Boss : " + p.getName() + " est mort dans l'arène (mort n°" + n + ") : stuff gardé, -" + taken + " pièces"
+                + (seconds > 0 ? ", lenteur " + seconds + " s" : "") + ".");
+    }
+
+    @EventHandler
+    public void onRespawn(org.bukkit.event.player.PlayerRespawnEvent event) {
+        Player p = event.getPlayer();
+        long[] info = afterDeath.remove(p.getUniqueId());
+        if (info == null) return;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!p.isOnline()) return;
+            if (info[1] > 0) p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, (int) info[1] * 20, 0, false, true, true));
+            plugin.msg(p, "<gray>Mort au combat : tu gardes ton stuff et ton XP"
+                    + (info[0] > 0 ? " <dark_gray>(</dark_gray><red>-" + plugin.economy().format(info[0]) + "</red><dark_gray>)</dark_gray>" : "") + "."
+                    + (info[1] > 0 ? " <gray>Encore sonné : lenteur pendant <white>" + info[1] + " s</white>." : ""));
+        }, 2L);
     }
 
     private List<Integer> phases() {
@@ -423,10 +559,11 @@ public final class BossService implements Listener {
         le.customName(plugin.text().parse("<light_purple>Gardien du Colosse"));
         le.setCustomNameVisible(true);
         le.setGlowing(true);
-        set(le, Attribute.MAX_HEALTH, num("gardien-vie"));
-        le.setHealth(num("gardien-vie"));
+        double life = Math.max(1, num("gardien-vie") * strength);
+        set(le, Attribute.MAX_HEALTH, life);
+        le.setHealth(life);
         set(le, Attribute.ARMOR, 14);
-        set(le, Attribute.ATTACK_DAMAGE, 9);
+        set(le, Attribute.ATTACK_DAMAGE, 9 * strength);
         set(le, Attribute.KNOCKBACK_RESISTANCE, 0.6);
         set(le, Attribute.SCALE, 1.25);
         if (le.getEquipment() != null) {
@@ -445,9 +582,11 @@ public final class BossService implements Listener {
         ent.getPersistentDataContainer().set(minionKey, PersistentDataType.BYTE, (byte) 1);
         ent.setPersistent(false);
         if (!(ent instanceof LivingEntity le)) return;
-        double hpM = num("sbire-vie");
+        double hpM = Math.max(1, num("sbire-vie") * strength);
         set(le, Attribute.MAX_HEALTH, hpM);
         le.setHealth(hpM);
+        AttributeInstance atk = le.getAttribute(Attribute.ATTACK_DAMAGE);
+        if (atk != null) atk.setBaseValue(atk.getBaseValue() * strength);
         if (le.getEquipment() != null && !(le instanceof Vex) && !(le instanceof Blaze)) {
             org.bukkit.inventory.EntityEquipment eq = le.getEquipment();
             eq.setHelmet(new org.bukkit.inventory.ItemStack(Material.IRON_HELMET));
@@ -474,7 +613,7 @@ public final class BossService implements Listener {
         int choice = pool.get(ThreadLocalRandom.current().nextInt(pool.size()));
         Location loc = boss.getLocation();
         World w = loc.getWorld();
-        double power = 1 + phase * 0.35;
+        double power = (1 + phase * 0.35) * strength;
         switch (choice) {
             case 0 -> { // Onde de choc
                 w.playSound(loc, Sound.ENTITY_GENERIC_EXPLODE, 1.5f, 0.6f);
@@ -571,7 +710,7 @@ public final class BossService implements Listener {
                     Location l = boss.getLocation();
                     w.spawnParticle(Particle.EXPLOSION_EMITTER, l, 2);
                     w.playSound(l, Sound.ENTITY_GENERIC_EXPLODE, 2f, 0.5f);
-                    for (Player p : around(6)) p.damage(14, boss);
+                    for (Player p : around(6)) p.damage(14 * strength, boss);
                 }, 50L);
             }
         }

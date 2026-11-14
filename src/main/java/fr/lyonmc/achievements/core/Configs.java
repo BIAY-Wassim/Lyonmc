@@ -79,6 +79,7 @@ public final class Configs {
         mergeChildren(missions, "daily.easy", "daily.medium", "daily.hard", "weekly");
         events = loadOrCreate("evenements.yml");
         upgradeBoss();
+        addBossKeys();
         jobs = loadOrCreate("metiers.yml");
         news = loadOrCreate("actualites.yml");
         mergeChildren(jobs, "metiers");
@@ -105,6 +106,41 @@ public final class Configs {
         try {
             events.save(new File(plugin.getDataFolder(), "evenements.yml"));
             plugin.getLogger().info("Boss mondial : nouveaux réglages ajoutés à evenements.yml (vie, phases, gardiens, XP).");
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Impossible de mettre à jour evenements.yml", e);
+        }
+    }
+
+    /**
+     * 7.2 : difficulté qui suit les joueurs et protection du stuff dans l'arène. Les réglages sont ajoutés
+     * à evenements.yml avec leurs explications (sans eux, les valeurs du .jar s'appliquent quand même).
+     */
+    private void addBossKeys() {
+        org.bukkit.configuration.Configuration def = events.getDefaults();
+        if (!(def instanceof YamlConfiguration y) || events.getConfigurationSection("boss") == null) return;
+        boolean changed = false;
+        for (String k : new String[]{"poids-connectes", "combattants-max", "force-par-joueur", "force-max", "protection"}) {
+            String path = "boss." + k;
+            if (events.isSet(path) || !y.isSet(path)) continue;
+            ConfigurationSection sec = y.getConfigurationSection(path);
+            if (sec != null) {
+                copy(sec, events.createSection(path));
+                for (String sub : sec.getKeys(true)) events.setComments(path + "." + sub, y.getComments(path + "." + sub));
+            } else {
+                events.set(path, y.get(path));
+            }
+            events.setComments(path, y.getComments(path));
+            changed = true;
+        }
+        // Ancienne explication de la vie (« par joueur présent au début ») remplacée par la nouvelle
+        if (String.join(" ", events.getComments("boss.vie-base")).contains("présent au début")) {
+            events.setComments("boss.vie-base", y.getComments("boss.vie-base"));
+            changed = true;
+        }
+        if (!changed) return;
+        try {
+            events.save(new File(plugin.getDataFolder(), "evenements.yml"));
+            plugin.getLogger().info("Boss mondial : réglages ajoutés à evenements.yml (difficulté selon les joueurs, stuff protégé dans l'arène).");
         } catch (IOException e) {
             plugin.getLogger().log(Level.WARNING, "Impossible de mettre à jour evenements.yml", e);
         }

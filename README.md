@@ -20,7 +20,8 @@ Plugin Paper / Purpur **1.21.8** pour la survie LyonMC, par **wassdead**.
 | Équipes | Tag, chat d'équipe, home d'équipe, classement | `/equipe` |
 | Homes & TP | Homes, spawn, tpa, back, téléportation aléatoire | `/sethome`, `/home`, `/homes`, `/spawn`, `/tpa`, `/back`, `/rtp` |
 | Hôtel des ventes | Achat/vente entre joueurs, taxe de 5 % | `/hdv`, `/hdv vendre <prix>` |
-| Boss mondial | Le Colosse, 2 fois par semaine, récompenses selon les dégâts | `/boss` |
+| Boss mondial | Le Colosse, 2 fois par semaine : sa difficulté suit les joueurs de l'arène et du serveur, le stuff est gardé en cas de mort dans l'arène (contre 100 pièces), récompenses selon les dégâts | `/boss` |
+| Œuf de l'End | Un nouvel œuf sur le portail à chaque dragon tué ; l'œuf d'un joueur qui a déjà le succès retourne sur le portail | — |
 | Monde ressources | Réinitialisé chaque mois | `/ressources` |
 | Hologrammes | Classements et podium avec les vraies têtes au spawn | `/lmc holo creer <type>` |
 | Discord | Annonces automatiques (défis, n°1, boss, saison) | webhook dans `config.yml` |
@@ -45,6 +46,7 @@ Le dossier `web/` contient le site (accueil, classements, profils joueurs, guide
 
 - `bash deploy/installer-site.sh` (sans sudo, avec l'utilisateur du serveur) installe ou met à jour le site sans toucher à `data/`.
 - `deploy/lyonmc.conf` est la configuration Apache en HTTPS : le site à la racine, la Dynmap (port 8134) sur `/dynmap/`, affichée dans la page `/carte` du site. Les anciens liens Dynmap sont redirigés vers `/carte`.
+- Page **Suggestions** (`/suggestions`) : les joueurs se connectent au site avec `/site` en jeu (lien ou code valable 10 minutes), proposent des idées et votent ; le staff change les statuts et répond sur la page. Le plugin COMMUNAUTE répond sur `127.0.0.1:8135`, et Apache relaie `lyonmc.fr/api/` vers cette adresse (lignes `ProxyPass /api/` de `deploy/lyonmc.conf`).
 
 ## Compiler
 
