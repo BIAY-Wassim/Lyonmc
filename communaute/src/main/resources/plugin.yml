@@ -85,10 +85,10 @@ commands:
     usage: /sanctions <joueur>
     aliases: [historique]
     permission: communaute.staff
-  site:
-    description: Se connecter au site lyonmc.fr (suggestions, votes pour les idées)
-    usage: /site [deconnexion]
-    aliases: [siteweb, suggestion, suggestions, idee, idees]
+  suggestion:
+    description: Proposer une idée sur le site lyonmc.fr (lien à cliquer)
+    usage: /suggestion
+    aliases: [suggestions, idee, idees, site]
   communaute:
     description: Administration de COMMUNAUTE
     aliases: [comm]

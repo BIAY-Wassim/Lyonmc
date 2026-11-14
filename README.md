@@ -46,7 +46,7 @@ Le dossier `web/` contient le site (accueil, classements, profils joueurs, guide
 
 - `bash deploy/installer-site.sh` (sans sudo, avec l'utilisateur du serveur) installe ou met à jour le site sans toucher à `data/`.
 - `deploy/lyonmc.conf` est la configuration Apache en HTTPS : le site à la racine, la Dynmap (port 8134) sur `/dynmap/`, affichée dans la page `/carte` du site. Les anciens liens Dynmap sont redirigés vers `/carte`.
-- Page **Suggestions** (`/suggestions`) : les joueurs se connectent au site avec `/site` en jeu (lien ou code valable 10 minutes), proposent des idées et votent ; le staff change les statuts et répond sur la page. Le plugin COMMUNAUTE répond sur `127.0.0.1:8135`, et Apache relaie `lyonmc.fr/api/` vers cette adresse (lignes `ProxyPass /api/` de `deploy/lyonmc.conf`).
+- Page **Suggestions** (`/suggestions`) : comme la vérification de NameMC, `/suggestion` en jeu donne un lien (valable 10 minutes, une seule fois) qui ouvre la page au nom du joueur ; il y propose ses idées et vote ; le staff change les statuts et répond sur la page. Le plugin COMMUNAUTE répond sur `127.0.0.1:8135`, et Apache relaie `lyonmc.fr/api/` vers cette adresse (lignes `ProxyPass /api/` de `deploy/lyonmc.conf`).
 
 ## Compiler
 
