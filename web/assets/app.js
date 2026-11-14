@@ -641,7 +641,7 @@
     ["Déplacements", [["/sethome <nom>", "Créer un home"], ["/home <nom>", "Aller à un home"], ["/homes", "Tes homes"], ["/hub", "Retour au hub (aussi /spawn)"], ["/survie", "Revenir là où tu étais en survie"], ["/mine", "Aller dans le monde ressources"], ["/tpa <joueur>", "Demander à rejoindre un joueur"], ["/tpahere <joueur>", "Demander à un joueur de venir"], ["/tpaccept", "Accepter une demande"], ["/back", "Revenir à ta position précédente"], ["/rtp", "Téléportation aléatoire"]]],
     ["Amis et messages", [["/ami", "Ta liste d'amis : qui est connecté, où"], ["/ami ajouter <joueur>", "Envoyer une demande d'ami"], ["/msg <joueur> <message>", "Message privé (aussi /tell, /w)"], ["/r <message>", "Répondre au dernier message"], ["/ignorer <joueur>", "Ne plus voir les messages d'un joueur"], ["/report <joueur> <raison>", "Signaler un joueur au staff"], ["/report bug <description>", "Signaler un bug"]]],
     ["Équipes", [["/equipe", "Menu de ton équipe"], ["/equipe creer <nom> <tag>", "Fonder une équipe"], ["/equipe inviter <joueur>", "Inviter un joueur"], ["/equipe rejoindre <équipe>", "Accepter une invitation"], ["/equipe chat", "Parler seulement à ton équipe"], ["/equipe home", "Home de l'équipe"]]],
-    ["Communauté", [["/vote", "Voter pour le serveur"], ["/parrain <joueur>", "Choisir ton parrain"], ["/objectif", "L'objectif de la semaine"], ["/bienvenue", "Souhaiter la bienvenue au dernier arrivé"], ["/premierspas", "Les étapes des nouveaux joueurs"], ["/astuces", "Couper ou remettre les astuces du chat"], ["/site", "Te connecter au site pour proposer tes idées"]]],
+    ["Communauté", [["/vote", "Voter pour le serveur"], ["/parrain <joueur>", "Choisir ton parrain"], ["/objectif", "L'objectif de la semaine"], ["/bienvenue", "Souhaiter la bienvenue au dernier arrivé"], ["/premierspas", "Les étapes des nouveaux joueurs"], ["/astuces", "Couper ou remettre les astuces du chat"], ["/suggestion", "Proposer une idée sur le site"]]],
     ["Hub et événements", [["/parkour", "Aller au départ du parkour du hub"], ["/parkour top", "Les meilleurs temps du parkour"], ["/boss", "Prochain boss, ou rejoindre l'arène"]]],
   ];
   const SECTIONS = [
@@ -966,7 +966,7 @@
       </div>`;
   }
 
-  // ───────────── Suggestions (connexion avec /site en jeu, API du plugin COMMUNAUTE sur /api/) ─────────────
+  // ───────────── Suggestions (lien donné en jeu par /suggestion, comme NameMC ; API du plugin COMMUNAUTE sur /api/) ─────────────
   const ST = [["nouvelle", "Nouvelle", "Nouvelles"], ["acceptee", "Acceptée", "Acceptées"], ["en-cours", "En cours", "En cours"],
     ["faite", "Faite", "Faites"], ["refusee", "Refusée", "Refusées"]];
   const stName = (k) => (ST.find((x) => x[0] === k) || [k, k])[1];
@@ -998,21 +998,21 @@
 
   async function suggestions() {
     setTitle("Suggestions");
-    const S = { live: false, d: null, flash: null };
-    // Lien reçu en jeu avec /site : lyonmc.fr/suggestions#code=XXXXXXXX
-    const m = location.hash.match(/code=([A-Za-z0-9-]{8,12})/);
-    if (m) {
+    const S = { live: false, d: null, flash: null, ip: "lyonmc.fr" };
+    // Lien donné en jeu par /suggestion : lyonmc.fr/suggestions?cle=XXXXXXXX (une seule fois, 10 minutes)
+    const key = new URLSearchParams(location.search).get("cle");
+    if (key) {
       history.replaceState({}, "", "/suggestions");
-      const r = await api("connexion", { code: m[1] });
-      S.flash = r.ok ? { ok: true, text: `Connecté en tant que ${r.data.pseudo} : tu peux proposer tes idées et voter.` }
-        : { ok: false, text: apiError(r, "Connexion impossible.") };
+      const r = await api("connexion", { code: key });
+      if (!r.ok) S.flash = { ok: false, text: apiError(r, "Ce lien ne marche pas.") };
     }
-    await loadSugg(S);
+    const [srv] = await Promise.all([data("serveur"), loadSugg(S)]);
+    S.ip = srv?.ip || "lyonmc.fr";
     app.innerHTML = `
       <div class="page-head"><div class="wrap"><h1>Suggestions</h1>
         <p>Une idée pour LyonMC ? Propose-la ici et vote pour celles des autres : les plus demandées passent en priorité dans les prochaines mises à jour.</p></div></div>
       <div class="wrap sugg-page">
-        <section class="card sugg-account" aria-label="Proposer une idée"></section>
+        <section class="sugg-account" aria-label="Proposer une idée"></section>
         <div class="sugg-tools"></div>
         <ol class="sugg-list" aria-label="Idées des joueurs"></ol>
       </div>`;
@@ -1023,37 +1023,48 @@
     page.addEventListener("submit", (e) => onSuggSubmit(e, page, S));
   }
 
+  /** Les 3 étapes, comme sur NameMC : rejoindre le serveur, taper /suggestion, cliquer sur le lien. */
+  function howTo(S) {
+    const link = `https://${S.ip}/suggestions?cle=K7PX4QM9`;
+    return `<h2>Proposer une idée</h2>
+      <ol class="sugg-how">
+        <li class="card"><span class="step">Étape 1</span>
+          <div class="mc-scene mc-join" aria-hidden="true"><span class="mc-label">Adresse du serveur</span><span class="mc-field">${esc(S.ip)}</span>
+            <span class="mc-btn">Rejoindre le serveur</span><span class="mc-btn">Annuler</span></div>
+          <p>Rejoins le serveur : <button type="button" class="copy-mini" data-copy="${esc(S.ip)}">${esc(S.ip)}</button></p></li>
+        <li class="card"><span class="step">Étape 2</span>
+          <div class="mc-scene" aria-hidden="true"><span class="mc-chat"><span class="mc-gold">Bienvenue sur LyonMC !</span>
+            <span>Tape <span class="mc-yellow">/suggestion</span> pour proposer une idée.</span></span><span class="mc-bar">/suggestion<span class="mc-caret">_</span></span></div>
+          <p>Tape la commande : <code class="cmd">/suggestion</code></p></li>
+        <li class="card"><span class="step">Étape 3</span>
+          <div class="mc-scene" aria-hidden="true"><span class="mc-chat"><span class="mc-green">Clique sur le lien pour écrire ta suggestion sur le site :</span>
+            <span class="mc-link">${esc(link)}</span></span></div>
+          <p>Clique sur le lien : tu arrives ici pour écrire ton idée.</p></li>
+      </ol>`;
+  }
+
   function drawAccount(page, S) {
     const box = page.querySelector(".sugg-account");
     const me = S.d.moi || {};
     const L = S.d.limites || {};
     const flash = S.flash ? `<p class="sugg-flash ${S.flash.ok ? "ok" : "err"}" role="status">${esc(S.flash.text)}</p>` : "";
-    if (!S.live) {
-      box.innerHTML = `${flash}<h2>Proposer une idée</h2>
-        <p class="muted">Le serveur ne répond pas pour le moment : tu pourras proposer et voter dès qu'il sera de retour. En attendant, voici les idées déjà proposées.</p>`;
-      return;
-    }
-    if (!me.connecte) {
-      box.innerHTML = `${flash}<h2>Proposer une idée</h2>
-        <p class="muted">Connecte-toi avec ton compte Minecraft : ton pseudo et ta tête s'afficheront à côté de tes idées.</p>
-        <ol class="sugg-steps">
-          <li><div><strong>En jeu, tape <code class="cmd">/site</code></strong></div></li>
-          <li><div><strong>Clique sur « Se connecter au site » dans le chat</strong><p>Tu arrives ici, connecté. Le lien marche 10 minutes, une seule fois.</p></div></li>
-        </ol>
-        <form class="sugg-login" novalidate>
-          <label for="sg-code">Ou entre le code reçu en jeu</label>
-          <div class="sugg-inline"><input id="sg-code" name="code" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" maxlength="9" placeholder="ABCD-EFGH" required>
-            <button class="btn" type="submit">Se connecter</button></div>
-          <p class="sugg-err" role="alert" hidden></p>
-        </form>`;
+    if (!S.live || !me.connecte) {
+      box.className = "sugg-account";
+      box.innerHTML = flash + howTo(S) + (S.live ? "" : `<p class="muted">Le serveur ne répond pas pour le moment : tu pourras proposer et voter dès qu'il sera de retour. En attendant, voici les idées déjà proposées.</p>`);
+      box.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", async () => {
+        try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Copié"; } catch (e) { /* le texte reste affiché */ }
+        setTimeout(() => (b.textContent = b.dataset.copy), 2000);
+      }));
       return;
     }
     const left = L.restant ?? L.parJour ?? 3;
     const quota = me.staff ? "Une idée par suggestion." : left > 0 ? `Encore ${left} idée${left > 1 ? "s" : ""} possible${left > 1 ? "s" : ""} aujourd'hui. Une idée par suggestion.`
       : "Tu as proposé tes idées du jour : reviens demain !";
+    box.className = "sugg-account card sugg-write";
     box.innerHTML = `${flash}
-      <div class="sugg-me">${img(face(me.uuid, 64), "face")}<div><strong>${esc(me.pseudo)}</strong><span class="small muted">${me.staff ? "Staff : tu peux changer les statuts, répondre et supprimer" : "Connecté avec ton compte Minecraft"}</span></div>
-        <button class="btn ghost sm" type="button" data-act="logout">Se déconnecter</button></div>
+      <h2>Ta suggestion</h2>
+      <div class="sugg-me">${img(face(me.uuid, 64), "face")}<div><strong>${esc(me.pseudo)}</strong><span class="small muted">Ton pseudo et ta tête s'afficheront à côté de ton idée${me.staff ? ". Staff : tu peux aussi gérer les idées" : ""}.</span></div>
+        <button class="linkish" type="button" data-act="logout">Ce n'est pas toi ?</button></div>
       ${S.d.ouvert === false ? `<p class="muted">Les suggestions sont fermées pour le moment.</p>` : `
       <form class="sugg-form" novalidate>
         <label for="sg-title">Ton idée</label>
@@ -1061,7 +1072,7 @@
         <label for="sg-text">Détails <span class="muted">(facultatif)</span></label>
         <textarea id="sg-text" name="texte" rows="4" maxlength="${L.texte || 700}" placeholder="Comment ça marcherait ? Pourquoi ce serait bien ?"></textarea>
         <div class="sugg-row"><span class="small muted">${quota}</span>
-          <button class="btn" type="submit"${!me.staff && left <= 0 ? " disabled" : ""}>Envoyer l'idée</button></div>
+          <button class="btn" type="submit"${!me.staff && left <= 0 ? " disabled" : ""}>Envoyer ma suggestion</button></div>
         <p class="sugg-err" role="alert" hidden></p>
       </form>`}`;
   }
@@ -1136,12 +1147,12 @@
     const id = li ? Number(li.dataset.id) : 0;
     if (b.dataset.act === "logout") {
       await api("deconnexion", {});
-      S.flash = { ok: true, text: "Tu es déconnecté du site." };
+      S.flash = { ok: true, text: "C'est fait. Pour écrire à ton nom, tape /suggestion en jeu et clique sur le lien." };
       await loadSugg(S);
       drawAccount(page, S);
       drawList(page, S);
     } else if (b.dataset.act === "vote") {
-      if (!S.d.moi?.connecte) return sayAbove(page, S, false, "Pour voter, connecte-toi : tape /site en jeu.");
+      if (!S.d.moi?.connecte) return sayAbove(page, S, false, "Pour voter, tape /suggestion en jeu et clique sur le lien.");
       b.disabled = true;
       const r = await api(`suggestions/${id}/vote`, {});
       if (r.ok) swapItem(page, S, r.data);
@@ -1171,22 +1182,14 @@
     const btn = f.querySelector("button[type=submit]");
     const fail = (t) => { if (err) { err.textContent = t; err.hidden = false; } else sayAbove(page, S, false, t); };
     if (err) err.hidden = true;
-    if (f.classList.contains("sugg-login")) {
-      const code = f.elements.code.value.trim();
-      if (code.replace(/[^A-Za-z0-9]/g, "").length !== 8) return fail("Le code fait 8 caractères, par exemple ABCD-EFGH. Tape /site en jeu pour l'avoir.");
-      btn.disabled = true;
-      const r = await api("connexion", { code });
-      btn.disabled = false;
-      if (!r.ok) return fail(apiError(r, "Connexion impossible."));
-      S.flash = { ok: true, text: `Connecté en tant que ${r.data.pseudo} : tu peux proposer tes idées et voter.` };
-    } else if (f.classList.contains("sugg-form")) {
+    if (f.classList.contains("sugg-form")) {
       const titre = f.elements.titre.value.trim();
       if (titre.length < 5) return fail("Donne un titre à ton idée (5 caractères au moins).");
       btn.disabled = true;
       const r = await api("suggestions", { titre, texte: f.elements.texte.value.trim() });
       btn.disabled = false;
       if (!r.ok) return fail(apiError(r, "Envoi impossible pour l'instant."));
-      S.flash = { ok: true, text: "Merci ! Ton idée est en ligne : les autres joueurs peuvent voter pour elle." };
+      S.flash = { ok: true, text: "Merci ! Ton idée est en ligne, juste en dessous : les autres joueurs peuvent voter pour elle." };
       SG.sort = "date";
       SG.filter = "toutes";
     } else if (f.matches("[data-staff]")) {
@@ -1264,7 +1267,7 @@
         <p>Pour éviter la triche aux récompenses (parrainage, votes, accueil), le serveur garde une <strong>empreinte</strong> de ton adresse IP, calculée de façon à ne pas pouvoir retrouver l'adresse elle-même. Les messages privés et les signalements sont notés dans le journal du serveur, pour pouvoir traiter un signalement.</p>
         <p>Ton pseudo, ta tête, tes succès, tes métiers et tes classements sont affichés publiquement sur ce site, comme les idées que tu proposes sur la page Suggestions (avec ton pseudo et ta tête).</p>
         <h2>Sur ce site</h2>
-        <p>Le site n'utilise aucun outil de mesure d'audience. Il dépose un seul cookie, et seulement si tu te connectes avec <code class="cmd">/site</code> pour proposer des idées : il te garde connecté pendant 30 jours au plus. <code class="cmd">/site deconnexion</code> en jeu te déconnecte de tous tes appareils. Pour afficher les skins, il charge des images depuis <strong>mc-heads.net</strong>, et l'icône du serveur depuis <strong>api.mcstatus.io</strong> : ces services reçoivent donc ton adresse IP, comme pour toute image chargée sur Internet. Les polices sont hébergées sur le site lui-même.</p>
+        <p>Le site n'utilise aucun outil de mesure d'audience. Il dépose un seul cookie, et seulement si tu arrives par le lien de <code class="cmd">/suggestion</code> : il permet de proposer et de voter à ton nom pendant 30 jours au plus. <code class="cmd">/suggestion deconnexion</code> en jeu l'annule sur tous tes appareils. Pour afficher les skins, il charge des images depuis <strong>mc-heads.net</strong>, et l'icône du serveur depuis <strong>api.mcstatus.io</strong> : ces services reçoivent donc ton adresse IP, comme pour toute image chargée sur Internet. Les polices sont hébergées sur le site lui-même.</p>
         <h2>Durée et suppression</h2>
         <p>Les données sont gardées tant que le serveur existe. Tu peux demander à les consulter ou à les faire supprimer (droits prévus par le RGPD) en écrivant à ${v("contact", "adresse e-mail de contact")}. Tu peux aussi saisir la CNIL (cnil.fr).</p>
         <p class="small muted">Responsable du traitement : ${v("editeur", "nom du responsable")}. Dernière mise à jour : ${v("mise-a-jour", "date")}.</p>

@@ -121,9 +121,9 @@ jobs:
           async function close() { if (bot.currentWindow) bot.closeWindow(bot.currentWindow); await sleep(800) }
           async function siteCode() {
             let code = null
-            const grab = m => { const k = m.match(/\b([A-Z2-9]{4}-[A-Z2-9]{4})\b/); if (k) code = k[1] }
+            const grab = m => { const k = m.match(/cle=([A-Z2-9]{8})/); if (k) code = k[1] }
             bot.on('messagestr', grab)
-            await cmd('/site', 3000)
+            await cmd('/suggestion', 3000)
             bot.removeListener('messagestr', grab)
             log('SITE code', code)
             return code

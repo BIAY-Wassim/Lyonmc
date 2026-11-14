@@ -44,14 +44,15 @@ import java.util.regex.Pattern;
 /**
  * Le site lyonmc.fr et le serveur : connexion des joueurs avec leur compte Minecraft, et API de la page Suggestions.
  * <ul>
- *   <li>En jeu, /site donne un lien (et un code) valable 10 minutes, utilisable une seule fois.</li>
+ *   <li>En jeu, /suggestion donne un lien (lyonmc.fr/suggestions?cle=...) valable 10 minutes, utilisable une seule fois,
+ *   comme la vérification de NameMC.</li>
  *   <li>Le site l'échange contre un cookie de session signé, valable 30 jours.</li>
  *   <li>Le plugin répond sur 127.0.0.1:8135 ; Apache relaie lyonmc.fr/api/ vers cette adresse.</li>
  * </ul>
  */
 final class Site implements Listener {
 
-    /** Compte du site : un joueur qui s'est connecté au moins une fois avec /site. */
+    /** Compte du site : un joueur venu au moins une fois par le lien de /suggestion. */
     record Account(UUID uuid, String name, boolean staff, long validAfter) {
     }
 
@@ -128,7 +129,7 @@ final class Site implements Listener {
 
     synchronized void save() {
         YamlConfiguration y = new YamlConfiguration();
-        y.options().setHeader(List.of("Comptes du site lyonmc.fr (les joueurs s'y connectent avec /site en jeu).",
+        y.options().setHeader(List.of("Comptes du site lyonmc.fr (les joueurs y arrivent par le lien de /suggestion en jeu).",
                 "secret : la clé des sessions du site. Ne la donne à personne ; la supprimer déconnecte tout le monde du site."));
         y.set("secret", Base64.getEncoder().encodeToString(secret));
         for (Account a : accounts.values()) {
@@ -172,7 +173,7 @@ final class Site implements Listener {
         saveSoon();
     }
 
-    // ───────────────────────────── /site ─────────────────────────────
+    // ───────────────────────────── /suggestion ─────────────────────────────
 
     String siteUrl() {
         String u = plugin.getConfig().getString("site.adresse", "https://lyonmc.fr").trim();
@@ -199,8 +200,8 @@ final class Site implements Listener {
             return;
         }
         if (server == null) {
-            plugin.msg(p, "<gray>Le site : <click:open_url:'" + url + "'><white><u>" + display(url) + "</u></white></click> "
-                    + "<dark_gray>(la connexion au site est indisponible pour l'instant)");
+            plugin.msg(p, "<gray>Les suggestions du site sont indisponibles pour l'instant. Le site : <click:open_url:'" + url + "'><white><u>"
+                    + display(url) + "</u></white></click>");
             return;
         }
         long now = System.currentTimeMillis();
@@ -215,14 +216,12 @@ final class Site implements Listener {
         String code = newCode();
         codes.put(code, new Code(p.getUniqueId(), p.getName(), Moderation.staff(p), now + CODE_MS));
         codeOf.put(p.getUniqueId(), code);
-        String pretty = code.substring(0, 4) + "-" + code.substring(4);
-        String link = url + "/suggestions#code=" + code;
-        p.sendMessage(plugin.lyon().prefixed("<gray>Connecte-toi au site pour proposer tes idées et voter :"));
-        p.sendMessage(plugin.parse("  <click:open_url:'" + link + "'><hover:show_text:'<gray>Ouvre " + display(url) + "/suggestions, connecté en tant que <white>"
-                + p.getName() + "'><green><bold>➤ Se connecter au site</bold></green></hover></click>"));
-        p.sendMessage(plugin.parse("  <gray>Ou entre ce code sur la page Suggestions : <click:copy_to_clipboard:'" + pretty
-                + "'><hover:show_text:'<gray>Copier le code'><white>" + pretty + "</white></hover></click>"));
-        p.sendMessage(plugin.parse("  <dark_gray>Valable 10 minutes, une seule fois. Ne le donne à personne."));
+        // Comme NameMC : un lien à cliquer, qui ouvre la page pour écrire sa suggestion
+        String link = url + "/suggestions?cle=" + code;
+        p.sendMessage(plugin.lyon().prefixed("<green>Clique sur le lien pour écrire ta suggestion sur le site :"));
+        p.sendMessage(plugin.parse("<click:open_url:'" + link + "'><hover:show_text:'<gray>Ouvre la page Suggestions en tant que <white>" + p.getName()
+                + "'><aqua><u>" + link + "</u></aqua></hover></click>"));
+        p.sendMessage(plugin.parse("<dark_gray>Lien valable 10 minutes, rien que pour toi : ne le partage pas."));
     }
 
     private String newCode() {
@@ -386,7 +385,7 @@ final class Site implements Listener {
             ex.getResponseHeaders().add("Set-Cookie", setCookie("", 0));
             return me(null);
         }
-        if (me == null) throw new ApiError(401, "Connecte-toi d'abord : tape /site en jeu.");
+        if (me == null) throw new ApiError(401, "Tape /suggestion en jeu et clique sur le lien.");
         long now = System.currentTimeMillis();
         long[] count = actions.compute(me.uuid(), (k, v) -> v == null || now - v[0] > 60_000L ? new long[]{now, 1} : new long[]{v[0], v[1] + 1});
         if (count[1] > 30) throw new ApiError(429, "Doucement : réessaie dans une minute.");
@@ -412,7 +411,7 @@ final class Site implements Listener {
         Code c = code.length() == 8 ? codes.remove(code) : null;
         if (c == null || c.expires() < now) {
             failures.compute(ip, (k, v) -> v == null || now - v[1] > FAIL_WINDOW ? new long[]{1, now} : new long[]{v[0] + 1, v[1]});
-            throw new ApiError(400, "Code invalide ou expiré. Tape /site en jeu pour en avoir un nouveau.");
+            throw new ApiError(400, "Ce lien n'est plus valable (il marche 10 minutes, une seule fois). Tape /suggestion en jeu pour en avoir un nouveau.");
         }
         codeOf.remove(c.uuid(), code);
         Account old = accounts.get(c.uuid());
@@ -423,7 +422,7 @@ final class Site implements Listener {
         plugin.getLogger().info("Site : " + a.name() + " s'est connecté au site.");
         Bukkit.getScheduler().runTask(plugin, () -> {
             Player p = Bukkit.getPlayer(a.uuid());
-            if (p != null) p.sendMessage(plugin.lyon().prefixed("<green>✔</green> <gray>Tu es connecté au site <white>" + display(siteUrl()) + "</white>."));
+            if (p != null) p.sendMessage(plugin.lyon().prefixed("<green>✔</green> <gray>C'est bon, tu peux écrire ta suggestion sur le site."));
         });
         return me(a);
     }

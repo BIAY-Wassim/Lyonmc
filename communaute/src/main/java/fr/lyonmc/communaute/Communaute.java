@@ -94,7 +94,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         getServer().getServicesManager().register(fr.lyonmc.achievements.api.ScreenPanel.class, new Panel(this), this, ServicePriority.Normal);
 
         for (String c : List.of("vote", "premierspas", "parrain", "objectif", "bienvenue", "communaute", "aide", "regles", "astuces",
-                "ami", "msg", "r", "ignorer", "espion", "report", "signalements", "mute", "unmute", "avertir", "tempban", "sanctions", "site")) {
+                "ami", "msg", "r", "ignorer", "espion", "report", "signalements", "mute", "unmute", "avertir", "tempban", "sanctions", "suggestion")) {
             var cmd = getCommand(c);
             if (cmd != null) {
                 cmd.setExecutor(this);
@@ -102,7 +102,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             }
         }
         for (Player p : Bukkit.getOnlinePlayers()) loyalty.joined(p, 0);
-        // Site : connexion des joueurs (/site) et page Suggestions
+        // Site : page Suggestions (lien donné en jeu par /suggestion)
         site.start();
         suggestions.export();
         startTasks();
@@ -385,7 +385,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             case "espion" -> messages.spy(p);
             case "report" -> reports.command(p, args);
             case "signalements" -> reports.staffCommand(p, args);
-            case "site" -> site.command(p, args);
+            case "suggestion" -> site.command(p, args);
             default -> {
             }
         }
@@ -465,7 +465,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             out.add("top");
             Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
         } else if (name.equals("premierspas") && args.length == 1) out.addAll(List.of("cacher", "afficher"));
-        else if (name.equals("site") && args.length == 1) out.add("deconnexion");
+        else if (name.equals("suggestion") && args.length == 1) out.add("deconnexion");
         else if (name.equals("communaute") && args.length == 2 && args[0].equalsIgnoreCase("vote")) Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
         else if (name.equals("aide") && args.length == 1) {
             var sec = section("aide.sujets");

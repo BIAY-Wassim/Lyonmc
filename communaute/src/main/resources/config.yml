@@ -428,7 +428,8 @@ signalements:
 # Commandes du staff (permission communaute.staff, les op l'ont) :
 #   /mute <joueur> [durée] [raison] · /unmute <joueur> · /avertir <joueur> <raison>
 #   /tempban <joueur> <durée> [raison] · /sanctions <joueur> (historique)
-# Site lyonmc.fr : les joueurs s'y connectent avec /site en jeu (lien ou code valable 10 minutes).
+# Site lyonmc.fr : en jeu, /suggestion donne un lien (valable 10 minutes, une seule fois) qui ouvre la page
+# Suggestions au nom du joueur, comme la vérification de NameMC.
 # Le plugin répond sur api.adresse:api.port, et Apache relaie lyonmc.fr/api/ vers cette adresse
 # (voir deploy/lyonmc.conf). Après un changement : /communaute reload.
 site:

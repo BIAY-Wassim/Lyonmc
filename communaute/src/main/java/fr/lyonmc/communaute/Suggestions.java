@@ -30,7 +30,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 /**
- * Boîte à idées du site (lyonmc.fr/suggestions) : les joueurs connectés avec /site proposent des idées et votent ;
+ * Boîte à idées du site (lyonmc.fr/suggestions) : les joueurs venus par le lien de /suggestion proposent des idées et votent ;
  * le staff leur donne un statut et peut répondre. Tout est enregistré dans suggestions.yml, et publié dans
  * siteweb/data/suggestions.json (la liste reste lisible sur le site quand le serveur est éteint).
  */
