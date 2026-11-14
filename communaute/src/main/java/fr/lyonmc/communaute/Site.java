@@ -86,6 +86,8 @@ final class Site implements Listener {
     private final Map<UUID, Account> accounts = new ConcurrentHashMap<>();
     private final Map<String, long[]> failures = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastCode = new ConcurrentHashMap<>();
+    /** Actions de chaque compte (idées, votes...) sur la dernière minute : début de la minute et nombre. */
+    private final Map<UUID, long[]> actions = new ConcurrentHashMap<>();
     private volatile byte[] secret;
     private HttpServer server;
     private ExecutorService executor;
@@ -237,6 +239,7 @@ final class Site implements Listener {
         codeOf.entrySet().removeIf(e -> !codes.containsKey(e.getValue()));
         failures.entrySet().removeIf(e -> now - e.getValue()[1] > FAIL_WINDOW);
         lastCode.entrySet().removeIf(e -> now - e.getValue() > 60_000L);
+        actions.entrySet().removeIf(e -> now - e.getValue()[0] > 60_000L);
     }
 
     // ───────────────────────────── Sessions ─────────────────────────────
@@ -384,6 +387,9 @@ final class Site implements Listener {
             return me(null);
         }
         if (me == null) throw new ApiError(401, "Connecte-toi d'abord : tape /site en jeu.");
+        long now = System.currentTimeMillis();
+        long[] count = actions.compute(me.uuid(), (k, v) -> v == null || now - v[0] > 60_000L ? new long[]{now, 1} : new long[]{v[0], v[1] + 1});
+        if (count[1] > 30) throw new ApiError(429, "Doucement : réessaie dans une minute.");
         Suggestions s = plugin.suggestions();
         if (path.equals("/api/suggestions")) return s.create(me, str(body, "titre"), str(body, "texte"));
         Matcher m = ACTION.matcher(path);
