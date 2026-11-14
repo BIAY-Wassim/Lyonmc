@@ -533,6 +533,9 @@ public final class WebExportService implements Listener {
         boss.put("name", WebText.plain(plugin.text().parse(plugin.configs().events().getString("boss.name", "Le Colosse"))));
         boss.put("schedule", plugin.configs().events().getStringList("boss.schedule"));
         boss.put("duration", plugin.configs().events().getInt("boss.duration-minutes", 15));
+        // Mort dans l'arène pendant le combat : stuff gardé contre quelques pièces
+        boss.put("protection", plugin.configs().events().getBoolean("boss.protection.enabled"));
+        boss.put("deathCost", plugin.configs().events().getLong("boss.protection.malus-pieces"));
         Map<String, Object> bossRewards = new LinkedHashMap<>();
         for (String k : List.of("participation", "top1", "top2", "top3", "last-hit")) {
             bossRewards.put(k, bundle(Bundle.of(plugin.configs().events().getConfigurationSection("boss.rewards." + k))));
