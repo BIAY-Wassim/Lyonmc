@@ -27,7 +27,7 @@ commands:
     permission: lyonmc.succes.use
   carte:
     description: Lien vers la Dynmap (lyonmc.fr)
-    aliases: [map, site, dynmap]
+    aliases: [map, dynmap]
     permission: lyonmc.succes.use
   titres:
     description: Choisir son titre

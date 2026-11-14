@@ -11,7 +11,7 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 37
+    timeout-minutes: 39
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
@@ -81,6 +81,16 @@ jobs:
           const log = (...a) => console.log(role, ...a)
           let gradeSignal = false
           let filtreDone = false, muetDone = false
+          // API du site (plugin COMMUNAUTE), comme l'appelle la page Suggestions
+          let siteCookie = ''
+          const API = 'http://127.0.0.1:8135/api/'
+          async function call(path, body, cookie, extra = {}) {
+            const opt = body === undefined ? { headers: {} } : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+            if (cookie) opt.headers.Cookie = cookie
+            Object.assign(opt.headers, extra)
+            try { const r = await fetch(API + path, opt); return { s: r.status, t: (await r.text()).slice(0, 500), c: r.headers.get('set-cookie') || '' } }
+            catch (e) { return { s: 0, t: e.message, c: '' } }
+          }
           bot.on('messagestr', async (m) => {
             if (role !== 'Acheteur') return
             if (m.includes('test-filtre') && !filtreDone) {
@@ -93,6 +103,7 @@ jobs:
             if (m.includes('test-muet') && !muetDone) {
               muetDone = true
               await sleep(800); bot.chat('je suis muet ?'); await sleep(1000); bot.chat('/msg Testeur message pendant le mute')
+              if (siteCookie) { const r = await call('suggestions', { titre: 'Une idée pendant le mute' }, siteCookie); log('SITE2 idee muet', r.s, r.t) }
             }
           })
           bot.on('messagestr', m => { if (m.trim()) log('CHAT', m); if (m.includes('test-chat-grade')) gradeSignal = true })
@@ -108,7 +119,47 @@ jobs:
             log('CLICK', slot, it ? it.name : 'vide'); await bot.clickWindow(slot, 0, 0).catch(e => log('CLICKERR', e.message)); await sleep(wait)
           }
           async function close() { if (bot.currentWindow) bot.closeWindow(bot.currentWindow); await sleep(800) }
+          async function siteCode() {
+            let code = null
+            const grab = m => { const k = m.match(/\b([A-Z2-9]{4}-[A-Z2-9]{4})\b/); if (k) code = k[1] }
+            bot.on('messagestr', grab)
+            await cmd('/site', 3000)
+            bot.removeListener('messagestr', grab)
+            log('SITE code', code)
+            return code
+          }
+          async function siteTesteur() {
+            let r = await call('moi'); log('SITE moi anonyme', r.s, r.t)
+            r = await call('suggestions', { titre: 'Sans connexion' }); log('SITE idee anonyme', r.s, r.t)
+            const code = await siteCode(); if (!code) return
+            r = await call('connexion', { code: 'ZZZZ-2222' }); log('SITE mauvais code', r.s, r.t)
+            r = await call('connexion', { code: code.toLowerCase() }); log('SITE connexion', r.s, r.t, r.c.replace(/=[^;]+/, '=(jeton)'))
+            const cookie = r.c.split(';')[0]
+            r = await call('connexion', { code }); log('SITE code reutilise', r.s, r.t)
+            r = await call('moi', undefined, cookie); log('SITE moi', r.s, r.t)
+            r = await call('moi', undefined, cookie.slice(0, -2) + 'xx'); log('SITE cookie falsifie', r.s, r.t)
+            r = await call('suggestions', { titre: 'Un /market avec des parcelles à louer', texte: 'Idée de Rinkael :\nchaque joueur loue une parcelle au spawn.' }, cookie); log('SITE idee', r.s, r.t)
+            r = await call('suggestions', { titre: 'UN /MARKET AVEC DES PARCELLES À LOUER' }, cookie); log('SITE doublon', r.s, r.t)
+            r = await call('suggestions', { titre: 'espece de connard' }, cookie); log('SITE filtre', r.s, r.t)
+            r = await call('suggestions', { titre: 'Rejoignez monserveur.fr' }, cookie); log('SITE pub', r.s, r.t)
+            r = await call('suggestions/1/vote', {}, cookie); log('SITE vote propre idee', r.s, r.t)
+            r = await call('suggestions', { titre: 'Une idée venue d ailleurs' }, cookie, { Origin: 'https://pirate.example' }); log('SITE autre site', r.s, r.t)
+            r = await call('suggestions/1/statut', { statut: 'acceptee', reponse: 'Bonne idée, on la prépare !' }, cookie); log('SITE statut', r.s, r.t)
+            r = await call('suggestions', undefined, cookie); log('SITE liste', r.s, r.t)
+          }
+          async function siteAcheteur() {
+            const code = await siteCode(); if (!code) return
+            let r = await call('connexion', { code }); log('SITE2 connexion', r.s, r.t)
+            siteCookie = r.c.split(';')[0]
+            r = await call('suggestions/1/vote', {}, siteCookie); log('SITE2 vote', r.s, r.t)
+            r = await call('suggestions/1/statut', { statut: 'refusee' }, siteCookie); log('SITE2 statut', r.s, r.t)
+            r = await call('suggestions', { titre: "Des courses d'élytres le vendredi" }, siteCookie); log('SITE2 idee', r.s, r.t)
+            let id = 0; try { id = JSON.parse(r.t).id } catch (e) {}
+            r = await call('suggestions/' + id + '/supprimer', {}, siteCookie); log('SITE2 suppression', r.s, r.t)
+            r = await call('deconnexion', {}, siteCookie); log('SITE2 deconnexion', r.s, r.c.split(';').slice(0, 2).join(';'))
+          }
           async function testeur() {
+            await siteTesteur()
             await cmd('/ami ajouter Acheteur', 2000)
             await cmd('salut tout le monde')
             await cmd('Acheteur regarde mon [objet] !', 2000)
@@ -147,6 +198,15 @@ jobs:
             await cmd('/lmc holo liste'); await cmd('/hub', 5000); await cmd('/lobby', 5000)
             await cmd('/titres'); await close()
             await cmd('/gamemode creative'); await cmd('/boss arene'); await cmd('/boss lancer', 4000)
+            // Mort dans l'arène pendant le combat : stuff gardé, -100 pièces, lenteur à partir de la 2e mort
+            await cmd('/gamerule keepInventory false', 1000); await cmd('/gamemode survival', 1000); await cmd('/give Testeur emerald 7', 6000)
+            for (let k = 1; k <= 2; k++) {
+              await cmd('/kill Testeur', 4500)
+              log('MORT ' + k, 'émeraudes', bot.inventory.items().filter(i => i.name === 'emerald').reduce((a, i) => a + i.count, 0), 'effets', JSON.stringify(bot.entity.effects))
+            }
+            await cmd('/money', 1500)
+            await cmd('/gamerule keepInventory true', 1000); await cmd('/gamemode creative', 1000)
+            bot.chat('/tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]'); await sleep(1500)
             await cmd('/item replace entity Testeur weapon.mainhand with minecraft:netherite_sword[enchantments={sharpness:255}]', 1500)
             await cmd('/effect give Testeur strength 600 40 true', 1000)
             for (let i = 0; i < 110; i++) {
@@ -158,7 +218,23 @@ jobs:
             }
             log('BOSS FIN')
             await sleep(3000)
-            await cmd('/gamemode survival'); await cmd('/money'); await cmd('/parcours'); await close()
+            await cmd('/gamemode survival')
+            // Œuf de l'End : le succès est donné, puis l'œuf repart vers le portail
+            await cmd('/give Testeur dragon_egg', 7000)
+            log('OEUF', bot.inventory.items().some(i => i.name === 'dragon_egg') ? 'encore dans l inventaire' : 'rendu')
+            // Shear Brilliance : retirer l'armure de son loup avec des cisailles
+            await cmd('/summon wolf ~2 ~ ~ {Tags:["testloup"],NoAI:1b}', 1500)
+            await cmd('/data modify entity @e[type=wolf,tag=testloup,limit=1] Owner set from entity Testeur UUID', 1500)
+            await cmd('/item replace entity @e[type=wolf,tag=testloup,limit=1] armor.body with minecraft:wolf_armor', 1500)
+            await cmd('/give Testeur shears', 1500)
+            try {
+              const sh = bot.inventory.items().find(i => i.name === 'shears'); if (sh) await bot.equip(sh, 'hand')
+              const wolf = bot.nearestEntity(e => e.name === 'wolf')
+              log('LOUP', wolf ? wolf.position.toString() : 'introuvable')
+              if (wolf) { await bot.lookAt(wolf.position.offset(0, 0.6, 0)); await bot.activateEntity(wolf); await sleep(2500) }
+            } catch (er) { log('LOUPERR', er.message) }
+            log('LOUP INV', bot.inventory.items().map(i => i.name).filter(n => n.includes('wolf') || n.includes('shears')).join(', '))
+            await cmd('/money'); await cmd('/parcours'); await close()
             await cmd('/rtp', 12000); await cmd('/ressources', 14000)
             log('EFFETS', JSON.stringify(bot.entity.effects))
             await cmd('/give Testeur iron_pickaxe'); await cmd('/lmc metier Testeur mineur 1')
@@ -238,7 +314,8 @@ jobs:
             await cmd('/ami accepter', 2000)
             await cmd('/msg Testeur coucou', 2000)
             await cmd('/ami'); await close()
-            await sleep(41000)
+            await sleep(5000); await siteAcheteur()
+            await sleep(30000)
             for (let i = 0; i < 25; i++) {
               await cmd('/hdv', 2000)
               const it = bot.currentWindow && bot.currentWindow.slots[0]
@@ -268,14 +345,14 @@ jobs:
           (
             for i in $(seq 1 240); do grep -q "Done (" logs/latest.log 2>/dev/null && break; sleep 1; done
             sleep 3
-            (cd ../bot && timeout 1090 node bot.js Testeur > ../bot.log 2>&1 &)
+            (cd ../bot && timeout 1150 node bot.js Testeur > ../bot.log 2>&1 &)
             (cd ../bot && timeout 900 node bot.js Acheteur > ../bot2.log 2>&1 &)
             sleep 12
             for c in "communaute vote Acheteur site-test" "communaute vote Acheteur site-test" "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob" "lmc donner Acheteur concours" "lmc donner Testeur inconnu"; do echo "$c"; sleep 1; done
             sleep 20; echo "deop Acheteur"; sleep 2; echo "say test-filtre"; sleep 14
             echo "mute Acheteur 2m test du mute"; sleep 1; echo "say test-muet"; sleep 6
             echo "unmute Acheteur"; sleep 1; echo "avertir Acheteur test d'avertissement"; sleep 1; echo "sanctions Acheteur"; sleep 1; echo "op Acheteur"
-            sleep 745
+            sleep 790
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
             echo "say test-chat-grade"; sleep 30
@@ -283,7 +360,7 @@ jobs:
             sleep 8
             echo "stop"
           ) > in &
-          timeout 1190 "$JAVA_HOME/bin/java" -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
+          timeout 1250 "$JAVA_HOME/bin/java" -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
       - name: Analyse des journaux
         if: always()
         run: |
@@ -292,6 +369,8 @@ jobs:
           cd srv
           echo "=== LyonAchievements ==="; grep -n "LyonAchievements" logs/latest.log | head -60
           echo "=== Nouveautés ==="; grep -nE "vote|Vérification|installé|HUB FAIT|PARKOUR DEPART|Métier|Mineur|Parkour|parkour|Signalement|MP\]|ami|Lot|lot|Astuce|Centre|Règlement" ../bot.log ../bot2.log logs/latest.log | head -80 || true
+          echo "=== Site et suggestions ==="; grep -nE "SITE|Site :|Suggestion" ../bot.log ../bot2.log logs/latest.log | head -80 || true
+          echo "=== Boss, œuf, loup ==="; grep -nE "Boss :|Boss mondial|MORT|OEUF|Œuf|LOUP|Shear|BOSSBAR" ../bot.log logs/latest.log | head -80 || true
           echo "=== Erreurs ==="; grep -nE "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -80 || true
           grep -E "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -10 | while IFS= read -r l; do echo "::error::$l"; done
           grep -E "BOT|KICKED|BOTERR|NOWINDOW|CLICKERR" ../bot.log | head -10 | while IFS= read -r l; do echo "::notice::$l"; done
@@ -306,13 +385,14 @@ jobs:
           mkdir -p /tmp/logs && cp bot.log bot2.log /tmp/logs/ 2>/dev/null || true
           cp srv/logs/latest.log /tmp/logs/server.log 2>/dev/null || true
           mkdir -p /tmp/logs/data && cp srv/siteweb/data/*.json /tmp/logs/data/ 2>/dev/null || true
+          cp srv/plugins/COMMUNAUTE/suggestions.yml /tmp/logs/data/ 2>/dev/null || true
           cp target/LyonAchievements-*.jar hub/build/libs/HUB-*.jar communaute/build/libs/COMMUNAUTE-*.jar /tmp/logs/ 2>/dev/null || true
           git config user.name "ci"
           git config user.email "ci@users.noreply.github.com"
           git checkout --orphan ci-logs
           git rm -rq --cached . || true
           cp /tmp/logs/*.log . 
-          mkdir -p data && cp /tmp/logs/data/*.json data/ 2>/dev/null || true
+          mkdir -p data && cp /tmp/logs/data/*.json /tmp/logs/data/*.yml data/ 2>/dev/null || true
           cp /tmp/logs/LyonAchievements-*.jar /tmp/logs/HUB-*.jar /tmp/logs/COMMUNAUTE-*.jar . 2>/dev/null || true
           git add bot.log bot2.log server.log data || true
           for f in LyonAchievements-*.jar HUB-*.jar COMMUNAUTE-*.jar; do if [ -f "$f" ]; then git add "$f"; fi; done

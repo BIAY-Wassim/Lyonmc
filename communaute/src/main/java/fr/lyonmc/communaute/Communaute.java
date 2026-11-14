@@ -46,6 +46,8 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
     private Messages messages;
     private Reports reports;
     private Moderation moderation;
+    private Site site;
+    private Suggestions suggestions;
     private final List<BukkitTask> tasks = new ArrayList<>();
 
     @Override
@@ -68,6 +70,10 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         messages = new Messages(this);
         reports = new Reports(this);
         moderation = new Moderation(this);
+        suggestions = new Suggestions(this);
+        suggestions.load();
+        site = new Site(this);
+        site.load();
 
         var pm = getServer().getPluginManager();
         pm.registerEvents(welcome, this);
@@ -79,6 +85,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         pm.registerEvents(messages, this);
         pm.registerEvents(reports, this);
         pm.registerEvents(moderation, this);
+        pm.registerEvents(site, this);
         votes.hookVotifier();
         votes.logSites();
 
@@ -87,7 +94,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         getServer().getServicesManager().register(fr.lyonmc.achievements.api.ScreenPanel.class, new Panel(this), this, ServicePriority.Normal);
 
         for (String c : List.of("vote", "premierspas", "parrain", "objectif", "bienvenue", "communaute", "aide", "regles", "astuces",
-                "ami", "msg", "r", "ignorer", "espion", "report", "signalements", "mute", "unmute", "avertir", "tempban", "sanctions")) {
+                "ami", "msg", "r", "ignorer", "espion", "report", "signalements", "mute", "unmute", "avertir", "tempban", "sanctions", "site")) {
             var cmd = getCommand(c);
             if (cmd != null) {
                 cmd.setExecutor(this);
@@ -95,12 +102,16 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             }
         }
         for (Player p : Bukkit.getOnlinePlayers()) loyalty.joined(p, 0);
+        // Site : connexion des joueurs (/site) et page Suggestions
+        site.start();
+        suggestions.export();
         startTasks();
         getLogger().info("COMMUNAUTE activé : " + store.all().size() + " joueurs connus.");
     }
 
     @Override
     public void onDisable() {
+        if (site != null) site.stop();
         for (BukkitTask t : tasks) t.cancel();
         tasks.clear();
         if (welcome != null) welcome.hideAll();
@@ -127,6 +138,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, export::export, 200L, 1200L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, votes::tickChecks, 40L, 30L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, votes::tickWatch, 600L, 600L));
+        tasks.add(Bukkit.getScheduler().runTaskTimer(this, site::cleanup, 600L, 600L));
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, () -> store.save(true), 2400L, 2400L));
     }
 
@@ -220,6 +232,18 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
 
     public Moderation moderation() {
         return moderation;
+    }
+
+    Site site() {
+        return site;
+    }
+
+    Suggestions suggestions() {
+        return suggestions;
+    }
+
+    WebExport webExport() {
+        return export;
     }
 
     /** Section de la config (celle du .jar si le fichier du serveur ne l'a pas). */
@@ -361,6 +385,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             case "espion" -> messages.spy(p);
             case "report" -> reports.command(p, args);
             case "signalements" -> reports.staffCommand(p, args);
+            case "site" -> site.command(p, args);
             default -> {
             }
         }
@@ -375,6 +400,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
                 addMissingSections();
                 votes.logSites();
                 happyHours.reload();
+                site.start();
                 msg(s, "<gray>COMMUNAUTE rechargé.");
             }
             case "vote" -> {
@@ -439,6 +465,7 @@ public final class Communaute extends JavaPlugin implements TabExecutor {
             out.add("top");
             Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
         } else if (name.equals("premierspas") && args.length == 1) out.addAll(List.of("cacher", "afficher"));
+        else if (name.equals("site") && args.length == 1) out.add("deconnexion");
         else if (name.equals("communaute") && args.length == 2 && args[0].equalsIgnoreCase("vote")) Bukkit.getOnlinePlayers().forEach(p -> out.add(p.getName()));
         else if (name.equals("aide") && args.length == 1) {
             var sec = section("aide.sujets");

@@ -329,6 +329,21 @@ public final class Moderation implements Listener {
         }
     }
 
+    /** Texte écrit sur le site (suggestions) : null s'il passe le filtre du chat, sinon la raison du refus. */
+    String refuse(String text) {
+        ConfigurationSection c = cfg();
+        if (c == null || !c.getBoolean("filtre.enabled", true) || text == null) return null;
+        if (c.getBoolean("filtre.anti-pub", true) && advertises(text, c)) return "Pas de publicité : retire l'adresse de site ou de serveur.";
+        String norm = simplify(text);
+        for (String w : c.getStringList("filtre.mots-interdits")) {
+            if (w.isBlank()) continue;
+            if (Pattern.compile("(?<![a-z0-9])" + Pattern.quote(simplify(w)) + "(?![a-z0-9])").matcher(norm).find()) {
+                return "Langage interdit sur LyonMC : reformule ton idée.";
+            }
+        }
+        return null;
+    }
+
     private boolean advertises(String text, ConfigurationSection c) {
         String low = text.toLowerCase(Locale.ROOT);
         for (String ok : c.getStringList("filtre.sites-autorises")) low = low.replace(ok.toLowerCase(Locale.ROOT), "");

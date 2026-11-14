@@ -32,11 +32,27 @@ boss:
   name: "<#ff6b6b><bold>Le Colosse</bold>"
   entity: WITHER_SKELETON
   scale: 2.6
-  # Vie du boss : base + par joueur présent au début (pas de limite)
+  # Vie du boss : base + par combattant. Elle est recalculée toutes les 5 secondes pendant le combat
+  # (le pourcentage de vie ne change pas, aucune phase n'est sautée).
   vie-base: 4000
   vie-par-joueur: 2000
+  # Combattants = joueurs dans l'arène + poids-connectes × les autres joueurs connectés (0.25 = un quart)
+  poids-connectes: 0.25
+  combattants-max: 20
+  # Attaques du boss, et vie et attaques de ses gardiens et sbires : +6 % par combattant en plus du premier, au plus x1,8
+  force-par-joueur: 0.06
+  force-max: 1.8
   damage: 14
   armor: 16
+  # Mourir dans l'arène pendant le combat : on garde son stuff et son XP, contre quelques pièces.
+  # À partir de la 2e mort du même combat, on revient avec Lenteur I, un peu plus longtemps à chaque mort.
+  protection:
+    enabled: true
+    rayon: 64
+    malus-pieces: 100
+    lenteur-a-partir-de: 2
+    lenteur-secondes: 10
+    lenteur-max-secondes: 60
   # Les dégâts à distance (arcs, arbalètes, tridents) ne comptent qu'à ce pourcentage
   degats-distance: 60
   # Phases : à ces pourcentages de vie, le boss devient invulnérable et appelle ses gardiens.

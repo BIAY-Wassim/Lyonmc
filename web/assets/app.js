@@ -961,7 +961,244 @@
       <div class="wrap prose-page">
         ${(news || []).length ? `<ul class="news">${news.map((n) => `<li class="card"><div class="meta"><time datetime="${esc(n.date)}">${esc(dateFr(n.date))}</time>${n.tag ? `<span class="label">${esc(n.tag)}</span>` : ""}</div>
           <h3>${esc(n.title)}</h3><p>${esc(n.text)}</p></li>`).join("")}</ul>` : `<p class="empty">Pas encore d'actualité. Reviens bientôt !</p>`}
+        <div class="callout"><p><strong>Une idée pour le serveur ?</strong> Propose-la sur la page <a href="/suggestions" data-link>Suggestions</a> : les plus votées passent en priorité.</p></div>
       </div>`;
+  }
+
+  // ───────────── Suggestions (connexion avec /site en jeu, API du plugin COMMUNAUTE sur /api/) ─────────────
+  const ST = [["nouvelle", "Nouvelle", "Nouvelles"], ["acceptee", "Acceptée", "Acceptées"], ["en-cours", "En cours", "En cours"],
+    ["faite", "Faite", "Faites"], ["refusee", "Refusée", "Refusées"]];
+  const stName = (k) => (ST.find((x) => x[0] === k) || [k, k])[1];
+  const SG = { sort: "votes", filter: "toutes" };
+
+  /** Appel à l'API du serveur. offline = le serveur ne répond pas (éteint, ou Apache pas encore relié). */
+  async function api(path, body) {
+    const opts = body === undefined ? { cache: "no-store", credentials: "same-origin" }
+      : { method: "POST", cache: "no-store", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+    let r;
+    try { r = await fetch(`/api/${path}`, opts); } catch (e) { return { ok: false, offline: true, data: {} }; }
+    try {
+      const d = await r.json();
+      return { ok: r.ok, offline: false, data: d || {} };
+    } catch (e) {
+      return { ok: false, offline: true, data: {} };
+    }
+  }
+  const apiError = (r, fallback) => (r.offline ? "Le serveur ne répond pas : réessaie dans une minute." : r.data.erreur || fallback);
+
+  async function loadSugg(S) {
+    const r = await api("suggestions");
+    if (r.ok && Array.isArray(r.data.suggestions)) { S.live = true; S.d = r.data; return; }
+    // Serveur éteint : la liste publiée par le plugin (lecture seule)
+    const st = await data("suggestions");
+    S.live = false;
+    S.d = { moi: { connecte: false }, ouvert: true, limites: {}, suggestions: st?.suggestions || [] };
+  }
+
+  async function suggestions() {
+    setTitle("Suggestions");
+    const S = { live: false, d: null, flash: null };
+    // Lien reçu en jeu avec /site : lyonmc.fr/suggestions#code=XXXXXXXX
+    const m = location.hash.match(/code=([A-Za-z0-9-]{8,12})/);
+    if (m) {
+      history.replaceState({}, "", "/suggestions");
+      const r = await api("connexion", { code: m[1] });
+      S.flash = r.ok ? { ok: true, text: `Connecté en tant que ${r.data.pseudo} : tu peux proposer tes idées et voter.` }
+        : { ok: false, text: apiError(r, "Connexion impossible.") };
+    }
+    await loadSugg(S);
+    app.innerHTML = `
+      <div class="page-head"><div class="wrap"><h1>Suggestions</h1>
+        <p>Une idée pour LyonMC ? Propose-la ici et vote pour celles des autres : les plus demandées passent en priorité dans les prochaines mises à jour.</p></div></div>
+      <div class="wrap sugg-page">
+        <section class="card sugg-account" aria-label="Proposer une idée"></section>
+        <div class="sugg-tools"></div>
+        <ol class="sugg-list" aria-label="Idées des joueurs"></ol>
+      </div>`;
+    const page = app.querySelector(".sugg-page");
+    drawAccount(page, S);
+    drawList(page, S);
+    page.addEventListener("click", (e) => onSuggClick(e, page, S));
+    page.addEventListener("submit", (e) => onSuggSubmit(e, page, S));
+  }
+
+  function drawAccount(page, S) {
+    const box = page.querySelector(".sugg-account");
+    const me = S.d.moi || {};
+    const L = S.d.limites || {};
+    const flash = S.flash ? `<p class="sugg-flash ${S.flash.ok ? "ok" : "err"}" role="status">${esc(S.flash.text)}</p>` : "";
+    if (!S.live) {
+      box.innerHTML = `${flash}<h2>Proposer une idée</h2>
+        <p class="muted">Le serveur ne répond pas pour le moment : tu pourras proposer et voter dès qu'il sera de retour. En attendant, voici les idées déjà proposées.</p>`;
+      return;
+    }
+    if (!me.connecte) {
+      box.innerHTML = `${flash}<h2>Proposer une idée</h2>
+        <p class="muted">Connecte-toi avec ton compte Minecraft : ton pseudo et ta tête s'afficheront à côté de tes idées.</p>
+        <ol class="sugg-steps">
+          <li><div><strong>En jeu, tape <code class="cmd">/site</code></strong></div></li>
+          <li><div><strong>Clique sur « Se connecter au site » dans le chat</strong><p>Tu arrives ici, connecté. Le lien marche 10 minutes, une seule fois.</p></div></li>
+        </ol>
+        <form class="sugg-login" novalidate>
+          <label for="sg-code">Ou entre le code reçu en jeu</label>
+          <div class="sugg-inline"><input id="sg-code" name="code" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" maxlength="9" placeholder="ABCD-EFGH" required>
+            <button class="btn" type="submit">Se connecter</button></div>
+          <p class="sugg-err" role="alert" hidden></p>
+        </form>`;
+      return;
+    }
+    const left = L.restant ?? L.parJour ?? 3;
+    const quota = me.staff ? "Une idée par suggestion." : left > 0 ? `Encore ${left} idée${left > 1 ? "s" : ""} possible${left > 1 ? "s" : ""} aujourd'hui. Une idée par suggestion.`
+      : "Tu as proposé tes idées du jour : reviens demain !";
+    box.innerHTML = `${flash}
+      <div class="sugg-me">${img(face(me.uuid, 64), "face")}<div><strong>${esc(me.pseudo)}</strong><span class="small muted">${me.staff ? "Staff : tu peux changer les statuts, répondre et supprimer" : "Connecté avec ton compte Minecraft"}</span></div>
+        <button class="btn ghost sm" type="button" data-act="logout">Se déconnecter</button></div>
+      ${S.d.ouvert === false ? `<p class="muted">Les suggestions sont fermées pour le moment.</p>` : `
+      <form class="sugg-form" novalidate>
+        <label for="sg-title">Ton idée</label>
+        <input id="sg-title" name="titre" maxlength="${L.titre || 80}" required placeholder="Ex. : un /market avec des parcelles à louer">
+        <label for="sg-text">Détails <span class="muted">(facultatif)</span></label>
+        <textarea id="sg-text" name="texte" rows="4" maxlength="${L.texte || 700}" placeholder="Comment ça marcherait ? Pourquoi ce serait bien ?"></textarea>
+        <div class="sugg-row"><span class="small muted">${quota}</span>
+          <button class="btn" type="submit"${!me.staff && left <= 0 ? " disabled" : ""}>Envoyer l'idée</button></div>
+        <p class="sugg-err" role="alert" hidden></p>
+      </form>`}`;
+  }
+
+  function drawList(page, S) {
+    const all = S.d.suggestions || [];
+    const counts = {};
+    all.forEach((x) => (counts[x.statut] = (counts[x.statut] || 0) + 1));
+    const tab = (attr, key, label, on, n) => `<button type="button" role="tab" data-${attr}="${key}" aria-selected="${on}">${label}${n !== undefined ? ` <span class="n">${n}</span>` : ""}</button>`;
+    page.querySelector(".sugg-tools").innerHTML = all.length ? `
+      <div class="subtabs" role="tablist" aria-label="Trier les idées">${tab("sort", "votes", "Les plus votées", SG.sort === "votes")}${tab("sort", "date", "Les plus récentes", SG.sort === "date")}</div>
+      <div class="subtabs" role="tablist" aria-label="Filtrer par statut">${tab("filter", "toutes", "Toutes", SG.filter === "toutes", all.length)}${ST.filter(([k]) => counts[k]).map(([k, , pl]) => tab("filter", k, pl, SG.filter === k, counts[k])).join("")}</div>` : "";
+    const list = all.filter((x) => SG.filter === "toutes" || x.statut === SG.filter);
+    list.sort(SG.sort === "date" ? (a, b) => b.date - a.date : (a, b) => b.votes - a.votes || b.date - a.date);
+    const ol = page.querySelector(".sugg-list");
+    ol.innerHTML = list.length ? list.map((x) => suggItem(x, S)).join("")
+      : `<li class="empty">${all.length ? "Aucune idée avec ce statut." : "Pas encore d'idée : sois le premier à en proposer une !"}</li>`;
+  }
+
+  function suggItem(x, S) {
+    const me = S.d.moi || {};
+    const a = x.auteur || {};
+    const closed = x.statut === "faite" || x.statut === "refusee";
+    const label = !me.connecte ? "Connecte-toi pour voter" : x.deMoi ? "C'est ton idée : ton vote est compté" : closed ? "Suggestion fermée"
+      : x.aVote ? "Retirer mon vote" : "Voter pour cette idée";
+    const canClick = S.live && (!me.connecte || (!x.deMoi && !closed));
+    const staff = S.live && me.staff ? `<details class="sugg-manage"><summary>Gérer</summary><form class="sugg-staff" data-staff novalidate>
+        <select name="statut" aria-label="Statut">${ST.map(([k, l]) => `<option value="${k}"${k === x.statut ? " selected" : ""}>${l}</option>`).join("")}</select>
+        <input name="reponse" maxlength="500" aria-label="Réponse aux joueurs" placeholder="Réponse aux joueurs (facultatif)" value="${esc(x.reponse || "")}">
+        <button class="btn ghost sm" type="submit">Enregistrer</button>
+        <button class="btn ghost sm danger" type="button" data-act="delete">Supprimer</button>
+      </form></details>` : S.live && x.deMoi && x.statut === "nouvelle" ? `<button type="button" class="linkish" data-act="delete">Supprimer mon idée</button>` : "";
+    return `<li class="card sugg" data-id="${x.id}">
+      ${img(face(a.uuid, 64), "sugg-face", "")}
+      <div class="sugg-body">
+        <div class="sugg-meta">${plink(a.pseudo || "?", "who")}<span>${esc(ago(x.date))}</span><span class="st st-${esc(x.statut)}">${esc(stName(x.statut))}</span></div>
+        <h3>${esc(x.titre)}</h3>
+        ${x.texte ? `<p class="sugg-text">${esc(x.texte)}</p>` : ""}
+        ${x.reponse ? `<div class="sugg-reply"><span class="small">Réponse de <strong>${esc(x.reponsePar || "l'équipe")}</strong></span><p>${esc(x.reponse)}</p></div>` : ""}
+        ${staff}
+      </div>
+      <button type="button" class="sugg-vote${x.aVote ? " on" : ""}" data-act="vote"${canClick ? "" : " disabled"} aria-pressed="${!!x.aVote}" title="${esc(label)}" aria-label="${esc(label)}, ${x.votes} vote${x.votes > 1 ? "s" : ""}">
+        <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M6 0 12 8H0z"/></svg><span class="n">${num(x.votes)}</span></button>
+    </li>`;
+  }
+
+  /** Remplace une idée modifiée (vote, statut) sans changer l'ordre affiché. */
+  function swapItem(page, S, item) {
+    const i = S.d.suggestions.findIndex((x) => x.id === item.id);
+    if (i >= 0) S.d.suggestions[i] = item;
+    const li = page.querySelector(`.sugg[data-id="${item.id}"]`);
+    if (li) li.outerHTML = suggItem(item, S);
+  }
+
+  function sayAbove(page, S, ok, text) {
+    S.flash = { ok, text };
+    drawAccount(page, S);
+    page.querySelector(".sugg-account").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function onSuggClick(e, page, S) {
+    const sortBtn = e.target.closest("[data-sort]");
+    const filterBtn = e.target.closest("[data-filter]");
+    if (sortBtn || filterBtn) {
+      if (sortBtn) SG.sort = sortBtn.dataset.sort; else SG.filter = filterBtn.dataset.filter;
+      drawList(page, S);
+      return;
+    }
+    const b = e.target.closest("[data-act]");
+    if (!b || b.disabled) return;
+    const li = b.closest(".sugg");
+    const id = li ? Number(li.dataset.id) : 0;
+    if (b.dataset.act === "logout") {
+      await api("deconnexion", {});
+      S.flash = { ok: true, text: "Tu es déconnecté du site." };
+      await loadSugg(S);
+      drawAccount(page, S);
+      drawList(page, S);
+    } else if (b.dataset.act === "vote") {
+      if (!S.d.moi?.connecte) return sayAbove(page, S, false, "Pour voter, connecte-toi : tape /site en jeu.");
+      b.disabled = true;
+      const r = await api(`suggestions/${id}/vote`, {});
+      if (r.ok) swapItem(page, S, r.data);
+      else { b.disabled = false; sayAbove(page, S, false, apiError(r, "Vote impossible pour l'instant.")); }
+    } else if (b.dataset.act === "delete") {
+      // Deux clics : le premier demande confirmation
+      if (b.dataset.sure !== "1") {
+        b.dataset.sure = "1";
+        b.dataset.label = b.textContent;
+        b.textContent = "Confirmer la suppression";
+        setTimeout(() => { if (b.isConnected) { b.dataset.sure = ""; b.textContent = b.dataset.label; } }, 4000);
+        return;
+      }
+      b.disabled = true;
+      const r = await api(`suggestions/${id}/supprimer`, {});
+      if (!r.ok) { b.disabled = false; return sayAbove(page, S, false, apiError(r, "Suppression impossible.")); }
+      await loadSugg(S);
+      drawAccount(page, S);
+      drawList(page, S);
+    }
+  }
+
+  async function onSuggSubmit(e, page, S) {
+    const f = e.target;
+    e.preventDefault();
+    const err = f.querySelector(".sugg-err");
+    const btn = f.querySelector("button[type=submit]");
+    const fail = (t) => { if (err) { err.textContent = t; err.hidden = false; } else sayAbove(page, S, false, t); };
+    if (err) err.hidden = true;
+    if (f.classList.contains("sugg-login")) {
+      const code = f.elements.code.value.trim();
+      if (code.replace(/[^A-Za-z0-9]/g, "").length !== 8) return fail("Le code fait 8 caractères, par exemple ABCD-EFGH. Tape /site en jeu pour l'avoir.");
+      btn.disabled = true;
+      const r = await api("connexion", { code });
+      btn.disabled = false;
+      if (!r.ok) return fail(apiError(r, "Connexion impossible."));
+      S.flash = { ok: true, text: `Connecté en tant que ${r.data.pseudo} : tu peux proposer tes idées et voter.` };
+    } else if (f.classList.contains("sugg-form")) {
+      const titre = f.elements.titre.value.trim();
+      if (titre.length < 5) return fail("Donne un titre à ton idée (5 caractères au moins).");
+      btn.disabled = true;
+      const r = await api("suggestions", { titre, texte: f.elements.texte.value.trim() });
+      btn.disabled = false;
+      if (!r.ok) return fail(apiError(r, "Envoi impossible pour l'instant."));
+      S.flash = { ok: true, text: "Merci ! Ton idée est en ligne : les autres joueurs peuvent voter pour elle." };
+      SG.sort = "date";
+      SG.filter = "toutes";
+    } else if (f.matches("[data-staff]")) {
+      const id = Number(f.closest(".sugg").dataset.id);
+      btn.disabled = true;
+      const r = await api(`suggestions/${id}/statut`, { statut: f.elements.statut.value, reponse: f.elements.reponse.value });
+      btn.disabled = false;
+      if (r.ok) swapItem(page, S, r.data); else sayAbove(page, S, false, apiError(r, "Enregistrement impossible."));
+      return;
+    } else return;
+    await loadSugg(S);
+    drawAccount(page, S);
+    drawList(page, S);
   }
 
   // ───────────── Pages légales (modèles à compléter) ─────────────
@@ -1024,9 +1261,9 @@
         <h2>Sur le serveur Minecraft</h2>
         <p>Quand tu joues, le serveur enregistre : ton pseudo et ton identifiant Minecraft (UUID), tes statistiques de jeu (succès, missions, métiers, pièces, temps de jeu, dates de connexion), tes paramètres (amis, joueurs ignorés, préférences) et tes positions (homes, dernière position en survie).</p>
         <p>Pour éviter la triche aux récompenses (parrainage, votes, accueil), le serveur garde une <strong>empreinte</strong> de ton adresse IP, calculée de façon à ne pas pouvoir retrouver l'adresse elle-même. Les messages privés et les signalements sont notés dans le journal du serveur, pour pouvoir traiter un signalement.</p>
-        <p>Ton pseudo, ta tête, tes succès, tes métiers et tes classements sont affichés publiquement sur ce site.</p>
+        <p>Ton pseudo, ta tête, tes succès, tes métiers et tes classements sont affichés publiquement sur ce site, comme les idées que tu proposes sur la page Suggestions (avec ton pseudo et ta tête).</p>
         <h2>Sur ce site</h2>
-        <p>Le site ne dépose aucun cookie et n'utilise aucun outil de mesure d'audience. Pour afficher les skins, il charge des images depuis <strong>mc-heads.net</strong>, et l'icône du serveur depuis <strong>api.mcstatus.io</strong> : ces services reçoivent donc ton adresse IP, comme pour toute image chargée sur Internet. Les polices sont hébergées sur le site lui-même.</p>
+        <p>Le site n'utilise aucun outil de mesure d'audience. Il dépose un seul cookie, et seulement si tu te connectes avec <code class="cmd">/site</code> pour proposer des idées : il te garde connecté pendant 30 jours au plus. <code class="cmd">/site deconnexion</code> en jeu te déconnecte de tous tes appareils. Pour afficher les skins, il charge des images depuis <strong>mc-heads.net</strong>, et l'icône du serveur depuis <strong>api.mcstatus.io</strong> : ces services reçoivent donc ton adresse IP, comme pour toute image chargée sur Internet. Les polices sont hébergées sur le site lui-même.</p>
         <h2>Durée et suppression</h2>
         <p>Les données sont gardées tant que le serveur existe. Tu peux demander à les consulter ou à les faire supprimer (droits prévus par le RGPD) en écrivant à ${v("contact", "adresse e-mail de contact")}. Tu peux aussi saisir la CNIL (cnil.fr).</p>
         <p class="small muted">Responsable du traitement : ${v("editeur", "nom du responsable")}. Dernière mise à jour : ${v("mise-a-jour", "date")}.</p>
@@ -1052,6 +1289,7 @@
       else if (parts[0] === "regles" || parts[0] === "reglement") await regles();
       else if (parts[0] === "faq") await faq();
       else if (parts[0] === "actualites") await actualites();
+      else if (parts[0] === "suggestions") await suggestions();
       else if (parts[0] === "mentions-legales") await legal("mentions");
       else if (parts[0] === "confidentialite") await legal("confidentialite");
       else {
