@@ -15,6 +15,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -91,6 +92,8 @@ public final class SnowBattle implements Listener, TabExecutor {
     private final List<UUID> fallen = new ArrayList<>();
     private final Map<UUID, String> names = new LinkedHashMap<>();
     private final Set<UUID> ownTeleport = new HashSet<>();
+    /** Où chaque joueur attendait (au hub) : il y revient à la fin de la partie. */
+    private final Map<UUID, Location> returnTo = new java.util.HashMap<>();
     private BukkitTask task;
     private int countdown;
     private boolean forced;
@@ -273,26 +276,24 @@ public final class SnowBattle implements Listener, TabExecutor {
             msg(p, "<gray>Quitte d'abord le mode construction (<white>/lyonhub construire</white>).");
             return;
         }
-        Location lobby = village.lobby();
         if (!worlds.isHub(p.getWorld())) {
-            // Pas encore au hub : on l'y emmène, puis il rejoint la file
-            if (lobby == null) return;
-            p.teleportAsync(lobby).thenAccept(ok -> Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            // En survie : on rejoint la file depuis le hub (le Père Noël est au spawn)
+            World hub = worlds.names().isEmpty() ? null : Bukkit.getWorld(worlds.names().get(0));
+            if (hub == null) return;
+            p.teleportAsync(hub.getSpawnLocation().add(0.5, 0, 0.5)).thenAccept(ok -> Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (ok && p.isOnline() && worlds.isHub(p.getWorld())) join(p);
             }, 10L));
             return;
         }
+        // On attend là où on est (au hub) : la téléportation dans l'arène se fait au départ de la partie
         boolean wasQueued = !queue.add(p.getUniqueId());
-        if (lobby != null && (!p.getWorld().equals(lobby.getWorld()) || p.getLocation().distanceSquared(lobby) > 30 * 30)) {
-            ownTeleport.add(p.getUniqueId());
-            p.teleportAsync(lobby).whenComplete((ok, err) -> Bukkit.getScheduler().runTask(plugin, () -> ownTeleport.remove(p.getUniqueId())));
-        }
+        if (!village.isVillageWorld(p.getWorld())) returnTo.put(p.getUniqueId(), p.getLocation().clone());
         int min = Math.max(2, num("joueurs-min", 2));
         if (!wasQueued) {
             p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.7f, 1.6f);
             String when = running() ? "Une partie est en cours : tu joueras la suivante."
-                    : queue.size() >= min ? "La partie commence bientôt !"
-                    : "La partie commence dès qu'il y a <white>" + min + "</white> joueurs (" + queue.size() + "/" + min + ").";
+                    : queue.size() >= min ? "La partie commence bientôt, tu vas être téléporté dans l'arène !"
+                    : "Tu seras téléporté dans l'arène dès qu'il y a <white>" + min + "</white> joueurs (" + queue.size() + "/" + min + ").";
             msg(p, "<gray>Tu es dans la file de la bataille de boules de neige. " + when
                     + " <dark_gray>[<click:run_command:'/bataille quitter'><hover:show_text:'<gray>Quitter la file'><red>quitter</red></hover></click>]");
             for (UUID u : queue) {
@@ -321,6 +322,7 @@ public final class SnowBattle implements Listener, TabExecutor {
             eliminate(p, "a abandonné");
             return;
         }
+        returnTo.remove(u);
         if (queue.remove(u)) msg(p, "<gray>Tu as quitté la file de la bataille.");
         else msg(p, "<gray>Tu n'es pas dans la file.");
     }
@@ -549,6 +551,7 @@ public final class SnowBattle implements Listener, TabExecutor {
             p.showTitle(Title.title(MM.deserialize("<#ff9f9f><bold>Éliminé"), MM.deserialize("<gray>" + place + (place == 1 ? "er" : "e") + " sur " + names.size()),
                     Title.Times.times(java.time.Duration.ofMillis(100), java.time.Duration.ofMillis(1800), java.time.Duration.ofMillis(300))));
             p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_HURT_FREEZE, 0.8f, 1f);
+            if (teleport && !alive.isEmpty()) msg(p, "<gray>Tu regardes la fin depuis le bord de l'arène : retour au hub à la fin de la partie (ou tout de suite avec <white>/hub</white>).");
         }
         for (UUID o : names.keySet()) {
             Player op = Bukkit.getPlayer(o);
@@ -630,12 +633,23 @@ public final class SnowBattle implements Listener, TabExecutor {
             }
         }
         // Après quelques secondes : tout le monde revient, l'arène est refaite
+        List<UUID> played = new ArrayList<>(names.keySet());
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             for (UUID u : new ArrayList<>(alive)) {
                 Player p = Bukkit.getPlayer(u);
-                if (p != null) backToVillage(p, true);
+                if (p != null) backToVillage(p, false);
             }
             alive.clear();
+            for (UUID u : played) {
+                Player p = Bukkit.getPlayer(u);
+                Location back = returnTo.remove(u);
+                if (p == null || !village.isVillageWorld(p.getWorld()) || queue.contains(u)) continue;
+                if (back == null || back.getWorld() == null) {
+                    World hub = worlds.names().isEmpty() ? null : Bukkit.getWorld(worlds.names().get(0));
+                    back = hub == null ? null : hub.getSpawnLocation().add(0.5, 0, 0.5);
+                }
+                if (back != null) p.teleportAsync(back);
+            }
             state = State.IDLE;
             rebuild();
             exportAsync(); // le site voit que la partie est finie
@@ -774,6 +788,7 @@ public final class SnowBattle implements Listener, TabExecutor {
         Player p = e.getPlayer();
         queue.remove(p.getUniqueId());
         ownTeleport.remove(p.getUniqueId());
+        returnTo.remove(p.getUniqueId());
         if (alive.contains(p.getUniqueId())) {
             players.removeHubItems(p);
             eliminate(p.getUniqueId(), null, "s'est déconnecté");
