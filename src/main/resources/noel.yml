@@ -1,0 +1,106 @@
+# ─────────────────────────────── Noël sur LyonMC ───────────────────────────────
+# Tout s'allume et s'éteint tout seul : MOTD, icône du serveur, calendrier de l'Avent,
+# chasse au trésor, boss de Noël et page Noël du site. Après un changement : /lmc reload.
+
+periode:
+  # Du 1er décembre au 6 janvier (mois-jour, dates incluses)
+  debut: "12-01"
+  fin: "01-06"
+  # Pour tester avant décembre : une fausse date du jour, ex. "2026-12-05" (laisser vide en temps normal)
+  date-test: ""
+
+# MOTD pendant Noël (remplace celui de config.yml). <jours_noel> = jours restants avant Noël.
+motd:
+  line1: "<gradient:#ffffff:#9fd3ff><bold>ʟʏᴏɴᴍᴄ</bold></gradient> <#ff6b6b>❄</#ff6b6b> <white>ɴᴏëʟ</white> <dark_gray>⏐</dark_gray> <gray>1.21.8</gray>"
+  line2:
+    - "<#ff6b6b>❄</#ff6b6b> <white>Calendrier de l'Avent</white> <gray>: un cadeau par jour</gray> <#7bd88f>/calendrier</#7bd88f>"
+    - "<#9fd3ff>☃</#9fd3ff> <gray>Bataille de neige au hub :</gray> <white>/tumble</white>"
+    - "<#ffd86b>✦</#ffd86b> <gray>Chasse au trésor de Noël :</gray> <white>/tresor</white>"
+    - "<#ff6b6b>❄</#ff6b6b> <gray>Plus que</gray> <white><jours_noel></white> <gray>avant Noël !</gray>"
+
+# Icône du serveur : un bonnet de Noël est ajouté sur server-icon.png pendant la période.
+# Pour une icône à toi : mets un fichier plugins/LyonAchievements/noel-icone.png (64 × 64).
+icone: true
+
+# ─────────────────────────────── Calendrier de l'Avent (/calendrier) ───────────────────────────────
+# Une case par jour du 1er au 24 décembre. texte = ce que le site affiche une fois la case ouverte.
+# items : MATIERE:quantité, ou MATIERE:quantité:enchantement=niveau,enchantement=niveau
+calendrier:
+  # Les cases ratées peuvent être ouvertes plus tard, jusqu'au 24 décembre
+  rattrapage: true
+  # Titre pour ceux qui ouvrent les 24 cases (défini dans recompenses.yml)
+  titre-complet: lutin-2026
+  jours:
+    1: { texte: "200 pièces et 16 cookies", coins: 200, items: [COOKIE:16] }
+    2: { texte: "250 pièces et 2 diamants", coins: 250, items: [DIAMOND:2] }
+    3: { texte: "200 pièces et 3 pommes dorées", coins: 200, items: [GOLDEN_APPLE:3] }
+    4: { texte: "300 pièces et 32 fioles d'expérience", coins: 300, items: [EXPERIENCE_BOTTLE:32] }
+    5: { texte: "250 pièces et 16 émeraudes", coins: 250, items: [EMERALD:16] }
+    6: { texte: "Saint-Nicolas : 500 pièces, 4 diamants et 8 tartes", coins: 500, items: [DIAMOND:4, PUMPKIN_PIE:8] }
+    7: { texte: "250 pièces et 4 blocs de fer", coins: 250, items: [IRON_BLOCK:4] }
+    8: { texte: "300 pièces et 8 perles de l'Ender", coins: 300, items: [ENDER_PEARL:8] }
+    9: { texte: "250 pièces et 2 étiquettes", coins: 250, items: [NAME_TAG:2] }
+    10: { texte: "400 pièces et 3 diamants", coins: 400, items: [DIAMOND:3] }
+    11: { texte: "300 pièces et 32 fusées", coins: 300, items: [FIREWORK_ROCKET:32] }
+    12: { texte: "350 pièces et 32 carottes dorées", coins: 350, items: [GOLDEN_CARROT:32] }
+    13: { texte: "300 pièces et un livre Raccommodage", coins: 300, items: ["ENCHANTED_BOOK:1:mending=1"] }
+    14: { texte: "400 pièces et 2 blocs d'émeraude", coins: 400, items: [EMERALD_BLOCK:2] }
+    15: { texte: "500 pièces et un fragment de netherite", coins: 500, items: [NETHERITE_SCRAP:1] }
+    16: { texte: "350 pièces et 16 obsidiennes", coins: 350, items: [OBSIDIAN:16] }
+    17: { texte: "400 pièces et 48 fioles d'expérience", coins: 400, items: [EXPERIENCE_BOTTLE:48] }
+    18: { texte: "450 pièces et une pioche en diamant enchantée", coins: 450, items: ["DIAMOND_PICKAXE:1:efficiency=4,unbreaking=3,fortune=2"] }
+    19: { texte: "400 pièces et 6 pommes dorées", coins: 400, items: [GOLDEN_APPLE:6] }
+    20: { texte: "500 pièces et 2 carapaces de shulker", coins: 500, items: [SHULKER_SHELL:2] }
+    21: { texte: "500 pièces et un totem d'immortalité", coins: 500, items: [TOTEM_OF_UNDYING:1] }
+    22: { texte: "600 pièces et un bloc de diamant", coins: 600, items: [DIAMOND_BLOCK:1] }
+    23: { texte: "700 pièces et 2 fragments de netherite", coins: 700, items: [NETHERITE_SCRAP:2] }
+    24: { texte: "Le gros cadeau : 3 000 pièces, 2 lingots de netherite, une pomme dorée enchantée et la traînée Flocons", coins: 3000, items: [NETHERITE_INGOT:2, ENCHANTED_GOLDEN_APPLE:1], xp-levels: 10, trail: flocons }
+
+# ─────────────────────────────── Chasse au trésor (/tresor) ───────────────────────────────
+# Un coffre de cadeaux est caché dans le monde survie (dans des zones déjà explorées), avec de faux coffres pièges autour.
+# Chaque quête réussie donne un indice de plus : la zone se resserre jusqu'aux coordonnées exactes.
+# Chaque joueur qui trouve le coffre a son cadeau ; le premier a un bonus.
+tresor:
+  enabled: true
+  # true : seulement pendant la période de Noël ; false : toute l'année
+  noel-seulement: true
+  # Un nouveau coffre tous les N jours, à cette heure-là
+  tous-les-jours: 5
+  heure: "18:00"
+  monde: "world"
+  # Distance au spawn du monde (en blocs)
+  distance-min: 250
+  distance-max: 1200
+  # Pas de coffre à moins de N blocs d'un home de joueur
+  loin-des-homes: 80
+  pieges: 2
+  # Rayon des zones données par les indices (le dernier donne les coordonnées exactes)
+  zones: [400, 120, 30]
+  # Une quête par étape, tirée au hasard. types : casser (blocs), tuer (créatures), pecher, crafter
+  quetes:
+    1:
+      - { type: casser, cible: "STONE,DEEPSLATE,COBBLESTONE,COBBLED_DEEPSLATE,ANDESITE,DIORITE,GRANITE,TUFF", nombre: 64, texte: "Mine 64 blocs de pierre" }
+      - { type: casser, cible: "OAK_LOG,SPRUCE_LOG,BIRCH_LOG,JUNGLE_LOG,ACACIA_LOG,DARK_OAK_LOG,MANGROVE_LOG,CHERRY_LOG,PALE_OAK_LOG", nombre: 32, texte: "Coupe 32 bûches" }
+    2:
+      - { type: tuer, cible: "ZOMBIE,SKELETON,CREEPER,SPIDER,HUSK,STRAY,DROWNED,ZOMBIE_VILLAGER,WITCH,ENDERMAN,SLIME", nombre: 10, texte: "Élimine 10 monstres" }
+      - { type: tuer, cible: "COW,PIG,SHEEP,CHICKEN,RABBIT", nombre: 8, texte: "Chasse 8 animaux pour le repas de Noël" }
+    3:
+      - { type: pecher, nombre: 5, texte: "Pêche 5 poissons" }
+      - { type: casser, cible: "COAL_ORE,DEEPSLATE_COAL_ORE,IRON_ORE,DEEPSLATE_IRON_ORE,COPPER_ORE,DEEPSLATE_COPPER_ORE", nombre: 12, texte: "Mine 12 minerais de charbon, de fer ou de cuivre" }
+    4:
+      - { type: crafter, cible: "CAKE,PUMPKIN_PIE,COOKIE", nombre: 1, texte: "Prépare une douceur de Noël (gâteau, tarte ou cookies)" }
+      - { type: crafter, cible: "TORCH,LANTERN,CAMPFIRE", nombre: 16, texte: "Fabrique 16 torches, lanternes ou feux de camp" }
+  cadeau: { texte: "600 pièces, 3 diamants et 16 fioles d'expérience", coins: 600, items: [DIAMOND:3, EXPERIENCE_BOTTLE:16] }
+  bonus-premier: { texte: "1 000 pièces de plus, un fragment de netherite et le titre Chasseur de trésor", coins: 1000, items: [NETHERITE_SCRAP:1], title: chasseur-de-tresor }
+
+# ─────────────────────────────── Boss de Noël ───────────────────────────────
+# Le boss mondial en version Noël (nom, tenue et renforts de Noël), à la date et l'heure indiquées.
+boss:
+  enabled: true
+  date: "12-24"
+  heure: "21:00"
+  nom: "<gradient:#ff6b6b:#ffffff>Le Père Fouettard</gradient>"
+  # Pour chaque joueur qui a combattu (en plus des récompenses habituelles)
+  cadeau: { texte: "1 500 pièces, 2 diamants et un fragment de netherite", coins: 1500, items: [DIAMOND:2, NETHERITE_SCRAP:1] }
+  # Objets qui tombent du boss à sa mort
+  butin: [DIAMOND:6, GOLD_INGOT:16, COOKIE:32, EMERALD:12, GOLDEN_APPLE:4]

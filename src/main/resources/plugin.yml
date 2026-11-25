@@ -25,6 +25,12 @@ commands:
     description: Podium et classement des succès
     aliases: [podium, top]
     permission: lyonmc.succes.use
+  calendrier:
+    description: Calendrier de l'Avent (un cadeau par jour du 1er au 24 décembre)
+    aliases: [avent, calendrierdelavent]
+  tresor:
+    description: Chasse au trésor de Noël (quêtes et indices)
+    aliases: [tresors, chasse]
   carte:
     description: Lien vers la Dynmap (lyonmc.fr)
     aliases: [map, dynmap]

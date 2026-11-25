@@ -37,7 +37,8 @@ public final class BossCommand implements TabExecutor {
                 case "lancer", "start" -> {
                     Location at = boss.arena();
                     if (at == null && sender instanceof Player p) at = p.getLocation();
-                    if (!boss.start(at)) plugin.msg(sender, "<gray>Impossible : boss déjà actif ou arène non définie.");
+                    boolean xmas = args.length > 1 && args[1].equalsIgnoreCase("noel");
+                    if (!(xmas ? boss.startChristmas(at) : boss.start(at))) plugin.msg(sender, "<gray>Impossible : boss déjà actif ou arène non définie.");
                     return true;
                 }
                 case "stop" -> {

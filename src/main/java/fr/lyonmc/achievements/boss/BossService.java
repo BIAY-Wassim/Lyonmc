@@ -106,6 +106,62 @@ public final class BossService implements Listener {
         return out;
     }
 
+    // ───────────────────────────── Boss de Noël ─────────────────────────────
+
+    /** Le combat en cours (ou le prochain lancé) est la version de Noël. */
+    private boolean christmas;
+    private boolean nextIsChristmas;
+
+    private ConfigurationSection xmas() {
+        return plugin.configs().noel().getConfigurationSection("boss");
+    }
+
+    /** Nom du boss : celui de noel.yml pendant le combat de Noël. */
+    private String bossName() {
+        if ((christmas || nextIsChristmas) && xmas() != null) return xmas().getString("nom", "Le Père Fouettard");
+        return cfg().getString("name", "Le Colosse");
+    }
+
+    /** Date du boss de Noël (null s'il n'y en a pas cette année ou s'il est passé). */
+    private ZonedDateTime christmasSlot() {
+        ConfigurationSection c = xmas();
+        if (c == null || !c.getBoolean("enabled", true) || !plugin.module("noel") || plugin.noel() == null) return null;
+        try {
+            java.time.MonthDay md = java.time.MonthDay.parse("--" + c.getString("date", "12-24").trim());
+            LocalTime time = LocalTime.parse(c.getString("heure", "21:00").trim());
+            java.time.LocalDate day = md.atYear(plugin.noel().today().getYear());
+            if (!plugin.noel().active(day)) return null;
+            // Avec une date de test, le jour simulé remplace aujourd'hui (même décalage)
+            long shift = plugin.noel().now() - System.currentTimeMillis();
+            return ZonedDateTime.of(day, time, plugin.text().zone()).minusNanos(shift * 1_000_000L);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** Prochain boss de Noël (pour le site), ou null. */
+    public ZonedDateTime christmasNext() {
+        ZonedDateTime x = christmasSlot();
+        return x != null && x.isAfter(ZonedDateTime.now(plugin.text().zone())) ? x : null;
+    }
+
+    /** Le combat en cours est celui de Noël. */
+    public boolean christmasFight() {
+        return christmas;
+    }
+
+    public String christmasName() {
+        return xmas() == null ? "Le Père Fouettard" : xmas().getString("nom", "Le Père Fouettard");
+    }
+
+    /** Lance la version de Noël (commande /boss lancer noel, et le 24 au soir). */
+    public boolean startChristmas(Location at) {
+        nextIsChristmas = true;
+        boolean ok = start(at);
+        nextIsChristmas = false;
+        return ok;
+    }
+
     /** Prochaine apparition prévue. */
     public ZonedDateTime next() {
         ZonedDateTime now = ZonedDateTime.now(plugin.text().zone());
@@ -115,6 +171,8 @@ public final class BossService implements Listener {
             if (c.isBefore(now)) c = c.plusWeeks(1);
             if (best == null || c.isBefore(best)) best = c;
         }
+        ZonedDateTime x = christmasSlot();
+        if (x != null && x.isAfter(now) && (best == null || x.isBefore(best))) best = x;
         return best;
     }
 
@@ -144,11 +202,25 @@ public final class BossService implements Listener {
             }
             if (minutes == 0 && firedKeys.add(base + "-start") && !active()) start(null);
         }
+        // Boss de Noël : mêmes annonces, puis la version de Noël
+        ZonedDateTime x = christmasSlot();
+        if (x != null) {
+            long minutes = ChronoUnit.MINUTES.between(now, x.withSecond(0).withNano(0));
+            String base = "noel-" + x.toLocalDate();
+            for (int w : cfg().getIntegerList("warnings-minutes")) {
+                if (minutes == w && firedKeys.add(base + "-w" + w) && !active()) {
+                    nextIsChristmas = true;
+                    warn(w);
+                    nextIsChristmas = false;
+                }
+            }
+            if (minutes == 0 && firedKeys.add(base + "-start") && !active()) startChristmas(null);
+        }
         if (firedKeys.size() > 200) firedKeys.clear();
     }
 
     private void warn(int minutes) {
-        Bukkit.broadcast(plugin.text().parse("<dark_gray>[<red>Boss</red>]</dark_gray> ").append(plugin.text().parse(cfg().getString("name", "Le Colosse")))
+        Bukkit.broadcast(plugin.text().parse("<dark_gray>[<red>Boss</red>]</dark_gray> ").append(plugin.text().parse(bossName()))
                 .append(plugin.text().parse(" <gray>apparaît dans <white>" + minutes + " min</white>. "
                         + "<click:run_command:'/boss'><hover:show_text:'<gray>Rejoindre l'arène'><accent><u>/boss</u></accent></hover></click>")));
         for (Player p : Bukkit.getOnlinePlayers()) p.playSound(p.getLocation(), Sound.BLOCK_BELL_USE, 0.6f, 0.8f);
@@ -215,11 +287,12 @@ public final class BossService implements Listener {
         deaths.clear();
         afterDeath.clear();
         lastScaleNotice = 0;
+        christmas = nextIsChristmas;
         plugin.getLogger().info("Boss : " + nearby + " joueur(s) près de l'arène, " + Bukkit.getOnlinePlayers().size() + " connecté(s) -> "
                 + String.format(Locale.FRANCE, "%.2f", fighters) + " combattant(s), " + String.format(Locale.FRANCE, "%.0f", maxHp)
                 + " PV, attaque x" + String.format(Locale.FRANCE, "%.2f", strength));
 
-        Component name = plugin.text().parse(cfg().getString("name", "Le Colosse"));
+        Component name = plugin.text().parse(bossName());
         Entity e = at.getWorld().spawn(at, cls, ent -> {
             LivingEntity le = (LivingEntity) ent;
             le.getPersistentDataContainer().set(bossKey, PersistentDataType.BYTE, (byte) 1);
@@ -240,6 +313,16 @@ public final class BossService implements Listener {
                 le.getEquipment().setItemInMainHandDropChance(0f);
                 le.getEquipment().setHelmet(new org.bukkit.inventory.ItemStack(Material.NETHERITE_HELMET));
                 le.getEquipment().setHelmetDropChance(0f);
+                if (christmas) {
+                    // Tenue de Noël : bonnet et manteau rouges, bottes noires
+                    le.getEquipment().setHelmet(leather(Material.LEATHER_HELMET, 0xC81E1E));
+                    le.getEquipment().setChestplate(leather(Material.LEATHER_CHESTPLATE, 0xC81E1E));
+                    le.getEquipment().setLeggings(leather(Material.LEATHER_LEGGINGS, 0xC81E1E));
+                    le.getEquipment().setBoots(leather(Material.LEATHER_BOOTS, 0x1E1E1E));
+                    le.getEquipment().setChestplateDropChance(0f);
+                    le.getEquipment().setLeggingsDropChance(0f);
+                    le.getEquipment().setBootsDropChance(0f);
+                }
             }
             le.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, PotionEffect.INFINITE_DURATION, 0, false, false));
         });
@@ -261,6 +344,15 @@ public final class BossService implements Listener {
         }
         plugin.discord().send("Boss mondial", "Le boss mondial vient d'apparaître sur LyonMC !", 0xFF6B6B, null);
         return true;
+    }
+
+    private static org.bukkit.inventory.ItemStack leather(Material m, int rgb) {
+        org.bukkit.inventory.ItemStack it = new org.bukkit.inventory.ItemStack(m);
+        if (it.getItemMeta() instanceof org.bukkit.inventory.meta.LeatherArmorMeta meta) {
+            meta.setColor(org.bukkit.Color.fromRGB(rgb));
+            it.setItemMeta(meta);
+        }
+        return it;
     }
 
     private static void set(LivingEntity e, Attribute a, double value) {
@@ -318,7 +410,7 @@ public final class BossService implements Listener {
     private void updateBar() {
         float progress = (float) Math.max(0, Math.min(1, hp / maxHp));
         bar.progress(progress);
-        Component name = plugin.text().parse(cfg().getString("name", "Le Colosse"));
+        Component name = plugin.text().parse(bossName());
         if (shield) {
             bar.color(BossBar.Color.PURPLE);
             bar.name(name.append(plugin.text().parse(" <dark_gray>·</dark_gray> <light_purple>bouclier : " + guardians.size() + " gardien(s) à vaincre")));
@@ -524,7 +616,7 @@ public final class BossService implements Listener {
         boss.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 20 * 600, 3, false, false));
         w.playSound(loc, Sound.BLOCK_BEACON_ACTIVATE, 2f, 0.6f);
         w.playSound(loc, Sound.ENTITY_WITHER_AMBIENT, 2f, 0.5f);
-        Component name = plugin.text().parse(cfg().getString("name", "Le Colosse"));
+        Component name = plugin.text().parse(bossName());
         for (Player p : around(64)) {
             p.showTitle(Title.title(plugin.text().parse("<light_purple>Bouclier !"),
                     plugin.text().parse("<gray>Tuez les <white>" + n + "</white> gardiens pour le briser"),
@@ -730,7 +822,7 @@ public final class BossService implements Listener {
         for (int i = 0; i < n; i++) {
             Location l = loc.clone().add(ThreadLocalRandom.current().nextDouble(-5, 5), 0.5, ThreadLocalRandom.current().nextDouble(-5, 5));
             if (!l.getBlock().isPassable()) l = loc.clone().add(0, 0.5, 0);
-            Class<? extends Entity> kind = switch (phase) {
+            Class<? extends Entity> kind = christmas && phase == 0 ? (i % 2 == 0 ? org.bukkit.entity.Stray.class : Zombie.class) : switch (phase) {
                 case 0 -> i % 2 == 0 ? Zombie.class : Skeleton.class;
                 case 1 -> i % 3 == 0 ? Vex.class : (i % 2 == 0 ? WitherSkeleton.class : Skeleton.class);
                 default -> i % 3 == 0 ? Blaze.class : (i % 3 == 1 ? WitherSkeleton.class : Vex.class);
@@ -747,7 +839,7 @@ public final class BossService implements Listener {
     }
 
     private void say(String mini) {
-        Component msg = plugin.text().parse(cfg().getString("name", "Le Colosse")).append(plugin.text().parse(" " + mini));
+        Component msg = plugin.text().parse(bossName()).append(plugin.text().parse(" " + mini));
         for (Player p : around(48)) p.sendActionBar(msg);
     }
 
@@ -834,6 +926,17 @@ public final class BossService implements Listener {
         Player killer = dead.getKiller();
         Location loc = dead.getLocation();
         dropXp(loc, (int) num("xp-boss"));
+        if (christmas && xmas() != null) {
+            // Les cadeaux tombent autour du boss
+            for (String spec : xmas().getStringList("butin")) {
+                org.bukkit.inventory.ItemStack it = fr.lyonmc.achievements.core.Items.parse(spec);
+                if (it == null) continue;
+                Location l = loc.clone().add(ThreadLocalRandom.current().nextDouble(-3, 3), 1.5, ThreadLocalRandom.current().nextDouble(-3, 3));
+                loc.getWorld().dropItemNaturally(l, it);
+            }
+            loc.getWorld().spawnParticle(Particle.SNOWFLAKE, loc.clone().add(0, 2, 0), 300, 3, 2, 3, 0.05);
+            plugin.getLogger().info("Boss de Noël vaincu : cadeaux lâchés.");
+        }
         reward(killer);
         firework(loc);
         end(true, null);
@@ -847,7 +950,7 @@ public final class BossService implements Listener {
         double min = cfg().getDouble("min-damage-percent", 2);
 
         Bukkit.broadcast(Component.empty());
-        Bukkit.broadcast(plugin.text().parse("<dark_gray>[<red>Boss</red>]</dark_gray> ").append(plugin.text().parse(cfg().getString("name", "Le Colosse")))
+        Bukkit.broadcast(plugin.text().parse("<dark_gray>[<red>Boss</red>]</dark_gray> ").append(plugin.text().parse(bossName()))
                 .append(plugin.text().parse(" <gray>a été vaincu !")));
         String[] medals = {"<#ffd86b>♛ 1</#ffd86b>", "<#c8c8c8>✧ 2</#c8c8c8>", "<#d29a6a>✧ 3</#d29a6a>"};
         StringBuilder discord = new StringBuilder();
@@ -866,6 +969,14 @@ public final class BossService implements Listener {
             p.dirty();
             give(p, "boss.rewards.participation");
             if (i < 3) give(p, "boss.rewards.top" + (i + 1));
+            if (christmas) {
+                Player on = Bukkit.getPlayer(u);
+                fr.lyonmc.achievements.rewards.Bundle gift = fr.lyonmc.achievements.rewards.Bundle.of(xmas() == null ? null : xmas().getConfigurationSection("cadeau"));
+                if (on != null && !gift.isEmpty()) {
+                    plugin.rewards().grant(on, gift);
+                    plugin.msg(on, "<#ff6b6b>❄</#ff6b6b> <gray>Cadeau de Noël pour avoir combattu !");
+                }
+            }
             plugin.custom().grantLater(p, "colosse");
             Player online = Bukkit.getPlayer(u);
             if (online != null) {

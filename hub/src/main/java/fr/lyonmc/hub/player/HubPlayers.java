@@ -64,6 +64,9 @@ public final class HubPlayers implements Listener {
     private final SurvivalPositions positions;
     private final Parkour parkour;
     private final NamespacedKey itemKey;
+    /** Objets d'un jeu du hub (boules de neige de la bataille) : jamais rapportés en survie, mais utilisables. */
+    private final NamespacedKey gameKey;
+    private fr.lyonmc.hub.noel.ChristmasVillage noel;
     private final File folder;
     private final Map<UUID, Location> returnPoints = new HashMap<>();
     private final Set<UUID> builders = new HashSet<>();
@@ -73,6 +76,7 @@ public final class HubPlayers implements Listener {
         this.plugin = plugin;
         this.worlds = worlds;
         this.itemKey = new NamespacedKey(plugin, "objet");
+        this.gameKey = new NamespacedKey(plugin, "jeu");
         this.folder = new File(plugin.getDataFolder(), "inventaires");
         if (!folder.isDirectory()) folder.mkdirs();
         this.positions = new SurvivalPositions(plugin, worlds);
@@ -86,6 +90,14 @@ public final class HubPlayers implements Listener {
 
     public HubMenus menus() {
         return menus;
+    }
+
+    public fr.lyonmc.hub.noel.ChristmasVillage noel() {
+        return noel;
+    }
+
+    public void noel(fr.lyonmc.hub.noel.ChristmasVillage village) {
+        this.noel = village;
     }
 
     public SurvivalPositions positions() {
@@ -344,7 +356,21 @@ public final class HubPlayers implements Listener {
     // ───────────────────────────── Objets du hub ─────────────────────────────
 
     public boolean isHubItem(ItemStack it) {
-        return it != null && it.hasItemMeta() && it.getItemMeta().getPersistentDataContainer().has(itemKey, PersistentDataType.STRING);
+        if (it == null || !it.hasItemMeta()) return false;
+        var pdc = it.getItemMeta().getPersistentDataContainer();
+        return pdc.has(itemKey, PersistentDataType.STRING) || pdc.has(gameKey, PersistentDataType.BYTE);
+    }
+
+    /** Marque un objet de jeu du hub (il reste utilisable, mais disparaît en quittant le hub ou la partie). */
+    public ItemStack gameItem(ItemStack it) {
+        ItemMeta meta = it.getItemMeta();
+        meta.getPersistentDataContainer().set(gameKey, PersistentDataType.BYTE, (byte) 1);
+        it.setItemMeta(meta);
+        return it;
+    }
+
+    public boolean isGameItem(ItemStack it) {
+        return it != null && it.hasItemMeta() && it.getItemMeta().getPersistentDataContainer().has(gameKey, PersistentDataType.BYTE);
     }
 
     private String action(ItemStack it) {

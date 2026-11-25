@@ -93,6 +93,7 @@ public final class WebExportService implements Listener {
             files.put("classements.json", GSON.toJson(leaderboards()));
             files.put("joueurs.json", GSON.toJson(players()));
             files.put("actualites.json", GSON.toJson(news()));
+            if (plugin.noel() != null) files.put("noel.json", GSON.toJson(plugin.noel().webData()));
             long now = System.currentTimeMillis();
             // Le guide est regénéré toutes les 10 minutes, ou tout de suite s'il a disparu du dossier
             if (now - lastContent > 10 * 60_000L || !Files.exists(folder().resolve("contenu.json"))) {
@@ -204,6 +205,13 @@ public final class WebExportService implements Listener {
         boss.put("active", plugin.boss().active());
         ZonedDateTime next = plugin.boss().arena() == null ? null : plugin.boss().next();
         boss.put("next", next == null ? null : next.toInstant().toEpochMilli());
+        // Le prochain combat est celui de Noël (le 24 au soir) : son nom à lui
+        ZonedDateTime xmas = plugin.boss().christmasNext();
+        boolean isXmas = next != null && xmas != null && next.toInstant().equals(xmas.toInstant());
+        if (isXmas || plugin.boss().active() && plugin.boss().christmasFight()) {
+            boss.put("name", WebText.plain(plugin.text().parse(plugin.boss().christmasName())));
+            boss.put("christmas", true);
+        }
         m.put("boss", boss);
 
         PlayerStats last = plugin.stats().lastGlobal();

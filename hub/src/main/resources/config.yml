@@ -94,3 +94,44 @@ parkour:
     - "eco give %player% 250"
     - "lmc titre %player% acrobate"
   message-premiere-fois: "<#9fffe0>✦</#9fffe0> <gray>Première fois : <white>250 pièces</white> et le titre <#9fffe0>Acrobate</#9fffe0> !"
+
+# ───────────────────────── Village de Noël ─────────────────────────
+# Le village enneigé (happychristmas.schem) à côté du hub médiéval, avec l'arène de la bataille
+# de boules de neige juste à côté : les joueurs ont la vue sur le village en jouant.
+# Installation : mets happychristmas.schem dans plugins/HUB/schematics puis /lyonhub noel installer
+# Les joueurs : /noel (y aller), /bataille (jouer), /bataille top (meilleurs joueurs)
+noel:
+  # Ouvert aux joueurs (/noel, PNJ, menu du hub). Mets false après les fêtes puis /lyonhub reload.
+  actif: true
+  schematic: happychristmas
+  # Coin du village (x y z), à l'est du hub médiéval
+  origine: "125 -12 -120"
+  # Bataille de boules de neige : des étages de neige en relief empilés ; on casse la neige sous les
+  # pieds des autres à coups de boules de neige. Tomber sous le dernier étage = éliminé, le dernier debout gagne.
+  bataille:
+    actif: true
+    # Centre de l'étage du haut (x y z). Vide = à côté du village, face au château
+    centre: ""
+    # Taille de l'arène : rayon, nombre d'étages, blocs entre deux étages, relief (0 = plat)
+    rayon: 14
+    etages: 3
+    ecart: 7
+    relief: 2
+    # Plaques de glace glissantes sur les étages du bas
+    glace: true
+    joueurs-min: 2
+    joueurs-max: 12
+    # Attente avant le début, une fois assez de joueurs dans la file
+    attente-secondes: 20
+    # Au bout de ce temps, la neige fond toute seule (pour que la partie se termine)
+    fonte-apres-secondes: 75
+    fonte-duree-secondes: 90
+    duree-max-secondes: 300
+    # Récompense du gagnant (commandes console, %player% = pseudo), pour ses N premières victoires du jour
+    recompense-victoire:
+      - "eco give %player% 100"
+    victoires-payees-par-jour: 5
+    message-victoire: "<#9fd3ff>❄</#9fd3ff> <gray>Victoire : <white>100 pièces</white> !"
+    # Titre au bout de N victoires
+    titre-victoires: 5
+    titre-commande: "lmc titre %player% roi-de-la-neige"

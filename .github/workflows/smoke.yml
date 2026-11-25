@@ -11,7 +11,7 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 39
+    timeout-minutes: 42
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
@@ -60,6 +60,12 @@ jobs:
           mkdir -p srv/plugins/HUB/schematics
           python3 hub/test/make_test_schem.py srv/plugins/HUB/schematics/test-hub.schem
           python3 hub/test/make_fake_medieval.py srv/plugins/HUB/schematics/hub-medieval.schem
+          python3 hub/test/make_fake_christmas.py srv/plugins/HUB/schematics/happychristmas.schem
+          # Noël : on fait comme si on était le 5 décembre, trésor caché près du spawn
+          mkdir -p srv/plugins/LyonAchievements
+          sed -e 's/date-test: ""/date-test: "2026-12-05"/' -e 's/distance-min: 250/distance-min: 16/' -e 's/distance-max: 1200/distance-max: 60/' \
+              -e 's/loin-des-homes: 80/loin-des-homes: 0/' src/main/resources/noel.yml > srv/plugins/LyonAchievements/noel.yml
+          grep -nE "date-test|distance-|loin-des" srv/plugins/LyonAchievements/noel.yml
           cd srv
           echo "eula=true" > eula.txt
           echo 'online-mode=false' > server.properties
@@ -165,6 +171,29 @@ jobs:
             await cmd('Acheteur regarde mon [objet] !', 2000)
             await cmd('/menu'); await click(22); await click(10); await close()
             await cmd('/menu'); await click(19); await close()
+            // Noël (date de test : 5 décembre) : MOTD, calendrier de l'Avent, chasse au trésor
+            try {
+              const r = await new Promise((res, rej) => require('minecraft-protocol').ping({ host: '127.0.0.1', port: 25565 }, (e, x) => e ? rej(e) : res(x)))
+              log('MOTD', JSON.stringify(r.description).replace(/"(color|bold|italic|underlined|strikethrough|obfuscated)":[^,}]+,?/g, '').slice(0, 400), 'icone', r.favicon ? 'oui' : 'non')
+            } catch (er) { log('MOTDERR', er.message) }
+            await cmd('/calendrier'); await click(10); await click(15); await click(16); await close()
+            await cmd('/calendrier'); await click(15); await close()
+            await cmd('/tresor admin nouveau', 8000)
+            let coffre = null
+            const grabCoffre = m => { const k = m.match(/Coffre : (\S+) (-?\d+) (-?\d+) (-?\d+)/); if (k) coffre = k.slice(2).map(Number) }
+            bot.on('messagestr', grabCoffre); await cmd('/tresor admin ou', 2000); bot.removeListener('messagestr', grabCoffre)
+            log('TRESOR', JSON.stringify(coffre))
+            await cmd('/tresor', 2000)
+            if (coffre) {
+              bot.chat(`/tp Testeur ${coffre[0] + 0.5} ${coffre[1]} ${coffre[2] + 2.5}`); await sleep(3000)
+              const b = bot.blockAt(new (require('vec3'))(coffre[0], coffre[1], coffre[2]))
+              log('TRESOR BLOC', b ? b.name : 'non chargé')
+              if (b) {
+                await bot.lookAt(b.position.offset(0.5, 0.5, 0.5)).catch(() => {}); await bot.activateBlock(b).catch(er => log('TRESORERR', er.message)); await sleep(3000); await close()
+                await bot.activateBlock(b).catch(() => {}); await sleep(2000); await close()
+              }
+              await cmd('/money', 1500); await cmd('/spawn', 4000)
+            }
             await cmd('/premierspas'); await cmd('/vote'); await cmd('/vote verifier', 12000); await cmd('/vote verifier', 12000); await cmd('/objectif'); await cmd('/bienvenue'); await cmd('/parrain')
             await cmd('/aide'); await click(19); await close()
             await cmd('/help'); await close()
@@ -197,7 +226,7 @@ jobs:
             for (const t of ['serveur', 'bienvenue', 'fortune', 'missions', 'grades']) await cmd('/lmc holo creer ' + t, 1500)
             await cmd('/lmc holo liste'); await cmd('/hub', 5000); await cmd('/lobby', 5000)
             await cmd('/titres'); await close()
-            await cmd('/gamemode creative'); await cmd('/boss arene'); await cmd('/boss lancer', 4000)
+            await cmd('/gamemode creative'); await cmd('/boss arene'); await cmd('/boss lancer noel', 4000)
             // Mort dans l'arène pendant le combat : stuff gardé, -100 pièces, lenteur à partir de la 2e mort
             await cmd('/gamerule keepInventory false', 1000); await cmd('/gamemode survival', 1000); await cmd('/give Testeur emerald 7', 6000)
             for (let k = 1; k <= 2; k++) {
@@ -293,6 +322,26 @@ jobs:
               'pnj', Object.values(bot.entities).filter(e => e.type === 'player' && e.username !== 'Testeur').length)
             await cmd('/lyonhub liste'); await cmd('/lmc holo liste'); await cmd('/parkour', 4000)
             log('PARKOUR DEPART', bot.entity.position.floored().toString())
+            // Village de Noël et bataille de boules de neige (avec Acheteur)
+            await cmd('/noel', 1500)
+            await cmd('/lyonhub noel installer', 1500); await cmd('/lyonhub noel installer confirmer Acheteur', 30000)
+            log('NOEL', bot.entity.position.floored().toString(), 'pnj', Object.values(bot.entities).filter(e => e.type === 'player' && e.username !== 'Testeur').length)
+            await cmd('/noel', 4000); log('NOEL SPAWN', bot.entity.position.floored().toString())
+            await cmd('/lyonhub noel', 1500)
+            await cmd('/bataille', 3000); await cmd('/bataille ajouter Acheteur', 6000); await cmd('/bataille lancer', 10000)
+            const inv = () => bot.inventory.items().map(i => i.name + ' x' + i.count).join(', ')
+            log('BATAILLE DEPART', bot.entity.position.floored().toString(), inv())
+            for (let i = 0, thrown = 0; i < 90; i++) {
+              const sb = bot.inventory.items().find(it => it.name === 'snowball')
+              if (!sb) { if (thrown > 0) break; await sleep(400); continue }
+              if (!bot.heldItem || bot.heldItem.name !== 'snowball') await bot.equip(sb, 'hand').catch(() => {})
+              await bot.look(bot.entity.yaw, -Math.PI / 2, true)
+              bot.activateItem(); thrown++; await sleep(350)
+              if (i % 10 === 0) log('BATAILLE', thrown, 'lancées, y =', bot.entity.position.y.toFixed(1))
+            }
+            await sleep(2000)
+            log('BATAILLE FIN', bot.entity.position.floored().toString(), inv())
+            await sleep(6000); await cmd('/bataille top', 2000)
             bot.chat('/tp Testeur 0.5 65 0.5 180 0'); await sleep(2000)
             await cmd('/advancement grant Testeur only minecraft:adventure/sleep_in_bed')
             bot.setQuickBarSlot(0); await sleep(500); bot.activateItem(); await sleep(2500)
@@ -345,14 +394,14 @@ jobs:
           (
             for i in $(seq 1 240); do grep -q "Done (" logs/latest.log 2>/dev/null && break; sleep 1; done
             sleep 3
-            (cd ../bot && timeout 1150 node bot.js Testeur > ../bot.log 2>&1 &)
-            (cd ../bot && timeout 900 node bot.js Acheteur > ../bot2.log 2>&1 &)
+            (cd ../bot && timeout 1250 node bot.js Testeur > ../bot.log 2>&1 &)
+            (cd ../bot && timeout 1100 node bot.js Acheteur > ../bot2.log 2>&1 &)
             sleep 12
             for c in "communaute vote Acheteur site-test" "communaute vote Acheteur site-test" "gamerule doMobSpawning false" "kill @e[type=minecraft:slime]" "gamerule keepInventory true" "op Testeur" "op Acheteur" "give Testeur diamond 5" "eco give Testeur 50000" "eco give Acheteur 3000" "advancement grant Testeur only minecraft:story/mine_stone" "advancement grant Testeur only minecraft:adventure/kill_a_mob" "lmc donner Acheteur concours" "lmc donner Testeur inconnu"; do echo "$c"; sleep 1; done
             sleep 20; echo "deop Acheteur"; sleep 2; echo "say test-filtre"; sleep 14
             echo "mute Acheteur 2m test du mute"; sleep 1; echo "say test-muet"; sleep 6
             echo "unmute Acheteur"; sleep 1; echo "avertir Acheteur test d'avertissement"; sleep 1; echo "sanctions Acheteur"; sleep 1; echo "op Acheteur"
-            sleep 790
+            sleep 890
             echo "advancement grant Acheteur from minecraft:story/root"; sleep 5
             echo "advancement grant Testeur everything"; sleep 20
             echo "say test-chat-grade"; sleep 30
@@ -360,7 +409,7 @@ jobs:
             sleep 8
             echo "stop"
           ) > in &
-          timeout 1250 "$JAVA_HOME/bin/java" -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
+          timeout 1350 "$JAVA_HOME/bin/java" -Xmx2G -jar paper.jar nogui < in > console.log 2>&1 || true
       - name: Analyse des journaux
         if: always()
         run: |
@@ -370,6 +419,7 @@ jobs:
           echo "=== LyonAchievements ==="; grep -n "LyonAchievements" logs/latest.log | head -60
           echo "=== Nouveautés ==="; grep -nE "vote|Vérification|installé|HUB FAIT|PARKOUR DEPART|Métier|Mineur|Parkour|parkour|Signalement|MP\]|ami|Lot|lot|Astuce|Centre|Règlement" ../bot.log ../bot2.log logs/latest.log | head -80 || true
           echo "=== Site et suggestions ==="; grep -nE "SITE|Site :|Suggestion" ../bot.log ../bot2.log logs/latest.log | head -80 || true
+          echo "=== Noël ==="; grep -nE "MOTD|Calendrier|calendrier|TRESOR|Chasse au trésor|trésor|Boss de Noël|Père Fouettard|NOEL|Village de Noël|village de Noël|BATAILLE|Bataille|bataille|têtes|happychristmas" ../bot.log ../bot2.log logs/latest.log | head -120 || true
           echo "=== Boss, œuf, loup ==="; grep -nE "Boss :|Boss mondial|MORT|OEUF|Œuf|LOUP|Shear|BOSSBAR" ../bot.log logs/latest.log | head -80 || true
           echo "=== Erreurs ==="; grep -nE "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -80 || true
           grep -E "Exception|SEVERE|Caused by|at fr\.lyonmc" logs/latest.log | head -10 | while IFS= read -r l; do echo "::error::$l"; done

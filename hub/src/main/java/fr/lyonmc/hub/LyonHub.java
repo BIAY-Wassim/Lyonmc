@@ -30,6 +30,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
     private fr.lyonmc.hub.player.HubPlayers players;
     private fr.lyonmc.hub.world.SchematicPaster paster;
     private fr.lyonmc.hub.world.HubBuilder builder;
+    private fr.lyonmc.hub.noel.ChristmasVillage noel;
 
     @Override
     public void onEnable() {
@@ -52,6 +53,18 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
         getServer().getPluginManager().registerEvents(players.positions(), this);
         getServer().getPluginManager().registerEvents(players.parkour(), this);
         builder = new fr.lyonmc.hub.world.HubBuilder(this, worlds, npcs, players, paster);
+        // Village de Noël et bataille de boules de neige
+        noel = new fr.lyonmc.hub.noel.ChristmasVillage(this, worlds, players, npcs, paster);
+        players.noel(noel);
+        getServer().getPluginManager().registerEvents(noel.battle(), this);
+        var noelCmd = getCommand("noel");
+        if (noelCmd != null) noelCmd.setExecutor(noel);
+        var bataille = getCommand("bataille");
+        if (bataille != null) {
+            bataille.setExecutor(noel.battle());
+            bataille.setTabCompleter(noel.battle());
+        }
+        noel.startup();
         var survie = getCommand("survie");
         if (survie != null) survie.setExecutor(players.positions());
         var parkour = getCommand("parkour");
@@ -71,6 +84,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
 
     @Override
     public void onDisable() {
+        if (noel != null) noel.battle().shutdown();
         if (players != null) players.restoreAll();
         if (npcs != null) {
             npcs.stop();
@@ -245,6 +259,10 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
             case "parkour" -> {
                 if (p != null) players.parkour().admin(p, args);
             }
+            case "noel", "noël" -> {
+                if (p != null) noel.admin(p, args);
+                else msg(sender, "<gray>À faire en jeu.");
+            }
             case "installer", "install" -> {
                 if (p == null) {
                     msg(sender, "<gray>À faire en jeu (tu seras téléporté au hub).");
@@ -273,6 +291,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                         "<white>/lyonhub construire</white> <dark_gray>mode construction au hub (créatif)",
                         "<white>/lyonhub depart</white> <dark_gray>point d'arrivée des nouveaux en survie (village de départ)",
                         "<white>/lyonhub parkour</white> <dark_gray>créer le parkour du hub (départ, étapes, arrivée, classement)",
+                        "<white>/lyonhub noel</white> <dark_gray>village de Noël et bataille de boules de neige",
                         "<white>/lyonhub liste</white> <dark_gray>· <white>/lyonhub reload")) {
                     sender.sendMessage(MM.deserialize("  " + line));
                 }
@@ -294,7 +313,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
             out.addAll(List.of("installer", "monde", "construire", "depart", "coller", "podium", "pnj", "texte", "commande", "deplacer", "suppr", "liste",
-                    "parkour", "reload"));
+                    "parkour", "noel", "reload"));
         } else if (args.length == 2) {
             switch (args[0].toLowerCase(Locale.ROOT)) {
                 case "podium" -> Rankings.BOARDS.forEach(b -> out.add(b.id()));
@@ -303,11 +322,14 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                 case "installer" -> out.addAll(List.of("confirmer", "recoller"));
                 case "coller" -> out.addAll(paster.available());
                 case "parkour" -> out.addAll(List.of("depart", "etape", "arrivee", "classement", "effacer", "temps-reset"));
+                case "noel" -> out.addAll(List.of("installer", "spawn", "attente", "pnj", "arene"));
                 default -> {
                 }
             }
         } else if (args.length == 3 && args[0].equalsIgnoreCase("podium")) {
             out.addAll(List.of("1", "2", "3"));
+        } else if (args.length == 3 && args[0].equalsIgnoreCase("noel") && args[1].equalsIgnoreCase("installer")) {
+            out.addAll(List.of("confirmer", "forcer"));
         } else if (args.length == 3 && args[0].equalsIgnoreCase("pnj")) {
             Bukkit.getOnlinePlayers().forEach(pl -> out.add(pl.getName()));
         }

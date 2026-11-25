@@ -64,6 +64,7 @@ public final class Configs {
     private YamlConfiguration jobs;
     private YamlConfiguration news;
     private YamlConfiguration state;
+    private YamlConfiguration noel;
     private final File stateFile;
 
     public Configs(JavaPlugin plugin) {
@@ -82,6 +83,7 @@ public final class Configs {
         addBossKeys();
         jobs = loadOrCreate("metiers.yml");
         news = loadOrCreate("actualites.yml");
+        noel = loadOrCreate("noel.yml");
         mergeChildren(jobs, "metiers");
         state = stateFile.exists() ? YamlConfiguration.loadConfiguration(stateFile) : new YamlConfiguration();
     }
@@ -182,6 +184,11 @@ public final class Configs {
         } catch (IOException e) {
             plugin.getLogger().log(Level.SEVERE, "Impossible d'enregistrer actualites.yml", e);
         }
+    }
+
+    /** noel.yml : calendrier de l'Avent, chasse au trésor, boss de Noël, MOTD et icône de Noël. */
+    public YamlConfiguration noel() {
+        return noel;
     }
 
     /** metiers.yml */
