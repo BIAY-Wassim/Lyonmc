@@ -1,20 +1,24 @@
 Plugins du serveur LyonMC (par wassdead), pour Purpur / Paper 1.21.8.
 
-- **LyonAchievements-7.2.0.jar** : succès, grades, missions, métiers, saisons, économie, hologrammes, menus, chat, site.
-  Nouveau : le **boss s'adapte au nombre de joueurs** (arène et serveur), **stuff gardé** en cas de mort dans l'arène pendant le combat
-  (-100 pièces, un peu de lenteur à partir de la 2e mort), **un œuf de l'End à chaque dragon tué** (l'œuf repart sur le portail
-  une fois le succès obtenu), succès **Shear Brilliance** corrigé.
-- **HUB-1.8.2.jar** : le monde du hub, son inventaire, les podiums de PNJ, le hub médiéval.
+- **LyonAchievements-7.3.0.jar** : succès, grades, missions, métiers, saisons, économie, hologrammes, menus, chat, site.
+  Nouveau, **Noël** (du 1er décembre au 6 janvier, réglages dans `plugins/LyonAchievements/noel.yml`) :
+  **calendrier de l'Avent** (`/calendrier`, une case par jour, gros cadeau le 24, cases ratées rattrapables jusqu'au 24,
+  titre Lutin 2026 pour les 24 cases), **chasse au trésor** (`/tresor`, un coffre caché tous les 5 jours pas trop loin du spawn,
+  des quêtes dévoilent où il est, un cadeau pour chaque joueur qui le trouve et un bonus pour le premier, des faux coffres piégés),
+  **boss de Noël le 24 à 21 h** qui lâche des cadeaux, **MOTD de Noël** et **icône du serveur avec un bonnet**.
+- **HUB-1.9.0.jar** : le monde du hub, son inventaire, les podiums de PNJ, le hub médiéval.
+  Nouveau : le **village de Noël** (`happychristmas.schem`) à côté du hub médiéval et, juste à côté avec la vue sur le village,
+  la **bataille de boules de neige** comme sur les consoles : des étages de neige en relief, on casse la neige sous les pieds
+  des autres, le dernier debout gagne (`/noel`, `/bataille`, `/bataille top`).
 - **COMMUNAUTE-1.4.1.jar** : premiers pas, centre d'aide, règlement, astuces, votes, parrainage, fidélité, amis, messages privés,
-  signalements, modération. Nouveau : la **page Suggestions** du site, comme la vérification de NameMC : en jeu, **`/suggestion`**
-  donne un lien qui ouvre la page pour écrire son idée, avec son pseudo et sa tête (votes et statuts du staff).
-- **lyonmc-site.zip** : le site lyonmc.fr, avec la nouvelle page **Suggestions**.
+  signalements, modération, page Suggestions du site. (Pas de changement.)
+- **lyonmc-site.zip** : le site lyonmc.fr en mode Noël (nouveau logo, neige, page **/noel**), page Joueurs corrigée.
 
 Mise à jour : télécharger les nouveaux .jar dans `plugins/`, supprimer les anciens, puis `stop` (le serveur redémarre tout seul).
 Les données des joueurs sont conservées, les nouveaux réglages s'ajoutent tout seuls aux fichiers de config.
 
-Site : extraire `lyonmc-site.zip` dans le dossier `siteweb` (les dossiers `data` et `pages` ne sont pas touchés).
+Village de Noël (une seule fois) : mettre `happychristmas.schem` dans `plugins/HUB/schematics/`, puis en jeu
+`/lyonhub noel installer confirmer`. Après les fêtes : `noel.actif: false` dans `plugins/HUB/config.yml` puis `/lyonhub reload`.
 
-Apache (une seule fois) : dans le site lyonmc.fr, ajouter sous la ligne `ProxyPassReverse /dynmap/ ...` :
-`ProxyPass /api/ http://127.0.0.1:8135/api/ retry=0 timeout=15`, puis `apache2ctl configtest` et `systemctl reload apache2`
-(voir `deploy/lyonmc.conf`). Sans ça, la page Suggestions s'affiche mais personne ne peut y écrire.
+Site : extraire `lyonmc-site.zip` dans le dossier `siteweb` (les dossiers `data` et `pages` ne sont pas touchés).
+Le site passe tout seul en mode Noël du 20 novembre au 6 janvier.
