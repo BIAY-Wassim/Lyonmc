@@ -135,7 +135,7 @@ public final class HubMenus implements Listener {
         h.inventory = Bukkit.createInventory(h, 45, MM.deserialize("<dark_gray>Hub · LyonMC"));
         if (players.noel() != null && players.noel().open()) {
             button(h, 4, item(Material.SPRUCE_SAPLING, "<#ff6b6b><bold>Village de Noël", List.of(
-                    "<gray>Le village enneigé du hub", "<gray>et la bataille de boules de neige.", "", "<#e8c872>➤ Cliquer pour y aller")), "commande:noel");
+                    "<gray>Un monde enneigé à part,", "<gray>avec la bataille de boules de neige.", "", "<#e8c872>➤ Cliquer pour y aller")), "commande:noel");
         }
         button(h, 13, item(Material.COMPASS, "<green><bold>Jouer", List.of(
                 "<gray>Survie, monde ressources,", "<gray>aventure au hasard, homes.", "", "<#e8c872>➤ Cliquer")), "jouer");

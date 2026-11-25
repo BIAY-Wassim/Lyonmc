@@ -96,16 +96,18 @@ parkour:
   message-premiere-fois: "<#9fffe0>✦</#9fffe0> <gray>Première fois : <white>250 pièces</white> et le titre <#9fffe0>Acrobate</#9fffe0> !"
 
 # ───────────────────────── Village de Noël ─────────────────────────
-# Le village enneigé (happychristmas.schem) à côté du hub médiéval, avec l'arène de la bataille
+# Le village enneigé (happychristmas.schem) dans son propre monde, à part du hub, avec l'arène de la bataille
 # de boules de neige juste à côté : les joueurs ont la vue sur le village en jouant.
 # Installation : mets happychristmas.schem dans plugins/HUB/schematics puis /lyonhub noel installer
-# Les joueurs : /noel (y aller), /bataille (jouer), /bataille top (meilleurs joueurs)
+# Les joueurs : /noel (y aller), /hub (revenir), /bataille (jouer), /bataille top (meilleurs joueurs)
 noel:
   # Ouvert aux joueurs (/noel, PNJ, menu du hub). Mets false après les fêtes puis /lyonhub reload.
   actif: true
+  # Monde à part pour le village et la bataille (monde vide créé par /lyonhub noel installer)
+  monde: noel
   schematic: happychristmas
-  # Coin du village (x y z), à l'est du hub médiéval
-  origine: "125 -12 -120"
+  # Coin du village (x y z) : l'arrivée tombe au centre du monde
+  origine: "-84 -12 -120"
   # Bataille de boules de neige : des étages de neige en relief empilés ; on casse la neige sous les
   # pieds des autres à coups de boules de neige. Tomber sous le dernier étage = éliminé, le dernier debout gagne.
   bataille:

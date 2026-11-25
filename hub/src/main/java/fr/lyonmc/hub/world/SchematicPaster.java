@@ -203,6 +203,42 @@ public final class SchematicPaster {
         paste(player, s, player.getLocation(), removeStartPlatform, null);
     }
 
+    /**
+     * Enlève un schematic collé (coin en baseX, baseY, baseZ) : seuls les blocs du monde identiques à ceux du fichier
+     * sont retirés, petit à petit. « done » reçoit le nombre de blocs retirés.
+     */
+    public void unpaste(Schem s, World world, int baseX, int baseY, int baseZ, java.util.function.Consumer<Long> done) {
+        int[] y = {0};
+        long[] removed = {0};
+        running = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            long deadline = System.nanoTime() + 25_000_000L;
+            while (System.nanoTime() < deadline && y[0] < s.height()) {
+                int wy = baseY + y[0];
+                if (wy >= world.getMinHeight() && wy < world.getMaxHeight()) {
+                    for (int z = 0; z < s.length(); z++) {
+                        int row = (y[0] * s.length() + z) * s.width();
+                        for (int x = 0; x < s.width(); x++) {
+                            int id = s.blocks()[row + x];
+                            BlockData bd = id < s.palette().length ? s.palette()[id] : null;
+                            if (bd == null || bd.getMaterial().isAir()) continue;
+                            org.bukkit.block.Block b = world.getBlockAt(baseX + x, wy, baseZ + z);
+                            if (b.getType() == bd.getMaterial()) {
+                                b.setType(Material.AIR, false);
+                                removed[0]++;
+                            }
+                        }
+                    }
+                }
+                y[0]++;
+            }
+            if (y[0] >= s.height()) {
+                running.cancel();
+                running = null;
+                done.accept(removed[0]);
+            }
+        }, 1L, 1L);
+    }
+
     /** Colle le schematic avec son point de référence en « at » ; « done » est lancé à la fin (sinon : message au joueur). */
     public void paste(Player player, Schem s, Location at, boolean removeStartPlatform, Runnable done) {
         World world = at.getWorld();
