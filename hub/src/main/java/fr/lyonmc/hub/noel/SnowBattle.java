@@ -777,7 +777,8 @@ public final class SnowBattle implements Listener, TabExecutor {
         Player p = e.getPlayer();
         // Du hub au village (ou l'inverse) on reste dans la file ; en partant en survie, on la quitte
         if (!worlds.isHub(p.getWorld())) queue.remove(p.getUniqueId());
-        if (alive.contains(p.getUniqueId())) {
+        // Arriver dans le monde de l'arène au départ de la partie, ce n'est pas la quitter
+        if (alive.contains(p.getUniqueId()) && (arena == null || !p.getWorld().equals(arena.world))) {
             boolean inHub = worlds.isHub(p.getWorld());
             eliminate(p.getUniqueId(), inHub ? p : null, "a quitté l'arène", false);
         }
