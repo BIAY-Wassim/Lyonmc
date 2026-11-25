@@ -14,7 +14,7 @@ motd:
   line1: "<gradient:#ffffff:#9fd3ff><bold>ʟʏᴏɴᴍᴄ</bold></gradient> <#ff6b6b>❄</#ff6b6b> <white>ɴᴏëʟ</white> <dark_gray>⏐</dark_gray> <gray>1.21.8</gray>"
   line2:
     - "<#ff6b6b>❄</#ff6b6b> <white>Calendrier de l'Avent</white> <gray>: un cadeau par jour</gray> <#7bd88f>/calendrier</#7bd88f>"
-    - "<#9fd3ff>☃</#9fd3ff> <gray>Bataille de neige au hub :</gray> <white>/tumble</white>"
+    - "<#9fd3ff>☃</#9fd3ff> <gray>Bataille de boules de neige au hub :</gray> <white>/bataille</white>"
     - "<#ffd86b>✦</#ffd86b> <gray>Chasse au trésor de Noël :</gray> <white>/tresor</white>"
     - "<#ff6b6b>❄</#ff6b6b> <gray>Plus que</gray> <white><jours_noel></white> <gray>avant Noël !</gray>"
 
