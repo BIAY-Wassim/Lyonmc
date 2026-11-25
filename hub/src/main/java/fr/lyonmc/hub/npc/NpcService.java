@@ -56,6 +56,8 @@ public final class NpcService implements Listener {
         String board;         // podium : succes, saison, fortune, missions
         int rank;             // podium : 1, 2, 3...
         String skinName;      // skin : pseudo dont on prend le skin
+        String skinValue;     // skin : texture signée fixe (au lieu du skin d'un joueur)
+        String skinSignature;
         String command;       // skin : commande lancée au clic
         List<String> label = new ArrayList<>();
         String world;
@@ -138,6 +140,8 @@ public final class NpcService implements Listener {
                 n.board = c.getString("classement", "succes");
                 n.rank = c.getInt("place", 1);
                 n.skinName = c.getString("skin");
+                n.skinValue = c.getString("skin-valeur");
+                n.skinSignature = c.getString("skin-signature");
                 n.command = c.getString("commande", "");
                 n.label = new ArrayList<>(c.getStringList("texte"));
                 n.world = c.getString("monde", "world");
@@ -163,6 +167,10 @@ public final class NpcService implements Listener {
                 y.set(p + "place", n.rank);
             } else {
                 y.set(p + "skin", n.skinName);
+                if (n.skinValue != null && !n.skinValue.isEmpty()) {
+                    y.set(p + "skin-valeur", n.skinValue);
+                    y.set(p + "skin-signature", n.skinSignature);
+                }
                 y.set(p + "commande", n.command);
                 y.set(p + "texte", n.label);
             }
@@ -222,6 +230,29 @@ public final class NpcService implements Listener {
         save();
         loadFixedSkin(n);
         return n;
+    }
+
+    /** PNJ avec une texture signée fixe (ex. : un skin de Père Noël venant de mineskin.org). */
+    public Npc createTextured(String id, String skinLabel, String value, String signature, String command, Location at) {
+        remove(id);
+        Npc n = new Npc(id);
+        n.type = "skin";
+        n.skinName = skinLabel;
+        n.skinValue = value;
+        n.skinSignature = signature;
+        n.command = command == null ? "" : command;
+        n.place(at);
+        npcs.put(id, n);
+        save();
+        loadFixedSkin(n);
+        return n;
+    }
+
+    /** Texte qui change souvent (chiffres en direct) : affiché sans réécrire pnj.yml à chaque fois. */
+    public void setLiveLabel(Npc n, List<String> lines) {
+        if (n.label.equals(lines)) return;
+        n.label = new ArrayList<>(lines);
+        updateLabel(n);
     }
 
     public void move(Npc n, Location at) {
@@ -336,6 +367,11 @@ public final class NpcService implements Listener {
 
     private void loadFixedSkin(Npc n) {
         if (n.profile == null) setProfile(n, null, null, true);
+        if (n.skinValue != null && !n.skinValue.isEmpty()) {
+            setProfile(n, n.skinValue, n.skinSignature, false);
+            updateLabel(n);
+            return;
+        }
         if (n.skinName == null || n.skinName.isEmpty()) return;
         SkinService.Skin cached = skins.cached(null, n.skinName);
         if (cached != null) setProfile(n, cached.texture(), cached.signature(), false);
@@ -497,7 +533,7 @@ public final class NpcService implements Listener {
             td.setShadowed(true);
             td.setAlignment(TextDisplay.TextAlignment.CENTER);
             td.setBackgroundColor(Color.fromARGB(70, 0, 0, 0));
-            td.setLineWidth(200);
+            td.setLineWidth(260);
         });
     }
 

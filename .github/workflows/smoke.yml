@@ -354,6 +354,18 @@ jobs:
             }
             log('NOEL MONDE', bot.game.dimension, bot.entity.position.floored().toString())
             await cmd('/hub', 5000); log('HUB RETOUR', bot.entity.position.floored().toString(), bot.inventory.items().map(i => i.name).join(', '))
+            // PNJ Père Noël au hub : un clic emmène dans le monde de l'arène, dans la file
+            bot.chat('/tp Testeur 6.5 65 6.5 180 0'); await sleep(1500)
+            await cmd('/lyonhub noel pnj-hub', 2000)
+            bot.chat('/tp Testeur 6.5 65 3.5 0 0'); await sleep(5000)
+            const pere = Object.values(bot.entities).filter(e => e.type === 'player' && e.username && e.username.startsWith('npc'))
+              .sort((a, b) => a.position.distanceTo(bot.entity.position) - b.position.distanceTo(bot.entity.position))[0]
+            const textes = Object.values(bot.entities).filter(e => e.name === 'text_display' && e.position.distanceTo(bot.entity.position) < 6)
+            log('PNJ HUB', pere ? pere.username + '@' + pere.position.floored().toString() : 'introuvable', 'textes', textes.length,
+              JSON.stringify(textes.map(t => (t.metadata || []).find(m => typeof m === 'string' || (m && m.type === 'compound')))).slice(0, 600))
+            if (pere) { await bot.activateEntity(pere).catch(er => log('ACTERR', er.message)); await sleep(5000) }
+            log('PNJ HUB CLIC', bot.entity.position.floored().toString())
+            await cmd('/bataille quitter', 1500); await cmd('/hub', 5000)
             bot.chat('/tp Testeur 0.5 65 0.5 180 0'); await sleep(2000)
             await cmd('/advancement grant Testeur only minecraft:adventure/sleep_in_bed')
             bot.setQuickBarSlot(0); await sleep(500); bot.activateItem(); await sleep(2500)
