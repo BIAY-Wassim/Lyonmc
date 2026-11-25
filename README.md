@@ -1,11 +1,12 @@
 Plugins du serveur LyonMC (par wassdead), pour Purpur / Paper 1.21.8.
 
-- **LyonAchievements-7.3.2.jar** : succès, grades, missions, métiers, saisons, économie, hologrammes, menus, chat, site.
+- **LyonAchievements-7.3.3.jar** : succès, grades, missions, métiers, saisons, économie, hologrammes, menus, chat, site.
   Nouveau, **Noël** (du 1er décembre au 6 janvier, réglages dans `plugins/LyonAchievements/noel.yml`) :
   **calendrier de l'Avent** (`/calendrier`, une case par jour, gros cadeau le 24, cases ratées rattrapables jusqu'au 24,
   titre Lutin 2026 pour les 24 cases), **chasse au trésor** (`/tresor`, un coffre caché tous les 5 jours pas trop loin du spawn,
   des quêtes dévoilent où il est, un cadeau pour chaque joueur qui le trouve et un bonus pour le premier, des faux coffres piégés),
   **boss de Noël le 24 à 21 h** qui lâche des cadeaux, **MOTD de Noël** et **icône du serveur avec un bonnet**.
+  `/menu` réorganisé en sous-menus, avec une case Noël (grisée jusqu'au 1er décembre).
 - **HUB-1.9.3.jar** : le monde du hub, son inventaire, les podiums de PNJ, le hub médiéval.
   Nouveau : l'**arène de Noël** dans **son propre monde** (`noel`, à part du hub) : la map `happychristmas.schem` et, juste à côté
   avec la vue sur la map, la **bataille de boules de neige** comme sur les consoles : des étages de neige en relief, on casse
