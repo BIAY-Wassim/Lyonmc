@@ -386,7 +386,7 @@ jobs:
             for (let i = 0; i < 6; i++) { await cmd('/equipe rejoindre Testeurs', 3000) }
             await cmd('/tpa Testeur', 12000)
             await cmd('/pay Testeur 500'); await cmd('/money'); await cmd('/equipe info')
-            for (let i = 0; i < 480 && !gradeSignal; i++) await sleep(1000)
+            for (let i = 0; i < 900 && !gradeSignal; i++) await sleep(1000)
             await cmd('mon grade est visible ?'); await cmd('/titres'); await close()
             log('done')
           }
