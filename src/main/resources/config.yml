@@ -46,6 +46,8 @@ modules:
   custom-advancements: true
   # Métiers (/metiers) : réglages dans metiers.yml
   jobs: true
+  # Noël (calendrier de l'Avent, chasse au trésor, boss, MOTD et icône) : réglages dans noel.yml
+  noel: true
 
 # Homes, /spawn, /tpa, /rtp
 teleport:

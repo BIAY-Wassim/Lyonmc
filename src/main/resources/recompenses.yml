@@ -49,6 +49,16 @@ grades:
 # Affichés entre crochets devant le pseudo, en plus du grade. Le joueur choisit avec /titres.
 # Un titre se débloque par un palier (plus bas), par une saison, ou s'achète (price).
 titles:
+  # Noël (calendrier de l'Avent, chasse au trésor, bataille de neige)
+  lutin-2026:
+    display: "<gradient:#ff6b6b:#7bd88f>Lutin 2026</gradient>"
+    description: "Ouvrir les 24 cases du calendrier de l'Avent"
+  chasseur-de-tresor:
+    display: "<#ffd86b>Chasseur de trésor"
+    description: "Trouver le trésor de Noël en premier"
+  roi-de-la-neige:
+    display: "<#9fd3ff>Roi de la neige"
+    description: "Gagner 5 batailles de neige au hub"
   lyonnais:
     display: "<#e8c872>Lyonnais"
     description: "Terminer les premiers pas"
@@ -222,6 +232,10 @@ colors:
 
 # Traînées de particules derrière le joueur quand il se déplace
 trails:
+  flocons:
+    display: "Flocons"
+    particle: SNOWFLAKE
+    icon: SNOWBALL
   notes:
     display: "Notes"
     particle: NOTE

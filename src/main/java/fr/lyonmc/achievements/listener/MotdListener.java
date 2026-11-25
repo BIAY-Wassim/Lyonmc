@@ -38,6 +38,8 @@ public final class MotdListener implements Listener {
     private volatile List<Component> line2 = List.of();
     private volatile List<String> hover = List.of();
     private volatile List<String> onlineNames = List.of();
+    /** Icône de Noël (null en dehors de la période). */
+    private volatile org.bukkit.util.CachedServerIcon icon;
 
     public MotdListener(JavaPlugin plugin, AdvancementRegistry registry, StatsService stats, Text text) {
         this.plugin = plugin;
@@ -51,11 +53,16 @@ public final class MotdListener implements Listener {
         TagResolver r = text.resolver(registry, stats, null, null);
         boolean center = plugin.getConfig().getBoolean("motd.center", true);
         int width = plugin.getConfig().getInt("motd.width", 264);
-        Component l1 = text.parse(plugin.getConfig().getString("motd.line1", ""), r);
+        // Noël : MOTD et icône de noel.yml pendant la période
+        fr.lyonmc.achievements.noel.NoelService noel = plugin instanceof fr.lyonmc.achievements.LyonAchievements la ? la.noel() : null;
+        boolean xmas = noel != null && noel.active();
+        if (xmas) r = TagResolver.resolver(r, net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unparsed("jours_noel", noel.daysToChristmasText()));
+        icon = xmas ? noel.icon() : null;
+        Component l1 = text.parse(xmas ? noel.motdLine1() : plugin.getConfig().getString("motd.line1", ""), r);
         line1 = center ? center(l1, width) : l1;
 
         List<Component> l2 = new ArrayList<>();
-        for (String s : plugin.getConfig().getStringList("motd.line2")) {
+        for (String s : xmas ? noel.motdLine2() : plugin.getConfig().getStringList("motd.line2")) {
             Component c = text.parse(s, r);
             l2.add(center ? center(c, width) : c);
         }
@@ -115,6 +122,8 @@ public final class MotdListener implements Listener {
         List<Component> l2 = line2;
         Component second = l2.isEmpty() ? Component.empty() : l2.get(ThreadLocalRandom.current().nextInt(l2.size()));
         event.motd(Component.text().append(line1).append(Component.newline()).append(second).build());
+        org.bukkit.util.CachedServerIcon xmasIcon = icon;
+        if (xmasIcon != null) event.setServerIcon(xmasIcon);
 
         List<String> h = hover;
         if (h.isEmpty()) return;

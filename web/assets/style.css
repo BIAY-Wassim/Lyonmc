@@ -274,7 +274,9 @@ code.cmd { font: 500 .9em/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 .pcard:hover { background: var(--panel-2); }
 .pcard img { width: 44px; height: 44px; border-radius: 6px; image-rendering: pixelated; }
 .pcard strong { display: flex; align-items: center; gap: 6px; font-weight: 600; overflow: hidden; white-space: nowrap; }
-.pcard span { display: block; font-size: var(--step--1); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pcard > div > span { display: block; font-size: var(--step--1); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Grades et titres en couleur (une balise par lettre pour les dégradés) : ils restent sur la ligne */
+.pcard > div > span span { display: inline; }
 
 /* Profil */
 .profile { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: clamp(24px, 5vw, 48px); padding-block: 36px 72px; }
@@ -683,4 +685,47 @@ ul.perks li { display: flex; flex-direction: column; gap: 2px; padding: 12px 14p
   .nav { order: 3; width: 100%; margin-left: 0; overflow-x: auto; scrollbar-width: none; }
   .nav::-webkit-scrollbar { display: none; }
   .online { margin-left: auto; }
+}
+
+/* ───────────── Noël (du 20 novembre au 6 janvier) ───────────── */
+:root { --snow: #eef4fb; --ice: #9fd3ff; --candy: #ff6b6b; }
+.wordmark.logo-noel { line-height: 0; text-shadow: none; }
+.wordmark.logo-noel img { width: clamp(260px, 34vw, 470px); height: auto; image-rendering: pixelated; filter: drop-shadow(0 6px 0 rgba(0, 0, 0, .28)); }
+.xmas .ground { background-image: url(/img/grass_side_snow.png); }
+.xmas .page-head::after { background-image: url(/img/snow_top.png); opacity: .5; }
+.hills .cap { fill: none; stroke: var(--snow); stroke-width: 5px; stroke-linejoin: miter; stroke-linecap: square; opacity: calc(.25 + var(--light) * .65); }
+.hills .far-cap { stroke-width: 4px; opacity: calc(.15 + var(--light) * .45); }
+.snow { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.snow i { position: absolute; top: -8px; background: #fff; animation: snow-fall linear infinite; }
+@keyframes snow-fall { to { transform: translate3d(var(--dx, 0), 760px, 0); } }
+@media (prefers-reduced-motion: reduce) { .snow { display: none; } }
+
+/* Bandeau de l'accueil */
+.xmas-band { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; margin-top: 10px; padding: 14px 16px; text-decoration: none; border-left: 3px solid var(--candy); }
+.xmas-band strong { display: block; font-weight: 600; }
+.xmas-band span:not(.ico) { display: block; color: var(--ink-2); font-size: var(--step--1); line-height: 1.45; }
+.xmas-band .go { color: var(--ice) !important; font-weight: 600; white-space: nowrap; }
+.xmas-band:hover { background: var(--panel-2); }
+.xmas-band:hover .go { text-decoration: underline; }
+
+/* Page Noël */
+.noel-head .countdown { display: flex; align-items: baseline; gap: 12px; margin-top: 16px; color: var(--ink-2); }
+.noel-head .countdown b { font: 400 2rem/1 var(--pixel); color: var(--snow); letter-spacing: .02em; white-space: nowrap; }
+.noel-page { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding-block: 26px 48px; }
+.noel-page > .card { padding: 18px 20px; }
+.noel-page p { margin: 0 0 12px; }
+.noel-page .noel-cal { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; align-items: start; }
+.slot .n { position: absolute; right: 2px; bottom: 0; font: 400 1rem/1 var(--pixel); color: #fff; text-shadow: 2px 2px 0 #3f3f3f; pointer-events: none; }
+.legend.one { grid-template-columns: 1fr; margin-top: 8px; }
+.legend.one li div { min-width: 0; }
+.quests { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 6px; }
+.quests li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.quests li > span:first-child { font: 400 1rem/1 var(--pixel); color: var(--ice); }
+@media (max-width: 980px) {
+  .noel-page { grid-template-columns: 1fr; }
+  .noel-page .noel-cal { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .xmas-band { grid-template-columns: auto minmax(0, 1fr); }
+  .xmas-band .go { grid-column: 2; }
 }

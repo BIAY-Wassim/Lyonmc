@@ -95,7 +95,26 @@ public final class Items {
             } catch (NumberFormatException ignored) {
             }
         }
-        return new ItemStack(m, amount);
+        ItemStack item = new ItemStack(m, amount);
+        // MATIERE:quantité:efficiency=4,unbreaking=3 (livre enchanté : enchantements stockés)
+        if (p.length > 2 && !p[2].isBlank()) {
+            org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
+            for (String e : p[2].split(",")) {
+                String[] kv = e.trim().split("=");
+                org.bukkit.enchantments.Enchantment ench = org.bukkit.Registry.ENCHANTMENT.get(
+                        org.bukkit.NamespacedKey.minecraft(kv[0].trim().toLowerCase(Locale.ROOT)));
+                if (ench == null || meta == null) continue;
+                int level = 1;
+                try {
+                    if (kv.length > 1) level = Math.max(1, Integer.parseInt(kv[1].trim()));
+                } catch (NumberFormatException ignored) {
+                }
+                if (meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta book) book.addStoredEnchant(ench, level, true);
+                else meta.addEnchant(ench, level, true);
+            }
+            item.setItemMeta(meta);
+        }
+        return item;
     }
 
     public static Material material(String name, Material fallback) {

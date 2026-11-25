@@ -74,6 +74,7 @@ public final class LyonAchievements extends JavaPlugin {
     private fr.lyonmc.achievements.shop.LotService lots;
     private fr.lyonmc.achievements.world.ResourceBonusService resourceBonus;
     private fr.lyonmc.achievements.world.DragonEggService dragonEgg;
+    private fr.lyonmc.achievements.noel.NoelService noel;
     private fr.lyonmc.achievements.teleport.HubService spawnHub;
     private fr.lyonmc.achievements.rewards.GradeService grades;
     private MotdListener motd;
@@ -171,6 +172,7 @@ public final class LyonAchievements extends JavaPlugin {
         holograms.load();
         resourceBonus = new fr.lyonmc.achievements.world.ResourceBonusService(this);
         dragonEgg = new fr.lyonmc.achievements.world.DragonEggService(this);
+        noel = new fr.lyonmc.achievements.noel.NoelService(this);
         resources = new ResourceWorldService(this);
         try {
             resources.init();
@@ -188,7 +190,8 @@ public final class LyonAchievements extends JavaPlugin {
 
         listen(placed, new AdvancementListener(this, registry, stats, boards, text), chat, new MenuListener(this), heads, motd,
                 missionListener, custom, teamCommand, teleporter, teleportCommands, spawnHub, resourceBonus, boss, web,
-                new fr.lyonmc.achievements.jobs.JobListener(this), dragonEgg, new fr.lyonmc.achievements.listener.VanillaFixes(this));
+                new fr.lyonmc.achievements.jobs.JobListener(this), dragonEgg, new fr.lyonmc.achievements.listener.VanillaFixes(this),
+                noel.calendar(), noel.treasure());
 
         SuccesCommand succes = new SuccesCommand(this, registry, stats, boards, achievementsMenu, text);
         command(succes, "succes", "classement", "carte");
@@ -201,6 +204,7 @@ public final class LyonAchievements extends JavaPlugin {
         command(auctionCommand, "hdv");
         command(new BossCommand(this), "boss");
         command(new fr.lyonmc.achievements.jobs.JobCommand(this), "metiers");
+        command(new fr.lyonmc.achievements.noel.NoelCommand(this), "calendrier", "tresor");
 
         // Joueurs déjà connectés (cas d'un /reload)
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -232,6 +236,7 @@ public final class LyonAchievements extends JavaPlugin {
         if (profiles != null) profiles.saveSync();
         if (teams != null) teams.save();
         if (auctions != null) auctions.save();
+        if (noel != null) noel.saveSync();
     }
 
     private void listen(Listener... listeners) {
@@ -283,6 +288,9 @@ public final class LyonAchievements extends JavaPlugin {
             auctions.tick();
             resources.tick();
             custom.tick();
+            // Noël : chasse au trésor (nouveau coffre, fin), données du calendrier
+            noel.treasure().tick();
+            noel.saveIfDirty();
         }, 600L, 1200L));
         // Toutes les 5 minutes : paliers liés au temps de jeu
         tasks.add(Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -354,6 +362,7 @@ public final class LyonAchievements extends JavaPlugin {
         missions.load();
         jobs.load();
         holograms.load();
+        noel.reload();
         web.invalidateContent();
         for (Player p : Bukkit.getOnlinePlayers()) stats.refreshOnline(p);
         stats.recomputeAll();
@@ -399,6 +408,7 @@ public final class LyonAchievements extends JavaPlugin {
     public AuctionService auctions() { return auctions; }
     public AuctionCommand auctionCommand() { return auctionCommand; }
     public BossService boss() { return boss; }
+    public fr.lyonmc.achievements.noel.NoelService noel() { return noel; }
     public HologramService holograms() { return holograms; }
     public DiscordService discord() { return discord; }
     public ResourceWorldService resources() { return resources; }

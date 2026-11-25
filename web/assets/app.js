@@ -70,6 +70,32 @@
     return guess - (Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi) - guess);
   }
 
+  // ───────────── Noël ─────────────
+  /** Le site passe en mode Noël du 20 novembre au 6 janvier (heure de Lyon). ?noel=1 ou ?noel=0 pour essayer. */
+  function isXmas() {
+    const q = new URLSearchParams(location.search).get("noel");
+    if (q === "1" || q === "0") return q === "1";
+    const { mo, d } = paris();
+    return (mo === 11 && d >= 20) || mo === 12 || (mo === 1 && d <= 6);
+  }
+  let XMAS = false;
+  function setupXmas() {
+    XMAS = isXmas();
+    document.body.classList.toggle("xmas", XMAS);
+    if (!XMAS) return;
+    // Dans la barre du haut, « Noël » prend la place d'« Actualités » (toujours dans le pied de page)
+    const news = document.querySelector('.nav a[href="/actualites"]');
+    if (news) { news.setAttribute("href", "/noel"); news.textContent = "Noël"; }
+  }
+  /** Jours avant le 25 décembre (heure de Lyon). */
+  function daysToXmas() {
+    const p = paris();
+    const today = Date.UTC(p.y, p.mo - 1, p.d);
+    let xmas = Date.UTC(p.y, 11, 25);
+    if (today > xmas) xmas = Date.UTC(p.y + 1, 11, 25);
+    return Math.round((xmas - today) / 86400000);
+  }
+
   async function data(name, fresh = true) {
     if (!fresh && cache[name]) return cache[name];
     try {
@@ -202,15 +228,27 @@
 
     const W = 1600, H = 190;
     const ridge = (base, amp, s) => {
-      let r = s, y = base, d = `M0 ${H}`;
+      let r = s, y = base, top = "";
       const rr = () => ((r = (r * 48271) % 2147483647) / 2147483647);
       for (let x = 0; x <= W; x += 32) {
         y = Math.max(8, Math.min(H - 16, y + Math.round((rr() - .5) * amp / 16) * 16));
-        d += ` L${x} ${y} L${x + 32} ${y}`;
+        top += ` L${x} ${y} L${x + 32} ${y}`;
       }
-      return d + ` L${W} ${H} Z`;
+      return { fill: `M0 ${H}${top} L${W} ${H} Z`, top: `M${top.slice(2)}` };
     };
-    scene.querySelector(".hills").innerHTML = `<path class="far" d="${ridge(70, 64, 11)}"/><path class="near" d="${ridge(126, 48, 29)}"/>`;
+    const far = ridge(70, 64, 11), near = ridge(126, 48, 29);
+    scene.querySelector(".hills").innerHTML = `<path class="far" d="${far.fill}"/><path class="near" d="${near.fill}"/>`
+      + (XMAS ? `<path class="cap far-cap" d="${far.top}" vector-effect="non-scaling-stroke"/><path class="cap" d="${near.top}" vector-effect="non-scaling-stroke"/>` : "");
+    // Noël : de la neige tombe sur l'accueil (rien si le visiteur préfère moins d'animations)
+    const snow = scene.querySelector(".snow");
+    if (snow) {
+      snow.innerHTML = Array.from({ length: 64 }, () => {
+        const size = rand() < .25 ? 4 : rand() < .6 ? 3 : 2;
+        const dur = 9 + rand() * 11;
+        return `<i style="left:${(rand() * 100).toFixed(2)}%;width:${size}px;height:${size}px;--dx:${((rand() - .5) * 90).toFixed(0)}px;`
+          + `animation-duration:${dur.toFixed(1)}s;animation-delay:-${(rand() * dur).toFixed(1)}s;opacity:${(.55 + rand() * .45).toFixed(2)}"></i>`;
+      }).join("");
+    }
   }
 
   // ───────────── Accueil ─────────────
@@ -238,13 +276,17 @@
     }).join("");
   }
 
-  function agenda(s) {
+  function agenda(s, noel) {
     const items = [];
     const now = Date.now();
     const boss = s?.boss || {};
     const bossName = esc(boss.name || "Le Colosse");
-    if (boss.active) items.push({ t: now, ic: "wither_skeleton_skull", title: `${bossName} est en combat`, sub: "Tape /boss en jeu pour rejoindre l'arène.", now: true });
-    else if (boss.next) items.push({ t: boss.next, ic: "wither_skeleton_skull", title: `${bossName} apparaît`, sub: fmtDay.format(boss.next) });
+    const bossIc = boss.christmas ? "snowball" : "wither_skeleton_skull";
+    if (boss.active) items.push({ t: now, ic: bossIc, title: `${bossName} est en combat`, sub: "Tape /boss en jeu pour rejoindre l'arène.", now: true });
+    else if (boss.next) items.push({ t: boss.next, ic: bossIc, title: `${bossName} apparaît`, sub: boss.christmas ? `Boss de Noël, ${fmtDay.format(boss.next)}` : fmtDay.format(boss.next) });
+    const hunt = noel?.tresor;
+    if (hunt?.actif) items.push({ t: now, ic: "chest", title: `Chasse au trésor n°${hunt.numero}`, sub: "Tape /tresor en jeu pour voir les quêtes.", now: true });
+    else if (hunt?.prochain && hunt.prochain > now) items.push({ t: hunt.prochain, ic: "chest", title: "Chasse au trésor de Noël", sub: fmtDay.format(hunt.prochain) });
     const season = s?.season;
     const mult = String(season?.multiplier ?? 2).replace(/\.0$/, "");
     if (season?.weekend) items.push({ t: now, ic: "experience_bottle", title: `Points de saison ×${mult}`, sub: "Tout le week-end, jusqu'à dimanche minuit.", now: true });
@@ -266,7 +308,8 @@
 
   async function home() {
     setTitle("");
-    const [s, c, j, contenu, news] = await Promise.all([data("serveur"), data("classements"), data("joueurs"), data("contenu", false), data("actualites")]);
+    const [s, c, j, contenu, news, noel] = await Promise.all([data("serveur"), data("classements"), data("joueurs"), data("contenu", false), data("actualites"),
+      XMAS ? data("noel") : null]);
     const idx = advIndex(contenu);
     const top = c?.achievements || [];
     const ip = s?.ip || "lyonmc.fr";
@@ -295,10 +338,11 @@
         <img class="celestial" alt="" aria-hidden="true">
         <div class="clouds" aria-hidden="true"></div>
         <svg class="hills" viewBox="0 0 1600 190" preserveAspectRatio="none" aria-hidden="true"></svg>
+        ${XMAS ? `<div class="snow" aria-hidden="true"></div>` : ""}
         <div class="ground" aria-hidden="true"></div>
         <div class="wrap">
           <div class="hero-copy">
-            <h1 class="wordmark">LyonMC</h1>
+            ${XMAS ? `<h1 class="wordmark logo-noel"><img src="/img/lyonmc-noel.png" width="640" height="259" alt="LyonMC Noël"></h1>` : `<h1 class="wordmark">LyonMC</h1>`}
             <p class="hero-lead">Survie Java ${esc(s?.version || "1.21.8")}. Cinq métiers, ${num(totals.achievements || 146)} succès à obtenir, des missions chaque jour, un boss deux fois par semaine et un classement qui repart chaque mois.</p>
             <div class="join">
               <p class="label">Adresse du serveur</p>
@@ -313,6 +357,7 @@
       <div class="wrap"><div class="stats-strip">
         ${stats.map(([ic, n, label]) => `<div class="card stat">${ico(ic)}<div><b>${num(n)}</b><span>${label}</span></div></div>`).join("")}
       </div></div>
+      ${XMAS ? xmasBand(noel) : ""}
 
       <section class="section"><div class="wrap">
         <h2>En ce moment sur le serveur</h2>
@@ -324,7 +369,7 @@
           </div>
           <div>
             <div class="panel-h"><h3>À venir</h3></div>
-            <ul class="agenda">${agenda(s)}</ul>
+            <ul class="agenda">${agenda(s, noel)}</ul>
             <div class="mini-board">
               <div class="panel-h"><h3>${esc(s?.season?.name || "Saison en cours")}</h3><a href="/classements/saison" data-link class="muted">Tout le classement</a></div>
               <ol>${sTop.length ? sTop.map((p, i) => `<li><span class="r">${i + 1}</span>${img(face(p.uuid, 32))}${plink(p.name)}<span class="pts">${num(p.points)} pts</span></li>`).join("") : `<li class="muted">Personne n'a encore marqué de points.</li>`}</ol>
@@ -373,6 +418,135 @@
       catch (e) { btn.textContent = ip; }
       setTimeout(() => (btn.textContent = "Copier"), 2000);
     });
+  }
+
+  // ───────────── Page Noël ─────────────
+  /** Jour du calendrier sur le serveur : 0 avant le 1er décembre, 1 à 24, 25 après le 24. */
+  function calDay(noel) {
+    const [y, m, d] = String(noel?.aujourdhui || "").split("-").map(Number);
+    if (!y) { const p = paris(); return p.mo === 12 ? Math.min(25, p.d) : p.mo === 1 ? 25 : 0; }
+    return m === 12 ? Math.min(25, d) : m === 1 ? 25 : 0;
+  }
+
+  function xmasBand(noel) {
+    const day = calDay(noel);
+    const cal = noel?.calendrier || [];
+    const left = daysToXmas();
+    let line;
+    if (day >= 1 && day <= 24) {
+      const n = cal[day - 1]?.joueurs || 0;
+      line = `Case n°${day} du calendrier de l'Avent : ${n ? `déjà ouverte par ${n} joueur${n > 1 ? "s" : ""}` : "à ouvrir en jeu avec /calendrier"}.`;
+    } else if (day === 0) line = "Le calendrier de l'Avent ouvre le 1er décembre : une case par jour, un gros cadeau le 24.";
+    else line = "Joyeuses fêtes ! Le village de Noël reste ouvert jusqu'au 6 janvier.";
+    return `<div class="wrap"><a class="card xmas-band" href="/noel" data-link>
+      ${ico("spruce_sapling")}
+      <div><strong>${left > 0 ? `Noël dans ${left} jour${left > 1 ? "s" : ""}` : "Joyeux Noël !"}</strong><span>${line} Village de Noël au hub, bataille de boules de neige, chasse au trésor et boss du 24.</span></div>
+      <span class="go">Le programme</span></a></div>`;
+  }
+
+  function adventGui(noel) {
+    const day = calDay(noel);
+    const cal = noel?.calendrier || [];
+    const slots = {};
+    let i = 0;
+    for (let r = 1; r <= 4; r++) for (const c of [1, 2, 3, 5, 6, 7]) slots[r * 9 + c] = ++i;
+    const cells = [];
+    for (let k = 0; k < 54; k++) {
+      if (k === 4) {
+        cells.push(`<span class="slot glint" ${tipAttr(tipHtml("Calendrier de l'Avent", ["Une case à ouvrir chaque jour", "du 1er au 24 décembre.", "Une case ratée se rattrape jusqu'au 24."], "/calendrier en jeu"))}>${img(icon("spruce_sapling"))}</span>`);
+        continue;
+      }
+      if (k === 49) { cells.push(`<span class="slot" ${tipAttr(tipHtml("Fermer"))}>${img(icon("barrier"))}</span>`); continue; }
+      const d = slots[k];
+      if (!d) { cells.push(`<span class="slot filler">${img(icon("black_stained_glass_pane"))}</span>`); continue; }
+      const c = cal[d - 1] || {};
+      const name = d === 24 ? "Jour 24 · le gros cadeau" : `Jour ${d}`;
+      let ic, tip, cls = "";
+      if (day >= d) {
+        ic = d === 24 ? "nether_star" : "chest";
+        const who = c.joueurs ? `Ouverte par ${c.joueurs} joueur${c.joueurs > 1 ? "s" : ""}` : "Personne ne l'a encore ouverte";
+        tip = tipHtml(esc(name), [esc(c.cadeau || "Un cadeau"), d === day ? "C'est la case d'aujourd'hui !" : who], d === day ? "À ouvrir en jeu : /calendrier" : (day <= 24 ? "Encore à rattraper si tu l'as ratée" : ""));
+        if (d === day) cls = "glint";
+      } else {
+        ic = "red_stained_glass_pane";
+        const wait = day === 0 ? `S'ouvre le ${d} décembre` : `S'ouvre dans ${d - day} jour${d - day > 1 ? "s" : ""}`;
+        tip = tipHtml(esc(name), [wait, d === 24 ? "Le plus gros cadeau du calendrier" : "Surprise !"]);
+      }
+      cells.push(`<span class="slot ${cls}" ${tipAttr(tip)} aria-label="${esc(name)}">${img(icon(ic))}<b class="n">${d}</b></span>`);
+    }
+    const opened = cal.filter((x) => x.ouvert).length;
+    return `<div class="chest"><p class="gui-title">Calendrier de l'Avent  ·  ${opened} / 24</p><div class="grid">${cells.join("")}</div></div>`;
+  }
+
+  async function noelPage() {
+    setTitle("Noël");
+    const [noel, bat] = await Promise.all([data("noel"), data("bataille")]);
+    const left = daysToXmas();
+    const day = calDay(noel);
+    const t = noel?.tresor || {};
+    const b = noel?.boss || {};
+    const top = bat?.top || [];
+    const last = bat?.derniere;
+    const [, bm, bd] = String(b.date ? `x-${b.date}` : "x-12-24").split("-").map(Number);
+    const bossDay = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(Date.UTC(paris().y, (bm || 12) - 1, bd || 24)));
+    const today24 = noel?.calendrier?.[23];
+    const sub = day === 0 ? "Le calendrier de l'Avent ouvre le 1er décembre."
+      : day <= 24 ? `Aujourd'hui, c'est la case n°${day} du calendrier.` : "Le calendrier est fini : joyeuses fêtes !";
+
+    let tresor;
+    if (!noel) tresor = `<p class="muted">Les infos arrivent dans une minute.</p>`;
+    else if (t.actif) {
+      tresor = `<p><strong>Trésor n°${esc(t.numero)} caché !</strong> Il disparaît dans ${until(t.fin)}. Tape <code class="cmd">/tresor</code> en jeu : chaque quête finie dévoile un indice, la dernière donne les coordonnées exactes.</p>
+        <ol class="quests">${(t.quetes || []).map((q, i) => `<li><span>${i + 1}</span><span>${esc(q)}${i === 3 ? ` <span class="muted small">(coordonnées exactes)</span>` : ""}</span></li>`).join("")}</ol>
+        <p class="small muted">${(t.trouveurs || []).length ? `Déjà trouvé par ${t.trouveurs.map((n) => plink(n)).join(", ")}.` : "Personne ne l'a encore trouvé : le premier gagne un bonus !"}</p>`;
+    } else {
+      tresor = `<p>Un coffre est caché dans le monde survie tous les ${esc(t.tousLesJours || 5)} jours pendant les fêtes, pas trop loin du spawn. Des quêtes dévoilent petit à petit où il est.</p>
+        <p class="small muted">${t.prochain && t.prochain > Date.now() ? `Prochain trésor : ${fmtDay.format(t.prochain)}.` : "Prochain trésor bientôt."}</p>`;
+    }
+
+    app.innerHTML = `
+      <div class="page-head noel-head"><div class="wrap">
+        <h1>Noël sur LyonMC</h1>
+        <p>Jusqu'au 6 janvier : une case du calendrier de l'Avent chaque jour, un village de Noël au hub avec sa bataille de boules de neige, une chasse au trésor tous les 5 jours et un boss le 24 au soir.</p>
+        <p class="countdown"><b>${left > 0 ? `J-${left}` : "Joyeux Noël"}</b><span>${sub}</span></p>
+      </div></div>
+
+      <div class="wrap noel-page">
+        <section class="card noel-cal">
+          ${adventGui(noel)}
+          <div>
+            <div class="panel-h"><h3>Calendrier de l'Avent</h3><span class="muted">${day >= 1 && day <= 24 ? `case n°${day} aujourd'hui` : ""}</span></div>
+            <p>En jeu, tape <code class="cmd">/calendrier</code> et ouvre la case du jour. Tu as raté une case ? Elle se rattrape jusqu'au 24.</p>
+            <p>Le 24, c'est le gros cadeau${today24?.cadeau ? ` : <strong>${esc(today24.cadeau)}</strong>` : ""}. Ouvre les 24 cases pour gagner le titre <strong>Lutin 2026</strong>.</p>
+            <ul class="legend one">
+              <li>${img(icon("chest"))}<div><strong>Case ouverte</strong><span>Survole-la pour voir le cadeau et combien de joueurs l'ont ouverte.</span></div></li>
+              <li>${img(icon("red_stained_glass_pane"))}<div><strong>À venir</strong><span>Les cadeaux restent une surprise jusqu'au jour J.</span></div></li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="panel-h"><h3>Bataille de boules de neige</h3>${bat?.enCours ? `<span class="badge-live">partie en cours</span>` : ""}</div>
+          <p>Au village de Noël du hub (<code class="cmd">/noel</code>), des étages de neige en relief empilés au-dessus du vide. Casse la neige sous les pieds des autres à coups de boules de neige : le dernier debout gagne.</p>
+          <p class="small muted">Tape <code class="cmd">/bataille</code> ou clique sur le PNJ près de la fontaine. La partie démarre dès qu'il y a ${esc(bat?.joueursMin || 2)} joueurs. 5 victoires : titre <strong>Roi de la neige</strong>.</p>
+          ${top.length ? `<div class="panel-h" style="margin-top:16px"><h3>Meilleurs joueurs</h3><span class="muted">${num(bat.parties)} partie${bat.parties > 1 ? "s" : ""}</span></div>
+            <ol class="toplist">${top.slice(0, 5).map((p, i) => `<li><span class="pos">${i + 1}</span>${plink(p.pseudo)}<span class="muted">${num(p.victoires)} victoire${p.victoires > 1 ? "s" : ""}</span></li>`).join("")}</ol>`
+            : `<p class="small muted" style="margin-top:14px">Pas encore de partie : la première victoire t'attend.</p>`}
+          ${last?.gagnant ? `<p class="small muted" style="margin-top:10px">Dernière partie : ${plink(last.gagnant)} contre ${num((last.joueurs || []).length - 1)} adversaire${(last.joueurs || []).length > 2 ? "s" : ""}, ${esc(ago(Date.parse(last.date)))}.</p>` : ""}
+        </section>
+
+        <section class="card">
+          <div class="panel-h"><h3>Chasse au trésor</h3>${t.actif ? `<span class="badge-live">en cours</span>` : ""}</div>
+          ${tresor}
+          ${noel ? `<p class="small muted">Chaque joueur qui le trouve gagne ${esc(t.cadeau || "un cadeau")}. Le premier gagne en plus ${esc(t.bonus || "un bonus")}. Attention aux faux coffres piégés autour !</p>` : ""}
+        </section>
+
+        <section class="card">
+          <div class="panel-h"><h3>Boss de Noël</h3></div>
+          <p><strong>${esc(b.nom || "Le Père Fouettard")}</strong> attaque ${esc(bossDay)} à ${esc(String(b.heure || "21:00").replace(":", " h "))}. Tout le monde se retrouve dans l'arène avec <code class="cmd">/boss</code>.</p>
+          <p class="small muted">Il lâche des cadeaux à sa mort, et chaque participant reçoit ${esc(b.cadeau || "un cadeau")}.</p>
+        </section>
+      </div>`;
   }
 
   // ───────────── Classements ─────────────
@@ -696,7 +870,8 @@
       menus: `<p>Tape <code class="cmd">/menu</code> pour l'ouvrir. C'est la copie exacte du menu en jeu : survole une case pour voir ce qu'elle affiche. Les chiffres sont des exemples.</p>
         <div class="wiki-menu" style="margin-top:18px">${chest(HUB)}
           <ul class="legend">${Object.values(HUB.items).map((e) => `<li>${img(e.head ? face("MHF_Steve", 32) : icon(e.icon))}<div><strong>${esc(e.name)}</strong><span>${esc(e.what)}${e.cmd ? ` <code class="cmd">${e.cmd}</code>` : ""}</span></div></li>`).join("")}</ul></div>`,
-      commandes: COMMANDS.map(([group, list]) => `<h3>${group}</h3><table class="cmds"><tbody>${list.map(([c, d]) => `<tr><td><code class="cmd">${esc(c)}</code></td><td>${esc(d)}</td></tr>`).join("")}</tbody></table>`).join(""),
+      commandes: (XMAS ? [["Noël", [["/calendrier", "Le calendrier de l'Avent : une case par jour jusqu'au 24"], ["/noel", "Aller au village de Noël du hub"],
+        ["/bataille", "Rejoindre la bataille de boules de neige (/bataille top : les meilleurs)"], ["/tresor", "La chasse au trésor : quêtes et indices"]]], ...COMMANDS] : COMMANDS).map(([group, list]) => `<h3>${group}</h3><table class="cmds"><tbody>${list.map(([c, d]) => `<tr><td><code class="cmd">${esc(c)}</code></td><td>${esc(d)}</td></tr>`).join("")}</tbody></table>`).join(""),
       metiers: (() => {
         const jb = g.jobs;
         if (!jb) return `<p>Les métiers arrivent bientôt.</p>`;
@@ -1294,6 +1469,7 @@
       else if (parts[0] === "faq") await faq();
       else if (parts[0] === "actualites") await actualites();
       else if (parts[0] === "suggestions") await suggestions();
+      else if (parts[0] === "noel" || parts[0] === "noël") await noelPage();
       else if (parts[0] === "mentions-legales") await legal("mentions");
       else if (parts[0] === "confidentialite") await legal("confidentialite");
       else {
@@ -1319,6 +1495,7 @@
   window.addEventListener("popstate", () => render(false));
 
   (async () => {
+    setupXmas();
     await loadFr();
     refreshOnline();
     setInterval(refreshOnline, 30000);

@@ -35,7 +35,11 @@ import java.util.Map;
 public final class SchematicPaster {
 
     public record Schem(String name, int width, int height, int length, BlockData[] palette, char[] blocks,
-                        int offsetX, int offsetY, int offsetZ, int nonAir) {
+                        int offsetX, int offsetY, int offsetZ, int nonAir, List<Head> heads) {
+    }
+
+    /** Tête décorative du schematic (position dans le fichier et texture du skin). */
+    public record Head(int x, int y, int z, java.util.UUID id, String texture) {
     }
 
     private final JavaPlugin plugin;
@@ -114,10 +118,66 @@ public final class SchematicPaster {
             oy = num(meta.get("WEOffsetY"));
             oz = num(meta.get("WEOffsetZ"));
         }
-        return new Schem(name, w, h, l, states, blocks, ox, oy, oz, nonAir);
+        return new Schem(name, w, h, l, states, blocks, ox, oy, oz, nonAir, heads(root));
+    }
+
+    /** Têtes avec un skin (ex. : Head Database) : ancien format (SkullOwner) et nouveau (profile). */
+    @SuppressWarnings("unchecked")
+    private static List<Head> heads(Map<String, Object> root) {
+        Object list = root.get("BlockEntities");
+        if (list == null && root.get("Blocks") instanceof Map<?, ?> b) list = b.get("BlockEntities"); // v3
+        List<Head> out = new ArrayList<>();
+        if (!(list instanceof List<?> entities)) return out;
+        for (Object o : entities) {
+            if (!(o instanceof Map<?, ?> raw)) continue;
+            Map<String, Object> e = (Map<String, Object>) raw;
+            if (!(e.get("Pos") instanceof int[] pos) || pos.length < 3) continue;
+            Map<String, Object> data = e.get("Data") instanceof Map<?, ?> d ? (Map<String, Object>) d : e;
+            String texture = null;
+            java.util.UUID id = null;
+            if (data.get("SkullOwner") instanceof Map<?, ?> owner) {
+                id = uuid(owner.get("Id"));
+                if (owner.get("Properties") instanceof Map<?, ?> props && props.get("textures") instanceof List<?> t && !t.isEmpty()
+                        && t.get(0) instanceof Map<?, ?> first) texture = (String) first.get("Value");
+            } else if (data.get("profile") instanceof Map<?, ?> profile) {
+                id = uuid(profile.get("id"));
+                if (profile.get("properties") instanceof List<?> props) {
+                    for (Object p : props) {
+                        if (p instanceof Map<?, ?> m && "textures".equals(m.get("name"))) texture = (String) m.get("value");
+                    }
+                }
+            }
+            if (texture != null && !texture.isBlank()) out.add(new Head(pos[0], pos[1], pos[2], id == null ? java.util.UUID.randomUUID() : id, texture));
+        }
+        return out;
+    }
+
+    private static java.util.UUID uuid(Object o) {
+        if (o instanceof int[] a && a.length == 4) {
+            return new java.util.UUID((long) a[0] << 32 | a[1] & 0xFFFFFFFFL, (long) a[2] << 32 | a[3] & 0xFFFFFFFFL);
+        }
+        if (o instanceof String s) {
+            try {
+                return java.util.UUID.fromString(s);
+            } catch (IllegalArgumentException ignored) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /** Pose la texture d'une tête déjà collée. */
+    private static void applyHead(World world, int x, int y, int z, Head h) {
+        if (!(world.getBlockAt(x, y, z).getState() instanceof org.bukkit.block.Skull skull)) return;
+        com.destroystokyo.paper.profile.PlayerProfile profile = Bukkit.createProfile(h.id());
+        profile.setProperty(new com.destroystokyo.paper.profile.ProfileProperty("textures", h.texture()));
+        skull.setPlayerProfile(profile);
+        skull.update(true, false);
     }
 
     private static BlockData parse(String state) {
+        // Blocs renommés depuis les anciennes versions (schematics plus vieux que le serveur)
+        if (state.equals("minecraft:grass") || state.startsWith("minecraft:grass[")) state = "minecraft:short_grass" + state.substring(15);
         try {
             return Bukkit.createBlockData(state);
         } catch (IllegalArgumentException e) {
@@ -158,6 +218,7 @@ public final class SchematicPaster {
         long[] placed = {0};
         int[] chunkIndex = {0};
         int[] shapeIndex = {0};
+        int[] headIndex = {0};
         long[] lastReport = {0};
         ServerLevel level = ((CraftWorld) world).getHandle();
 
@@ -188,6 +249,13 @@ public final class SchematicPaster {
                     BlockState st = level.getBlockState(pos);
                     BlockState ns = Block.updateFromNeighbourShapes(st, level, pos);
                     if (ns != st) level.setBlock(pos, ns, 2 | 16);
+                } else if (headIndex[0] < s.heads().size()) {
+                    Head h = s.heads().get(headIndex[0]++);
+                    try {
+                        applyHead(world, baseX + h.x(), baseY + h.y(), baseZ + h.z(), h);
+                    } catch (RuntimeException e) {
+                        plugin.getLogger().fine("Tête non posée : " + e.getMessage());
+                    }
                 } else {
                     if (removeStartPlatform) {
                         // Plateforme de départ (0, 64, 0) : on enlève ce que la construction n'a pas recouvert
@@ -207,7 +275,8 @@ public final class SchematicPaster {
                     for (int[] c : chunks) world.removePluginChunkTicket(c[0], c[1], plugin);
                     running.cancel();
                     running = null;
-                    plugin.getLogger().info("Schematic " + s.name() + " collé : " + placed[0] + " blocs.");
+                    plugin.getLogger().info("Schematic " + s.name() + " collé : " + placed[0] + " blocs"
+                            + (s.heads().isEmpty() ? "." : ", " + s.heads().size() + " têtes décorées."));
                     if (done != null) {
                         done.run();
                         return;
