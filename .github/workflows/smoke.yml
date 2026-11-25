@@ -452,7 +452,7 @@ jobs:
           if grep -qE "at fr\.lyonmc|Error occurred while enabling LyonAchievements" logs/latest.log; then exit 1; fi
       - name: Nettoyer les branches temporaires
         if: always()
-        run: git push origin --delete deps deps-jars || true
+        run: git push origin --delete deps deps-jars outils-skins skins-data || true
       - name: Publier les journaux (branche ci-logs)
         if: always()
         run: |
