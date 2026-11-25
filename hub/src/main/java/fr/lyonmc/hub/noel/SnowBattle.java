@@ -638,6 +638,7 @@ public final class SnowBattle implements Listener, TabExecutor {
             alive.clear();
             state = State.IDLE;
             rebuild();
+            exportAsync(); // le site voit que la partie est finie
             cleanQueue();
             if (queue.size() >= Math.max(2, num("joueurs-min", 2))) startCountdown(num("attente-secondes", 20));
             else stopTaskIfIdle();
