@@ -122,6 +122,15 @@ public final class NoelService {
         return !day.isAfter(periodEnd(s));
     }
 
+    /** Jours avant le début de la prochaine période (0 pendant la période). */
+    public long daysUntilStart() {
+        LocalDate t = today();
+        if (active(t)) return 0;
+        LocalDate next = monthDay("periode.debut", "12-01").atYear(t.getYear());
+        if (!next.isAfter(t)) next = next.plusYears(1);
+        return ChronoUnit.DAYS.between(t, next);
+    }
+
     /** Jours restants avant le 25 décembre (0 le jour de Noël). */
     public long daysToChristmas() {
         LocalDate t = today();

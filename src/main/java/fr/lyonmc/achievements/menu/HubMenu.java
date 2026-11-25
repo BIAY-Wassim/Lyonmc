@@ -28,6 +28,11 @@ public final class HubMenu {
         this.plugin = plugin;
     }
 
+    /** Bouton d'un sous-menu (la case est choisie par la mise en page). */
+    private record Btn(Material icon, String name, List<Component> lore, boolean glint, Consumer<Player> action) {
+    }
+
+    /** Menu principal : le profil, quatre catégories (sous-menus), Noël, quelques raccourcis. */
     public void open(Player player) {
         Profile p = plugin.profiles().get(player);
         plugin.missions().ensure(p);
@@ -61,96 +66,52 @@ public final class HubMenu {
         for (Profile.MissionSlot m : p.daily) if (m.done) done++;
         boolean daily = plugin.daily().canClaim(p);
 
-        // ─── Rangée 0 : communauté (plugin COMMUNAUTE) ───
-        communityRow(holder, inv);
-
-        // ─── Rangée 1 : progresser ───
-        section(inv, 18, Material.YELLOW_STAINED_GLASS_PANE, "<#ffd86b>Progresser", "Missions, succès, récompenses");
-        button(holder, inv, 19, Material.WRITABLE_BOOK, "Missions", List.of(
-                Items.line("3 missions par jour, 3 par semaine"),
-                Items.kv("Aujourd'hui", done + " / " + p.daily.size()),
-                Items.kv("Série", plugin.missions().activeStreak(p) + " jour(s)"),
-                Items.dark("Commande : /missions")), done < p.daily.size(),
-                pl -> plugin.missionMenu().open(pl));
-        if (plugin.jobs().enabled()) {
-            List<Component> jl = new ArrayList<>();
-            jl.add(Items.line("Mineur, Bûcheron, Fermier, Chasseur,"));
-            jl.add(Items.line("Pêcheur : des niveaux et des pièces"));
-            jl.add(Items.line("en jouant normalement"));
-            for (var job : plugin.jobs().all()) {
-                jl.add(Component.text(" ").append(job.label()).append(Component.text("  niv. " + plugin.jobs().level(p, job.id()), Text.WHITE)));
+        // ─── Les quatre catégories ───
+        List<Component> prog = new ArrayList<>(List.of(
+                Items.line("Missions, métiers, succès,"),
+                Items.line("récompenses, saison, classements, boss"),
+                Items.EMPTY,
+                Items.kv("Missions du jour", done + " / " + p.daily.size()),
+                Items.kv("Récompense du jour", daily ? "disponible !" : "récupérée")));
+        category(holder, inv, 19, Material.EXPERIENCE_BOTTLE, "<#ffd86b>Progresser", prog, daily || done < p.daily.size(), this::openProgress);
+        category(holder, inv, 21, Material.COMPASS, "<#9fd8ff>Se déplacer", List.of(
+                Items.line("Hub, survie, la mine, homes,"),
+                Items.line("position précédente, rejoindre un joueur")), false, this::openTravel);
+        category(holder, inv, 23, Material.EMERALD, "<#c79bff>Style et échanges", List.of(
+                Items.line("Titres, cosmétiques, boutique,"),
+                Items.line("hôtel des ventes, équipe, site"),
+                Items.EMPTY,
+                Items.kv("Solde", plugin.economy().format(p.coins))), false, this::openStyle);
+        if (hasCommand("vote") || hasCommand("premierspas") || hasCommand("parrain") || hasCommand("objectif")) {
+            var boost = plugin.boosts().current();
+            List<Component> cl = new ArrayList<>(List.of(
+                    Items.line("Voter, premiers pas, parrainage,"),
+                    Items.line("objectif de la semaine")));
+            if (boost != null) {
+                cl.add(Items.EMPTY);
+                cl.add(Component.text("✦ Bonus en cours : pièces x" + fmt(boost.coins()), accent).decoration(TextDecoration.ITALIC, false));
             }
-            jl.add(Items.dark("Commande : /metiers"));
-            button(holder, inv, 20, Material.IRON_PICKAXE, "Métiers", jl, false, pl -> plugin.jobMenu().open(pl));
+            category(holder, inv, 25, Material.GOLDEN_APPLE, "<#9be37c>Communauté", cl, boost != null, this::openCommunity);
         }
-        button(holder, inv, 21, Material.KNOWLEDGE_BOOK, "Succès", List.of(
-                Items.line("Ta progression et ce qu'il te reste"),
-                Items.kv("Obtenus", s.count() + " / " + plugin.registry().total()),
-                Items.dark("Commande : /succes")), false,
-                pl -> plugin.achievementsMenu().open(pl));
-        button(holder, inv, 22, daily ? Material.CHEST : Material.BARREL, "Récompense du jour", List.of(
+
+        // ─── Noël ───
+        noelButton(holder, inv, 31, player);
+
+        // ─── Raccourcis ───
+        button(holder, inv, 38, Material.WRITABLE_BOOK, "Missions", List.of(
+                Items.kv("Aujourd'hui", done + " / " + p.daily.size()),
+                Items.kv("Série", plugin.missions().activeStreak(p) + " jour(s)")), done < p.daily.size(),
+                pl -> plugin.missionMenu().open(pl));
+        button(holder, inv, 40, daily ? Material.CHEST : Material.BARREL, "Récompense du jour", List.of(
                 Items.line(daily ? "Disponible : viens la chercher !" : "Déjà récupérée aujourd'hui"),
-                Items.kv("Série", plugin.daily().currentStreak(p) + " jour(s)"),
-                Items.dark("Commande : /recompense")), daily,
+                Items.kv("Série", plugin.daily().currentStreak(p) + " jour(s)")), daily,
                 pl -> plugin.rewardMenus().openDaily(pl));
-        button(holder, inv, 23, Material.GOLD_INGOT, "Parcours de récompenses", List.of(
-                Items.line("Des paliers qui se débloquent tout seuls"),
-                Items.kv("Débloqués", p.claimed.size() + " / " + plugin.rewards().paliers().size()),
-                Items.dark("Commande : /parcours")), false,
-                pl -> plugin.rewardMenus().openPath(pl, 1));
-        button(holder, inv, 24, Material.NETHER_STAR, plugin.seasons().name(), List.of(
-                Items.line("Le classement du mois"),
-                Items.kv("Fin dans", plugin.seasons().timeLeft()),
-                plugin.seasons().isWeekend() ? Component.text("✦ Week-end : points bonus !", accent) : Items.dark("Commande : /saison")),
-                plugin.seasons().isWeekend(), pl -> plugin.seasonMenu().open(pl));
-        button(holder, inv, 25, Material.DIAMOND, "Classements", List.of(
-                Items.line("Le podium des meilleurs joueurs"),
-                Items.dark("Commande : /classement")), false,
-                pl -> plugin.achievementsMenu().openTop(pl));
-        button(holder, inv, 26, Material.WITHER_SKELETON_SKULL, "Boss mondial", List.of(
+        button(holder, inv, 42, Material.WITHER_SKELETON_SKULL, "Boss mondial", List.of(
                 Items.line(plugin.boss().active() ? "Le boss est en cours de combat !" : "Prochaine apparition :"),
-                Items.line(plugin.boss().active() ? "Clique pour rejoindre l'arène" : plugin.boss().nextText()),
-                Items.dark("Commande : /boss")),
+                Items.line(plugin.boss().active() ? "Clique pour rejoindre l'arène" : plugin.boss().nextText())),
                 plugin.boss().active(), pl -> {
                     pl.closeInventory();
                     pl.performCommand("boss");
-                });
-
-        // ─── Rangée 2 : se déplacer ───
-        travelRow(holder, inv, player, p);
-
-        // ─── Rangée 3 : personnaliser et échanger ───
-        section(inv, 36, Material.PURPLE_STAINED_GLASS_PANE, "<#c79bff>Style et échanges", "Grade, titres, cosmétiques, boutique");
-        button(holder, inv, 37, Material.NAME_TAG, "Titres et grade", List.of(
-                Component.text("Grade : ", Text.GRAY).append(plugin.grades().display(p.uuid())).decoration(TextDecoration.ITALIC, false),
-                Items.line("Le titre à côté de ton pseudo"),
-                Items.kv("Titres débloqués", plugin.rewards().unlockedTitles(p) + " / " + plugin.rewards().titles().size()),
-                Items.dark("Commande : /titres")), false,
-                pl -> plugin.rewardMenus().openTitles(pl, 1));
-        button(holder, inv, 38, Material.BLAZE_POWDER, "Cosmétiques", List.of(
-                Items.line("Couleur du pseudo et traînées"),
-                Items.dark("Commande : /cosmetiques")), false,
-                pl -> plugin.rewardMenus().openCosmetics(pl));
-        button(holder, inv, 39, Material.EMERALD, "Boutique", List.of(
-                Items.line("Titres, cosmétiques, homes en plus"),
-                Items.kv("Solde", plugin.economy().format(p.coins)),
-                Items.dark("Commande : /boutique")), false,
-                pl -> plugin.rewardMenus().openShop(pl, 1));
-        button(holder, inv, 40, Material.GOLD_BLOCK, "Hôtel des ventes", List.of(
-                Items.line("Achète et vends entre joueurs"),
-                Items.kv("Objets en vente", String.valueOf(plugin.auctions().active().size())),
-                Items.dark("Commande : /hdv")), false,
-                pl -> plugin.auctionCommand().open(pl, 1, false));
-        button(holder, inv, 41, Material.WHITE_BANNER, "Équipe", List.of(
-                Items.line(team == null ? "Crée ou rejoins une équipe" : "Ton équipe : " + team.name),
-                Items.dark("Commande : /equipe")), false,
-                pl -> plugin.teamCommand().openMenu(pl));
-        button(holder, inv, 42, Material.FILLED_MAP, "Carte et site", List.of(
-                Items.line("La carte du serveur en direct"),
-                Items.line("et les classements sur lyonmc.fr"),
-                Items.dark("Commande : /carte")), false, pl -> {
-                    pl.closeInventory();
-                    pl.performCommand("carte");
                 });
 
         // ─── Bas ───
@@ -159,7 +120,7 @@ public final class HubMenu {
                     Items.line("Tout comprendre sur LyonMC :"),
                     Items.line("commencer, gagner des pièces,"),
                     Items.line("protéger sa base, les règles..."),
-                    Items.dark("Commande : /aide")), true, pl -> {
+                    Items.dark("Commande : /aide")), false, pl -> {
                         pl.closeInventory();
                         pl.performCommand("aide");
                     });
@@ -182,55 +143,280 @@ public final class HubMenu {
         player.openInventory(inv);
     }
 
-    // ───────────────────────────── Communauté ─────────────────────────────
+    // ───────────────────────────── Sous-menus ─────────────────────────────
 
-    private void communityRow(MenuHolder holder, Inventory inv) {
-        if (!hasCommand("vote") && !hasCommand("premierspas") && !hasCommand("parrain") && !hasCommand("objectif")) return;
-        section(inv, 9, Material.LIME_STAINED_GLASS_PANE, "<#9be37c>Communauté", "Voter, parrainer, jouer ensemble");
-        int slot = 11;
-        if (hasCommand("vote")) {
-            button(holder, inv, slot++, Material.GOLDEN_APPLE, "Voter pour LyonMC", List.of(
-                    Items.line("Une récompense à chaque vote,"),
-                    Items.line("et le serveur monte dans les classements"),
-                    Items.dark("Commande : /vote")), true, pl -> {
-                        pl.closeInventory();
-                        pl.performCommand("vote");
-                    });
+    /** Cases des boutons d'un sous-menu de 5 rangées, centrés et espacés selon leur nombre. */
+    private static int[] layout(int n) {
+        return switch (n) {
+            case 1 -> new int[]{22};
+            case 2 -> new int[]{21, 23};
+            case 3 -> new int[]{20, 22, 24};
+            case 4 -> new int[]{19, 21, 23, 25};
+            case 5 -> new int[]{20, 21, 22, 23, 24};
+            case 6 -> new int[]{19, 20, 21, 23, 24, 25};
+            case 7 -> new int[]{19, 20, 21, 22, 23, 24, 25};
+            case 8 -> new int[]{10, 12, 14, 16, 28, 30, 32, 34};
+            default -> {
+                int[] a = new int[Math.min(n, 14)];
+                for (int i = 0; i < a.length; i++) a[i] = (i < 7 ? 10 : 19 - 7 + 9) + i;
+                yield a;
+            }
+        };
+    }
+
+    private void openSub(Player player, String title, List<Btn> buttons) {
+        MenuHolder holder = new MenuHolder();
+        Inventory inv = Bukkit.createInventory(holder, 45, Component.text(title));
+        holder.inventory(inv);
+        int[] slots = layout(buttons.size());
+        for (int i = 0; i < slots.length; i++) {
+            Btn b = buttons.get(i);
+            button(holder, inv, slots[i], b.icon(), b.name(), b.lore(), b.glint(), b.action());
         }
-        if (hasCommand("premierspas")) {
-            button(holder, inv, slot++, Material.MAP, "Premiers pas", List.of(
-                    Items.line("Les étapes pour bien commencer"),
-                    Items.line("(avec des récompenses)"),
-                    Items.dark("Commande : /premierspas")), false, pl -> {
-                        pl.closeInventory();
-                        pl.performCommand("premierspas");
-                    });
+        inv.setItem(40, Items.item(Material.ARROW, Component.text("Retour au menu", Text.WHITE), List.of(), false));
+        holder.action(40, this::open);
+        Items.fill(inv);
+        player.openInventory(inv);
+    }
+
+    private static Consumer<Player> run(String command) {
+        return pl -> {
+            pl.closeInventory();
+            pl.performCommand(command);
+        };
+    }
+
+    public void openProgress(Player player) {
+        Profile p = plugin.profiles().get(player);
+        plugin.missions().ensure(p);
+        PlayerStats s = plugin.stats().refreshOnline(player);
+        TextColor accent = plugin.text().accent();
+        int done = 0;
+        for (Profile.MissionSlot m : p.daily) if (m.done) done++;
+        boolean daily = plugin.daily().canClaim(p);
+        List<Btn> b = new ArrayList<>();
+        b.add(new Btn(Material.WRITABLE_BOOK, "Missions", List.of(
+                Items.line("3 missions par jour, 3 par semaine"),
+                Items.kv("Aujourd'hui", done + " / " + p.daily.size()),
+                Items.kv("Série", plugin.missions().activeStreak(p) + " jour(s)"),
+                Items.dark("Commande : /missions")), done < p.daily.size(), pl -> plugin.missionMenu().open(pl)));
+        if (plugin.jobs().enabled()) {
+            List<Component> jl = new ArrayList<>();
+            jl.add(Items.line("Mineur, Bûcheron, Fermier, Chasseur,"));
+            jl.add(Items.line("Pêcheur : des niveaux et des pièces"));
+            for (var job : plugin.jobs().all()) {
+                jl.add(Component.text(" ").append(job.label()).append(Component.text("  niv. " + plugin.jobs().level(p, job.id()), Text.WHITE)));
+            }
+            jl.add(Items.dark("Commande : /metiers"));
+            b.add(new Btn(Material.IRON_PICKAXE, "Métiers", jl, false, pl -> plugin.jobMenu().open(pl)));
         }
-        if (hasCommand("parrain")) {
-            button(holder, inv, slot++, Material.TOTEM_OF_UNDYING, "Parrainage", List.of(
-                    Items.line("Invite tes amis : vous êtes"),
-                    Items.line("récompensés tous les deux"),
-                    Items.dark("Commande : /parrain")), false, pl -> {
-                        pl.closeInventory();
-                        pl.performCommand("parrain");
-                    });
+        b.add(new Btn(Material.KNOWLEDGE_BOOK, "Succès", List.of(
+                Items.line("Ta progression et ce qu'il te reste"),
+                Items.kv("Obtenus", s.count() + " / " + plugin.registry().total()),
+                Items.dark("Commande : /succes")), false, pl -> plugin.achievementsMenu().open(pl)));
+        b.add(new Btn(daily ? Material.CHEST : Material.BARREL, "Récompense du jour", List.of(
+                Items.line(daily ? "Disponible : viens la chercher !" : "Déjà récupérée aujourd'hui"),
+                Items.kv("Série", plugin.daily().currentStreak(p) + " jour(s)"),
+                Items.dark("Commande : /recompense")), daily, pl -> plugin.rewardMenus().openDaily(pl)));
+        b.add(new Btn(Material.GOLD_INGOT, "Parcours de récompenses", List.of(
+                Items.line("Des paliers qui se débloquent tout seuls"),
+                Items.kv("Débloqués", p.claimed.size() + " / " + plugin.rewards().paliers().size()),
+                Items.dark("Commande : /parcours")), false, pl -> plugin.rewardMenus().openPath(pl, 1)));
+        b.add(new Btn(Material.NETHER_STAR, plugin.seasons().name(), List.of(
+                Items.line("Le classement du mois"),
+                Items.kv("Fin dans", plugin.seasons().timeLeft()),
+                plugin.seasons().isWeekend() ? Component.text("✦ Week-end : points bonus !", accent) : Items.dark("Commande : /saison")),
+                plugin.seasons().isWeekend(), pl -> plugin.seasonMenu().open(pl)));
+        b.add(new Btn(Material.DIAMOND, "Classements", List.of(
+                Items.line("Le podium des meilleurs joueurs"),
+                Items.dark("Commande : /classement")), false, pl -> plugin.achievementsMenu().openTop(pl)));
+        b.add(new Btn(Material.WITHER_SKELETON_SKULL, "Boss mondial", List.of(
+                Items.line(plugin.boss().active() ? "Le boss est en cours de combat !" : "Prochaine apparition :"),
+                Items.line(plugin.boss().active() ? "Clique pour rejoindre l'arène" : plugin.boss().nextText()),
+                Items.dark("Commande : /boss")), plugin.boss().active(), run("boss")));
+        openSub(player, "Progresser", b);
+    }
+
+    public void openTravel(Player player) {
+        Profile p = plugin.profiles().get(player);
+        boolean inHub = plugin.spawnHub() != null && plugin.spawnHub().inHub(player.getLocation());
+        boolean inRes = plugin.resources().world() != null && player.getWorld().equals(plugin.resources().world());
+        List<Btn> b = new ArrayList<>();
+        b.add(new Btn(Material.LODESTONE, "Hub", List.of(
+                Items.line("Le spawn : stats, podium, menus"),
+                inHub ? Component.text("✔ Tu y es", plugin.text().accent()) : Items.dark("Commande : /hub")), inHub, run("spawn")));
+        if (hasCommand("survie")) {
+            b.add(new Btn(Material.GRASS_BLOCK, "Retour en survie", List.of(
+                    Items.line("Là où tu étais dans le monde survie,"),
+                    Items.line("même après le hub ou la mine"),
+                    Items.dark("Commande : /survie")), inHub || inRes, run("survie")));
         }
-        if (hasCommand("objectif")) {
-            button(holder, inv, slot++, Material.BEACON, "Objectif de la semaine", List.of(
-                    Items.line("Un défi pour tout le serveur,"),
-                    Items.line("une récompense pour tous"),
-                    Items.dark("Commande : /objectif")), false, pl -> {
-                        pl.closeInventory();
-                        pl.performCommand("objectif");
-                    });
-        }
+        b.add(new Btn(Material.DIAMOND_PICKAXE, "La mine (monde ressources)", List.of(
+                Items.line("Le monde où miner rapporte le plus :"),
+                Items.line("plus de minerais, minage rapide,"),
+                Items.line("pièces et trésors. Remis à neuf"),
+                Items.line("chaque mois."),
+                inRes ? Component.text("✔ Tu y es", plugin.text().accent()) : Items.dark("Commande : /mine")), inRes, pl -> {
+                    pl.closeInventory();
+                    plugin.resources().teleport(pl);
+                }));
+        b.add(new Btn(Material.RED_BED, "Homes", List.of(
+                Items.line("Tes maisons : clique pour y aller"),
+                Items.kv("Emplacements", p.homes.size() + " / " + plugin.rewards().homesLimit(p)),
+                Items.dark("Commandes : /home, /sethome <nom>")), false, pl -> plugin.teleportCommands().openHomes(pl)));
+        org.bukkit.Location back = plugin.teleporter().back(player.getUniqueId());
+        b.add(new Btn(Material.RECOVERY_COMPASS, "Position précédente", List.of(
+                Items.line("Revenir là où tu étais juste avant"),
+                Items.line("(dernière téléportation ou mort)"),
+                Items.kv("Position", where(back)),
+                Items.dark("Commande : /back")), false, run("back")));
+        b.add(new Btn(Material.ENDER_PEARL, "Aventure au hasard", List.of(
+                Items.line("Un endroit sûr au hasard du monde survie"),
+                Items.line("(une fois toutes les " + Math.max(1, plugin.getConfig().getLong("teleport.rtp.cooldown-seconds", 600) / 60) + " minutes)"),
+                Items.dark("Commande : /rtp")), false, run("rtp")));
+        b.add(new Btn(Material.LEAD, "Rejoindre un joueur", List.of(
+                Items.line("Choisis un joueur connecté :"),
+                Items.line("il devra accepter ta demande"),
+                Items.dark("Commandes : /tpa <joueur>, /tpaccept")), false, this::openPlayers));
+        openSub(player, "Se déplacer", b);
+    }
+
+    public void openStyle(Player player) {
+        Profile p = plugin.profiles().get(player);
+        Team team = plugin.teams().teamOf(player.getUniqueId());
+        List<Btn> b = new ArrayList<>();
+        b.add(new Btn(Material.NAME_TAG, "Titres et grade", List.of(
+                Component.text("Grade : ", Text.GRAY).append(plugin.grades().display(p.uuid())).decoration(TextDecoration.ITALIC, false),
+                Items.line("Le titre à côté de ton pseudo"),
+                Items.kv("Titres débloqués", plugin.rewards().unlockedTitles(p) + " / " + plugin.rewards().titles().size()),
+                Items.dark("Commande : /titres")), false, pl -> plugin.rewardMenus().openTitles(pl, 1)));
+        b.add(new Btn(Material.BLAZE_POWDER, "Cosmétiques", List.of(
+                Items.line("Couleur du pseudo et traînées"),
+                Items.dark("Commande : /cosmetiques")), false, pl -> plugin.rewardMenus().openCosmetics(pl)));
+        b.add(new Btn(Material.EMERALD, "Boutique", List.of(
+                Items.line("Titres, cosmétiques, homes en plus"),
+                Items.kv("Solde", plugin.economy().format(p.coins)),
+                Items.dark("Commande : /boutique")), false, pl -> plugin.rewardMenus().openShop(pl, 1)));
+        b.add(new Btn(Material.GOLD_BLOCK, "Hôtel des ventes", List.of(
+                Items.line("Achète et vends entre joueurs"),
+                Items.kv("Objets en vente", String.valueOf(plugin.auctions().active().size())),
+                Items.dark("Commande : /hdv")), false, pl -> plugin.auctionCommand().open(pl, 1, false)));
+        b.add(new Btn(Material.WHITE_BANNER, "Équipe", List.of(
+                Items.line(team == null ? "Crée ou rejoins une équipe" : "Ton équipe : " + team.name),
+                Items.dark("Commande : /equipe")), false, pl -> plugin.teamCommand().openMenu(pl)));
+        b.add(new Btn(Material.FILLED_MAP, "Carte et site", List.of(
+                Items.line("La carte du serveur en direct"),
+                Items.line("et les classements sur lyonmc.fr"),
+                Items.dark("Commande : /carte")), false, run("carte")));
+        openSub(player, "Style et échanges", b);
+    }
+
+    public void openCommunity(Player player) {
+        List<Btn> b = new ArrayList<>();
+        if (hasCommand("vote")) b.add(new Btn(Material.GOLDEN_APPLE, "Voter pour LyonMC", List.of(
+                Items.line("Une récompense à chaque vote,"),
+                Items.line("et le serveur monte dans les classements"),
+                Items.dark("Commande : /vote")), true, run("vote")));
+        if (hasCommand("premierspas")) b.add(new Btn(Material.MAP, "Premiers pas", List.of(
+                Items.line("Les étapes pour bien commencer"),
+                Items.line("(avec des récompenses)"),
+                Items.dark("Commande : /premierspas")), false, run("premierspas")));
+        if (hasCommand("parrain")) b.add(new Btn(Material.TOTEM_OF_UNDYING, "Parrainage", List.of(
+                Items.line("Invite tes amis : vous êtes"),
+                Items.line("récompensés tous les deux"),
+                Items.dark("Commande : /parrain")), false, run("parrain")));
+        if (hasCommand("objectif")) b.add(new Btn(Material.BEACON, "Objectif de la semaine", List.of(
+                Items.line("Un défi pour tout le serveur,"),
+                Items.line("une récompense pour tous"),
+                Items.dark("Commande : /objectif")), false, run("objectif")));
+        if (hasCommand("ami")) b.add(new Btn(Material.PLAYER_HEAD, "Amis", List.of(
+                Items.line("Qui est connecté, où,"),
+                Items.line("et rejoindre tes amis"),
+                Items.dark("Commande : /ami")), false, run("ami")));
         var boost = plugin.boosts().current();
-        if (boost != null) {
-            inv.setItem(slot, Items.item(Material.EXPERIENCE_BOTTLE, plugin.text().parse("<#ffd86b><bold>Bonus en cours !")
-                    .decoration(TextDecoration.ITALIC, false), List.of(
-                    Items.line("Pièces x" + fmt(boost.coins()) + ", points de saison x" + fmt(boost.season())),
-                    Items.kv("Fin dans", Math.max(1, (boost.until() - System.currentTimeMillis()) / 60000) + " min")), true));
+        if (boost != null) b.add(new Btn(Material.EXPERIENCE_BOTTLE, "Bonus en cours !", List.of(
+                Items.line("Pièces x" + fmt(boost.coins()) + ", points de saison x" + fmt(boost.season())),
+                Items.kv("Fin dans", Math.max(1, (boost.until() - System.currentTimeMillis()) / 60000) + " min")), true, pl -> { }));
+        openSub(player, "Communauté", b);
+    }
+
+    // ───────────────────────────── Noël ─────────────────────────────
+
+    /** Case Noël du menu : grisée avant le 1er décembre, puis ouvre le sous-menu de Noël ; rien après les fêtes. */
+    private void noelButton(MenuHolder holder, Inventory inv, int slot, Player player) {
+        var noel = plugin.noel();
+        if (noel == null || !plugin.module("noel")) return;
+        if (noel.active()) {
+            int day = noel.calendar().currentDay();
+            boolean caseDuJour = day >= 1 && day <= 24 && noel.calendar().canOpen(player.getUniqueId(), day);
+            List<Component> l = new ArrayList<>();
+            l.add(Items.line("Calendrier de l'Avent, chasse au trésor,"));
+            l.add(Items.line("arène de Noël et boss du 24"));
+            l.add(Items.EMPTY);
+            long left = noel.daysToChristmas();
+            l.add(Items.kv("Noël", left == 0 ? "c'est aujourd'hui !" : "dans " + noel.daysToChristmasText()));
+            if (caseDuJour) l.add(Component.text("✦ Ta case du jour t'attend !", plugin.text().accent()).decoration(TextDecoration.ITALIC, false));
+            if (noel.treasure().running()) l.add(Component.text("✦ Un trésor est caché !", plugin.text().accent()).decoration(TextDecoration.ITALIC, false));
+            List<Component> all = new ArrayList<>(l);
+            all.add(Items.EMPTY);
+            all.add(Items.action("Cliquer pour ouvrir", plugin.text().accent()));
+            inv.setItem(slot, Items.item(Material.SPRUCE_SAPLING, plugin.text().parse("<gradient:#ff6b6b:#ffffff:#ff6b6b><bold>❄ Noël sur LyonMC ❄</bold></gradient>")
+                    .decoration(TextDecoration.ITALIC, false), all, caseDuJour || noel.treasure().running()));
+            holder.action(slot, this::openNoel);
+            return;
         }
+        long until = noel.daysUntilStart();
+        if (until <= 0 || until > 45) return; // après les fêtes : rien
+        inv.setItem(slot, Items.item(Material.GRAY_DYE, plugin.text().parse("<gray><bold>❄ Noël sur LyonMC</bold>").decoration(TextDecoration.ITALIC, false), List.of(
+                Items.line("L'événement de Noël arrive le 1er décembre !"),
+                Items.kv("Dans", until + " jour" + (until > 1 ? "s" : "")),
+                Items.EMPTY,
+                Items.dark("Au programme :"),
+                Items.dark(" • le calendrier de l'Avent (un cadeau par jour)"),
+                Items.dark(" • la chasse au trésor (tous les 5 jours)"),
+                Items.dark(" • l'arène de Noël (bataille de boules de neige)"),
+                Items.dark(" • le boss de Noël, le 24 au soir")), false));
+        holder.action(slot, pl -> plugin.msg(pl, "<gray>Patience : l'événement de Noël commence le <white>1er décembre</white> !"));
+    }
+
+    public void openNoel(Player player) {
+        var noel = plugin.noel();
+        if (noel == null || !noel.active()) {
+            open(player);
+            return;
+        }
+        int day = noel.calendar().currentDay();
+        int opened = noel.calendar().opened(player.getUniqueId()).size();
+        boolean caseDuJour = day >= 1 && day <= 24 && noel.calendar().canOpen(player.getUniqueId(), day);
+        List<Btn> b = new ArrayList<>();
+        b.add(new Btn(day == 24 ? Material.NETHER_STAR : Material.CHEST, "Calendrier de l'Avent", List.of(
+                Items.line("Une case à ouvrir chaque jour"),
+                Items.line("du 1er au 24 décembre, gros cadeau le 24"),
+                Items.kv("Ouvertes", opened + " / 24"),
+                caseDuJour ? Component.text("✦ Ta case du jour t'attend !", plugin.text().accent()).decoration(TextDecoration.ITALIC, false)
+                        : Items.dark(day > 24 ? "Le calendrier est fini" : "Reviens demain pour la suivante"),
+                Items.dark("Commande : /calendrier")), caseDuJour, pl -> noel.calendar().open(pl)));
+        boolean hunt = noel.treasure().running();
+        b.add(new Btn(Material.FILLED_MAP, "Chasse au trésor", List.of(
+                Items.line("Un coffre caché dans le monde survie"),
+                Items.line("tous les 5 jours : les quêtes disent où"),
+                Items.line(hunt ? "Un trésor est caché en ce moment !" : "Le prochain arrive bientôt"),
+                Items.dark("Commande : /tresor")), hunt, pl -> {
+                    pl.closeInventory();
+                    noel.treasure().show(pl);
+                }));
+        if (hasCommand("noel")) b.add(new Btn(Material.SNOWBALL, "Arène de Noël", List.of(
+                Items.line("La bataille de boules de neige :"),
+                Items.line("casse la neige sous les pieds des autres,"),
+                Items.line("le dernier debout gagne"),
+                Items.dark("Commandes : /noel, /bataille")), false, run("bataille")));
+        String date = noel.cfg().getString("boss.date", "12-24"), heure = noel.cfg().getString("boss.heure", "21:00");
+        String[] d = date.split("-");
+        b.add(new Btn(Material.WITHER_SKELETON_SKULL, "Boss de Noël", List.of(
+                Items.line("Il attaque le " + (d.length == 2 ? Integer.parseInt(d[1]) + " décembre" : date) + " à " + heure.replace(":", " h ")),
+                Items.line("et lâche des cadeaux en mourant"),
+                Items.dark("Commande : /boss")), plugin.boss().active(), run("boss")));
+        openSub(player, "Noël sur LyonMC", b);
     }
 
     private static String fmt(double d) {
@@ -245,69 +431,6 @@ public final class HubMenu {
 
     private static String where(org.bukkit.Location l) {
         return l == null || l.getWorld() == null ? "aucune" : l.getWorld().getName() + " " + l.getBlockX() + " " + l.getBlockY() + " " + l.getBlockZ();
-    }
-
-    private void travelRow(MenuHolder holder, Inventory inv, Player player, Profile p) {
-        section(inv, 27, Material.LIGHT_BLUE_STAINED_GLASS_PANE, "<#9fd8ff>Se déplacer", "Hub, survie, mine, homes...");
-        boolean inHub = plugin.spawnHub() != null && plugin.spawnHub().inHub(player.getLocation());
-        boolean inRes = plugin.resources().world() != null && player.getWorld().equals(plugin.resources().world());
-
-        button(holder, inv, 28, Material.LODESTONE, "Hub", List.of(
-                Items.line("Le spawn : stats, podium, menus"),
-                inHub ? Component.text("✔ Tu y es", plugin.text().accent()) : Items.dark("Commande : /hub")), inHub, pl -> {
-                    pl.closeInventory();
-                    pl.performCommand("spawn");
-                });
-        if (hasCommand("survie")) {
-            button(holder, inv, 29, Material.GRASS_BLOCK, "Retour en survie", List.of(
-                    Items.line("Là où tu étais dans le monde survie,"),
-                    Items.line("même après le hub ou la mine"),
-                    Items.dark("Commande : /survie")), inHub || inRes, pl -> {
-                        pl.closeInventory();
-                        pl.performCommand("survie");
-                    });
-        } else {
-            button(holder, inv, 29, Material.GRASS_BLOCK, "Aventure au hasard", List.of(
-                    Items.line("Un endroit sûr au hasard du monde survie"),
-                    Items.dark("Commande : /rtp")), false, pl -> {
-                        pl.closeInventory();
-                        pl.performCommand("rtp");
-                    });
-        }
-        button(holder, inv, 30, Material.DIAMOND_PICKAXE, "La mine (monde ressources)", List.of(
-                Items.line("Le monde où miner rapporte le plus :"),
-                Items.line("plus de minerais, minage rapide,"),
-                Items.line("pièces et trésors. Remis à neuf"),
-                Items.line("chaque mois."),
-                inRes ? Component.text("✔ Tu y es", plugin.text().accent()) : Items.dark("Commande : /mine")), inRes, pl -> {
-                    pl.closeInventory();
-                    plugin.resources().teleport(pl);
-                });
-        button(holder, inv, 31, Material.RED_BED, "Homes", List.of(
-                Items.line("Tes maisons : clique pour y aller"),
-                Items.kv("Emplacements", p.homes.size() + " / " + plugin.rewards().homesLimit(p)),
-                Items.dark("Commandes : /home, /sethome <nom>")), false,
-                pl -> plugin.teleportCommands().openHomes(pl));
-        org.bukkit.Location back = plugin.teleporter().back(player.getUniqueId());
-        button(holder, inv, 32, Material.RECOVERY_COMPASS, "Position précédente", List.of(
-                Items.line("Revenir là où tu étais juste avant"),
-                Items.line("(dernière téléportation ou mort)"),
-                Items.kv("Position", where(back)),
-                Items.dark("Commande : /back")), false, pl -> {
-                    pl.closeInventory();
-                    pl.performCommand("back");
-                });
-        button(holder, inv, 33, Material.ENDER_PEARL, "Aventure au hasard", List.of(
-                Items.line("Un endroit sûr au hasard du monde survie"),
-                Items.line("(une fois toutes les " + Math.max(1, plugin.getConfig().getLong("teleport.rtp.cooldown-seconds", 600) / 60) + " minutes)"),
-                Items.dark("Commande : /rtp")), false, pl -> {
-                    pl.closeInventory();
-                    pl.performCommand("rtp");
-                });
-        button(holder, inv, 34, Material.LEAD, "Rejoindre un joueur", List.of(
-                Items.line("Choisis un joueur connecté :"),
-                Items.line("il devra accepter ta demande"),
-                Items.dark("Commandes : /tpa <joueur>, /tpaccept")), false, this::openPlayers);
     }
 
     /** Liste des joueurs connectés pour envoyer une demande de téléportation. */
@@ -332,8 +455,8 @@ public final class HubMenu {
         if (slot == 0) {
             inv.setItem(22, Items.item(Material.GRAY_DYE, Component.text("Personne d'autre n'est connecté", Text.GRAY), List.of(), false));
         }
-        inv.setItem(49, Items.item(Material.ARROW, Component.text("Retour au menu", Text.WHITE), List.of(), false));
-        holder.action(49, this::open);
+        inv.setItem(49, Items.item(Material.ARROW, Component.text("Retour", Text.WHITE), List.of(), false));
+        holder.action(49, this::openTravel);
         Items.fill(inv);
         player.openInventory(inv);
     }
@@ -359,6 +482,11 @@ public final class HubMenu {
         if (hasCommand("aide")) community.add("aide|Le centre d'aide");
         if (hasCommand("regles")) community.add("regles|Le règlement");
         if (community.size() > 1) groups.add(community.toArray(new String[0]));
+        if (plugin.noel() != null && plugin.noel().active()) {
+            groups.add(hasCommand("noel")
+                    ? new String[]{"Noël", "calendrier|Calendrier de l'Avent", "tresor|Chasse au trésor", "noel|Arène de Noël", "bataille|Rejoindre la bataille de neige"}
+                    : new String[]{"Noël", "calendrier|Calendrier de l'Avent", "tresor|Chasse au trésor"});
+        }
         groups.add(new String[]{"Style et échanges", "titres|Titres et grade", "cosmetiques|Cosmétiques", "boutique|Boutique", "hdv|Hôtel des ventes",
                 "equipe|Équipe", "money|Ton solde", "pay |Donner des pièces"});
         p.sendMessage(Component.empty());
@@ -376,9 +504,13 @@ public final class HubMenu {
         p.sendMessage(Component.empty());
     }
 
-    private void section(Inventory inv, int slot, Material pane, String title, String sub) {
-        inv.setItem(slot, Items.item(pane, plugin.text().parse("<bold>" + title).decoration(TextDecoration.ITALIC, false),
-                List.of(Items.line(sub)), false));
+    private void category(MenuHolder holder, Inventory inv, int slot, Material icon, String title, List<Component> lore, boolean glint,
+                          Consumer<Player> action) {
+        List<Component> l = new ArrayList<>(lore);
+        l.add(Items.EMPTY);
+        l.add(Items.action("Cliquer pour ouvrir", plugin.text().accent()));
+        inv.setItem(slot, Items.item(icon, plugin.text().parse("<bold>" + title).decoration(TextDecoration.ITALIC, false), l, glint));
+        holder.action(slot, action);
     }
 
     private void button(MenuHolder holder, Inventory inv, int slot, Material icon, String name, List<Component> lore,
