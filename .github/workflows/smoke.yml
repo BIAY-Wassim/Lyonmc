@@ -342,6 +342,16 @@ jobs:
             await sleep(2000)
             log('BATAILLE FIN', bot.entity.position.floored().toString(), inv())
             await sleep(6000); await cmd('/bataille top', 2000)
+            const V = require('vec3')
+            for (const [lo, hi] of [[58, 66], [51, 59], [44, 52]]) {
+              const prof = []
+              for (let x = 262; x <= 288; x += 2) {
+                let top = '-'
+                for (let y = hi; y >= lo; y--) { const b = bot.blockAt(new V(x, y, 0)); if (b && (b.name === 'snow_block' || b.name === 'ice')) { top = y; break } }
+                prof.push(top)
+              }
+              log('ARENE RELIEF', lo + '-' + hi, prof.join(' '))
+            }
             bot.chat('/tp Testeur 0.5 65 0.5 180 0'); await sleep(2000)
             await cmd('/advancement grant Testeur only minecraft:adventure/sleep_in_bed')
             bot.setQuickBarSlot(0); await sleep(500); bot.activateItem(); await sleep(2500)
@@ -376,7 +386,7 @@ jobs:
             for (let i = 0; i < 6; i++) { await cmd('/equipe rejoindre Testeurs', 3000) }
             await cmd('/tpa Testeur', 12000)
             await cmd('/pay Testeur 500'); await cmd('/money'); await cmd('/equipe info')
-            for (let i = 0; i < 200 && !gradeSignal; i++) await sleep(1000)
+            for (let i = 0; i < 480 && !gradeSignal; i++) await sleep(1000)
             await cmd('mon grade est visible ?'); await cmd('/titres'); await close()
             log('done')
           }
