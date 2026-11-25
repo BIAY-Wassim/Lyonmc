@@ -58,7 +58,7 @@ titles:
     description: "Trouver le trésor de Noël en premier"
   roi-de-la-neige:
     display: "<#9fd3ff>Roi de la neige"
-    description: "Gagner 5 batailles de neige au hub"
+    description: "Gagner 5 batailles de boules de neige au village de Noël"
   lyonnais:
     display: "<#e8c872>Lyonnais"
     description: "Terminer les premiers pas"

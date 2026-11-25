@@ -119,7 +119,9 @@ public final class HubBuilder {
                     + " <white>plugins/HUB/schematics/</white> puis relance la commande.");
             return;
         }
-        World w = worlds.isHub(p.getWorld()) ? p.getWorld() : null;
+        // Le monde du village de Noël n'est pas le hub
+        boolean village = players.noel() != null && players.noel().isVillageWorld(p.getWorld());
+        World w = worlds.isHub(p.getWorld()) && !village ? p.getWorld() : null;
         if (w == null) {
             String name = worlds.names().isEmpty() ? "hub" : worlds.names().get(0);
             w = Bukkit.getWorld(name);

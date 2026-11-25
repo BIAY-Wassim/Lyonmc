@@ -57,6 +57,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
         noel = new fr.lyonmc.hub.noel.ChristmasVillage(this, worlds, players, npcs, paster);
         players.noel(noel);
         getServer().getPluginManager().registerEvents(noel.battle(), this);
+        getServer().getPluginManager().registerEvents(noel, this);
         var noelCmd = getCommand("noel");
         if (noelCmd != null) noelCmd.setExecutor(noel);
         var bataille = getCommand("bataille");
@@ -322,7 +323,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                 case "installer" -> out.addAll(List.of("confirmer", "recoller"));
                 case "coller" -> out.addAll(paster.available());
                 case "parkour" -> out.addAll(List.of("depart", "etape", "arrivee", "classement", "effacer", "temps-reset"));
-                case "noel" -> out.addAll(List.of("installer", "spawn", "attente", "pnj", "arene"));
+                case "noel" -> out.addAll(List.of("installer", "spawn", "attente", "pnj", "arene", "retirer"));
                 default -> {
                 }
             }

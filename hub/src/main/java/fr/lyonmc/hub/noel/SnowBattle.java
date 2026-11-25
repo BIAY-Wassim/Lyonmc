@@ -761,8 +761,12 @@ public final class SnowBattle implements Listener, TabExecutor {
     @EventHandler
     public void onWorld(PlayerChangedWorldEvent e) {
         Player p = e.getPlayer();
-        queue.remove(p.getUniqueId());
-        if (alive.contains(p.getUniqueId())) eliminate(p.getUniqueId(), null, "a quitté le hub");
+        // Du hub au village (ou l'inverse) on reste dans la file ; en partant en survie, on la quitte
+        if (!worlds.isHub(p.getWorld())) queue.remove(p.getUniqueId());
+        if (alive.contains(p.getUniqueId())) {
+            boolean inHub = worlds.isHub(p.getWorld());
+            eliminate(p.getUniqueId(), inHub ? p : null, "a quitté le village", false);
+        }
     }
 
     @EventHandler
