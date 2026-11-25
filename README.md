@@ -7,7 +7,7 @@ Plugins du serveur LyonMC (par wassdead), pour Purpur / Paper 1.21.8.
   des quêtes dévoilent où il est, un cadeau pour chaque joueur qui le trouve et un bonus pour le premier, des faux coffres piégés),
   **boss de Noël le 24 à 21 h** qui lâche des cadeaux, **MOTD de Noël** et **icône du serveur avec un bonnet**.
   `/menu` réorganisé en sous-menus, avec une case Noël (grisée jusqu'au 1er décembre).
-- **HUB-1.9.3.jar** : le monde du hub, son inventaire, les podiums de PNJ, le hub médiéval.
+- **HUB-1.9.4.jar** : le monde du hub, son inventaire, les podiums de PNJ, le hub médiéval.
   Nouveau : l'**arène de Noël** dans **son propre monde** (`noel`, à part du hub) : la map `happychristmas.schem` et, juste à côté
   avec la vue sur la map, la **bataille de boules de neige** comme sur les consoles : des étages de neige en relief, on casse
   la neige sous les pieds des autres, le dernier debout gagne. Au hub, un **PNJ Père Noël** : un clic pour entrer dans la file,
