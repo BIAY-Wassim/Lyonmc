@@ -437,10 +437,10 @@
       const n = cal[day - 1]?.joueurs || 0;
       line = `Case n°${day} du calendrier de l'Avent : ${n ? `déjà ouverte par ${n} joueur${n > 1 ? "s" : ""}` : "à ouvrir en jeu avec /calendrier"}.`;
     } else if (day === 0) line = "Le calendrier de l'Avent ouvre le 1er décembre : une case par jour, un gros cadeau le 24.";
-    else line = "Joyeuses fêtes ! Le village de Noël reste ouvert jusqu'au 6 janvier.";
+    else line = "Joyeuses fêtes ! L'arène de Noël reste ouverte jusqu'au 6 janvier.";
     return `<div class="wrap"><a class="card xmas-band" href="/noel" data-link>
       ${ico("spruce_sapling")}
-      <div><strong>${left > 0 ? `Noël dans ${left} jour${left > 1 ? "s" : ""}` : "Joyeux Noël !"}</strong><span>${line} Village de Noël et bataille de boules de neige (/noel), chasse au trésor et boss du 24.</span></div>
+      <div><strong>${left > 0 ? `Noël dans ${left} jour${left > 1 ? "s" : ""}` : "Joyeux Noël !"}</strong><span>${line} Arène de Noël avec sa bataille de boules de neige (/noel), chasse au trésor et boss du 24.</span></div>
       <span class="go">Le programme</span></a></div>`;
   }
 
@@ -507,7 +507,7 @@
     app.innerHTML = `
       <div class="page-head noel-head"><div class="wrap">
         <h1>Noël sur LyonMC</h1>
-        <p>Jusqu'au 6 janvier : une case du calendrier de l'Avent chaque jour, un village de Noël avec sa bataille de boules de neige, une chasse au trésor tous les 5 jours et un boss le 24 au soir.</p>
+        <p>Jusqu'au 6 janvier : une case du calendrier de l'Avent chaque jour, une arène de Noël avec sa bataille de boules de neige, une chasse au trésor tous les 5 jours et un boss le 24 au soir.</p>
         <p class="countdown"><b>${left > 0 ? `J-${left}` : "Joyeux Noël"}</b><span>${sub}</span></p>
       </div></div>
 
@@ -527,8 +527,8 @@
 
         <section class="card">
           <div class="panel-h"><h3>Bataille de boules de neige</h3>${bat?.enCours ? `<span class="badge-live">partie en cours</span>` : ""}</div>
-          <p>Au village de Noël (<code class="cmd">/noel</code>, un monde à part), des étages de neige en relief empilés au-dessus du vide. Casse la neige sous les pieds des autres à coups de boules de neige : le dernier debout gagne.</p>
-          <p class="small muted">Tape <code class="cmd">/bataille</code> ou clique sur le PNJ près de la fontaine. La partie démarre dès qu'il y a ${esc(bat?.joueursMin || 2)} joueurs. 5 victoires : titre <strong>Roi de la neige</strong>.</p>
+          <p>Dans l'arène de Noël (<code class="cmd">/noel</code>, ou le Père Noël au spawn du hub), des étages de neige en relief empilés au-dessus du vide. Casse la neige sous les pieds des autres à coups de boules de neige : le dernier debout gagne.</p>
+          <p class="small muted">Clique sur le Père Noël au spawn du hub, ou tape <code class="cmd">/bataille</code>. La partie démarre dès qu'il y a ${esc(bat?.joueursMin || 2)} joueurs. 5 victoires : titre <strong>Roi de la neige</strong>.</p>
           ${top.length ? `<div class="panel-h" style="margin-top:16px"><h3>Meilleurs joueurs</h3><span class="muted">${num(bat.parties)} partie${bat.parties > 1 ? "s" : ""}</span></div>
             <ol class="toplist">${top.slice(0, 5).map((p, i) => `<li><span class="pos">${i + 1}</span>${plink(p.pseudo)}<span class="muted">${num(p.victoires)} victoire${p.victoires > 1 ? "s" : ""}</span></li>`).join("")}</ol>`
             : `<p class="small muted" style="margin-top:14px">Pas encore de partie : la première victoire t'attend.</p>`}
@@ -870,7 +870,7 @@
       menus: `<p>Tape <code class="cmd">/menu</code> pour l'ouvrir. C'est la copie exacte du menu en jeu : survole une case pour voir ce qu'elle affiche. Les chiffres sont des exemples.</p>
         <div class="wiki-menu" style="margin-top:18px">${chest(HUB)}
           <ul class="legend">${Object.values(HUB.items).map((e) => `<li>${img(e.head ? face("MHF_Steve", 32) : icon(e.icon))}<div><strong>${esc(e.name)}</strong><span>${esc(e.what)}${e.cmd ? ` <code class="cmd">${e.cmd}</code>` : ""}</span></div></li>`).join("")}</ul></div>`,
-      commandes: (XMAS ? [["Noël", [["/calendrier", "Le calendrier de l'Avent : une case par jour jusqu'au 24"], ["/noel", "Aller au village de Noël (/hub pour revenir)"],
+      commandes: (XMAS ? [["Noël", [["/calendrier", "Le calendrier de l'Avent : une case par jour jusqu'au 24"], ["/noel", "Aller à l'arène de Noël (/hub pour revenir)"],
         ["/bataille", "Rejoindre la bataille de boules de neige (/bataille top : les meilleurs)"], ["/tresor", "La chasse au trésor : quêtes et indices"]]], ...COMMANDS] : COMMANDS).map(([group, list]) => `<h3>${group}</h3><table class="cmds"><tbody>${list.map(([c, d]) => `<tr><td><code class="cmd">${esc(c)}</code></td><td>${esc(d)}</td></tr>`).join("")}</tbody></table>`).join(""),
       metiers: (() => {
         const jb = g.jobs;

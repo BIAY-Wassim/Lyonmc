@@ -211,7 +211,7 @@ public final class SnowBattle implements Listener, TabExecutor {
                     msg(sender, "<gray>Attends la fin de la partie.");
                     return true;
                 }
-                msg(sender, rebuild() ? "<gray>Arène refaite avec un nouveau relief." : "<red>Le village de Noël n'est pas installé.");
+                msg(sender, rebuild() ? "<gray>Arène refaite avec un nouveau relief." : "<red>L'arène de Noël n'est pas installée.");
             }
             case "fin", "stop" -> {
                 if (!admin) return deny(sender);
@@ -423,7 +423,7 @@ public final class SnowBattle implements Listener, TabExecutor {
             p.teleportAsync(spawns.get(i)).whenComplete((ok, err) -> Bukkit.getScheduler().runTask(plugin, () -> ownTeleport.remove(p.getUniqueId())));
             players.removeHubItems(p);
             players.placeHubItem(p, 8, players.hubItem(Material.RED_BED, "<red><bold>Quitter la bataille</bold> <gray>(clic droit)",
-                    List.of("<gray>Retour au village de Noël"), "bataille:quitter"));
+                    List.of("<gray>Retour au bord de l'arène"), "bataille:quitter"));
             p.getInventory().setHeldItemSlot(0);
             p.setFallDistance(0);
             p.setFireTicks(0);
@@ -602,7 +602,7 @@ public final class SnowBattle implements Listener, TabExecutor {
         Player wp = winner == null ? null : Bukkit.getPlayer(winner);
         if (winnerName != null) {
             String others = names.size() - 1 + " adversaire" + (names.size() > 2 ? "s" : "");
-            Bukkit.broadcast(MM.deserialize(P + "<white>" + winnerName + "</white> <gray>gagne la bataille de boules de neige du village de Noël ! <dark_gray>("
+            Bukkit.broadcast(MM.deserialize(P + "<white>" + winnerName + "</white> <gray>gagne la bataille de boules de neige de l'arène de Noël ! <dark_gray>("
                     + others + ", " + time(seconds) + ")"));
             if (wp != null) {
                 wp.showTitle(Title.title(MM.deserialize("<#ffd86b><bold>Victoire !"), MM.deserialize("<gray>Le roi de la neige, c'est toi"),
@@ -765,7 +765,7 @@ public final class SnowBattle implements Listener, TabExecutor {
         if (!worlds.isHub(p.getWorld())) queue.remove(p.getUniqueId());
         if (alive.contains(p.getUniqueId())) {
             boolean inHub = worlds.isHub(p.getWorld());
-            eliminate(p.getUniqueId(), inHub ? p : null, "a quitté le village", false);
+            eliminate(p.getUniqueId(), inHub ? p : null, "a quitté l'arène", false);
         }
     }
 
@@ -778,6 +778,38 @@ public final class SnowBattle implements Listener, TabExecutor {
             players.removeHubItems(p);
             eliminate(p.getUniqueId(), null, "s'est déconnecté");
         }
+    }
+
+    // ───────────────────────────── Texte des PNJ de l'arène ─────────────────────────────
+
+    /** Lignes au-dessus des PNJ de l'arène (au hub et au village), avec les chiffres en direct. */
+    public List<String> npcLabel() {
+        int min = Math.max(2, num("joueurs-min", 2));
+        String status;
+        if (!enabled()) status = "<red>Fermée pour le moment";
+        else if (state == State.RUNNING || state == State.ENDING) {
+            status = "<#ff9f9f>● Partie en cours</#ff9f9f> <gray>· <white>" + alive.size() + "</white> debout";
+        } else if (state == State.COUNTDOWN) {
+            status = "<#7bd88f>● Départ dans <white>" + countdown + " s</white></#7bd88f> <gray>· <white>" + queue.size() + "</white> joueurs";
+        } else if (!queue.isEmpty()) {
+            status = "<#ffd86b>● <white>" + queue.size() + "/" + min + "</white> joueurs dans la file";
+        } else {
+            status = "<gray>● En attente de joueurs <dark_gray>(" + min + " min.)";
+        }
+        List<Map<String, Object>> best = top(1);
+        int games = stats.getInt("parties");
+        String record;
+        if (best.isEmpty() || (int) best.get(0).get("victoires") == 0) record = "<gray>Pas encore de champion !";
+        else {
+            int v = (int) best.get(0).get("victoires");
+            record = "<gray>Champion : <white>" + best.get(0).get("pseudo") + "</white> <dark_gray>· " + v + " victoire" + (v > 1 ? "s" : "");
+        }
+        return List.of(
+                "<gradient:#ff6b6b:#ffffff:#ff6b6b><bold>❄ Arène de Noël ❄</bold></gradient>",
+                "<#9fd3ff>Bataille de boules de neige" + (games > 0 ? " <dark_gray>· " + games + " partie" + (games > 1 ? "s" : "") : ""),
+                status,
+                record,
+                "<#7bd88f><bold>▶ Clic pour jouer");
     }
 
     // ───────────────────────────── Classement et site ─────────────────────────────

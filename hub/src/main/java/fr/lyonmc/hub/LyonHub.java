@@ -323,7 +323,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
                 case "installer" -> out.addAll(List.of("confirmer", "recoller"));
                 case "coller" -> out.addAll(paster.available());
                 case "parkour" -> out.addAll(List.of("depart", "etape", "arrivee", "classement", "effacer", "temps-reset"));
-                case "noel" -> out.addAll(List.of("installer", "spawn", "attente", "pnj", "arene", "retirer"));
+                case "noel" -> out.addAll(List.of("installer", "pnj-hub", "spawn", "attente", "pnj", "arene", "retirer"));
                 default -> {
                 }
             }

@@ -108,6 +108,9 @@ noel:
   schematic: happychristmas
   # Coin du village (x y z) : l'arrivée tombe au centre du monde
   origine: "-84 -12 -120"
+  # Skin des PNJ de l'arène (/lyonhub noel pnj-hub au hub, et celui posé près de la fontaine) :
+  # vide = Père Noël, sinon le pseudo d'un joueur dont on prend le skin
+  pnj-skin: ""
   # Bataille de boules de neige : des étages de neige en relief empilés ; on casse la neige sous les
   # pieds des autres à coups de boules de neige. Tomber sous le dernier étage = éliminé, le dernier debout gagne.
   bataille:

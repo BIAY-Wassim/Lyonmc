@@ -49,6 +49,21 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
     /** Emplacement de la version 1.9.0 (dans le monde du hub, à côté du hub médiéval). */
     private static final String OLD_ORIGIN = "125 -12 -120";
     public static final String NPC_ID = "noel-bataille";
+    /** PNJ du hub qui emmène à l'arène. */
+    public static final String HUB_NPC_ID = "noel-arene";
+    /** Skin de Père Noël (texture signée par Mojang, via mineskin.org « Santa »). */
+    private static final String SANTA_VALUE = "ewogICJ0aW1lc3RhbXAiIDogMTc2NjI0NzcyMzQ3OSwKICAicHJvZmlsZUlkIiA6ICJkYzNhNmI2MTAyOWY0Y2Y2OGU3MzFlOWI1" +
+            "Zjg0ZWJlYyIsCiAgInByb2ZpbGVOYW1lIiA6ICIxaWxvIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVy" +
+            "ZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJl" +
+            "LzFmY2Y3NGI5NmMyOWU4M2JkMTFiMDUyZjUzYWYzNmIyYTRiNThmMDMwYWVmNGQ3M2FmOGNjMWU2NmMzYzc5MGEiLAogICAgICAi" +
+            "bWV0YWRhdGEiIDogewogICAgICAgICJtb2RlbCIgOiAic2xpbSIKICAgICAgfQogICAgfQogIH0KfQ==";
+    private static final String SANTA_SIGNATURE = "KMARUpfdw/WQSyMl/3nsKFeqt2efmJClpf7gygggR47d78yauyPBlsLxbK1RySPoR4aByECBAltMtGc9za8NwDS6i9UrbwkT2dMH" +
+            "aNP0ax3YEvxkQIVspINHDqrdCNrIIGB81wz5nUX/3A0XQUq2tnTiOd4CjdXbS+4zY9N9sgxmu32cBoC7I01xp/H+USEYHqqqBbaN" +
+            "XMmyutAEBMqN4G6ytVRCGrSZ9D3OJW6FGWkmSGcJuRqAoV0jasXm3TZadDAzAEbZkLjIAN0a1uhyjgB8YXc+Q9CD/oJ2oNx88/8z" +
+            "uUV6zQyi6X5NwTJtZNdiJSxWkMPv0m0aDnJjqQNQCLV/xc9AH2xPes2MHVwxQp1vwhrTD5OH/rdCPaQX9NPVVKHMrVpYNTVflvZY" +
+            "11jvqE56wLBp7nOErAN4RKj1au9a74dmQfig2uzK4KVGKDVIW6NG93q5DbnKfYy59CXnqg9m/T+xtQ0MzfHyTQoXolYGGtYfmZT9" +
+            "RedNHWWr9BimfT/2QFqIDiPVy2Cs5xRWvxEcTQrnDzzleZuCXBgjG04/s0StZ4UWfnHYDTO1axmY+VMGJw/ONINLfI3+mjfEfes5" +
+            "jZ94dtWDDF8aLTgAzkKiwqJ8Au5RhvJ5iA0jtdexBqYEzQfSxOYaqfQgEz97XleYav8ZrXZj5O3fhtykM8E=";
 
     private final JavaPlugin plugin;
     private final HubWorlds worlds;
@@ -196,12 +211,23 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
         return new Location(w, o[0] + ARENA[0], o[1] + ARENA[1], o[2] + ARENA[2]);
     }
 
-    /** Au démarrage : l'arène est prête et le site a ses chiffres. */
+    /** Au démarrage : l'arène est prête et le site a ses chiffres ; le texte des PNJ suit la bataille en direct. */
     public void startup() {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (installed()) battle.rebuild();
             battle.exportAsync();
         }, 60L);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::updateNpcLabels, 80L, 40L);
+    }
+
+    private void updateNpcLabels() {
+        List<String> lines = null;
+        for (String id : List.of(NPC_ID, HUB_NPC_ID)) {
+            NpcService.Npc n = npcs.get(id);
+            if (n == null) continue;
+            if (lines == null) lines = battle.npcLabel();
+            npcs.setLiveLabel(n, lines);
+        }
     }
 
     // ───────────────────────────── Le monde du village ─────────────────────────────
@@ -228,8 +254,8 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
             return true;
         }
         if (!open()) {
-            msg(p, installed() ? "<gray>Le village de Noël est fermé pour cette année. À bientôt !"
-                    : "<gray>Le village de Noël n'est pas encore installé.");
+            msg(p, installed() ? "<gray>L'arène de Noël est fermée pour cette année. À bientôt !"
+                    : "<gray>L'arène de Noël n'est pas encore installée.");
             return true;
         }
         Location l = spawn();
@@ -238,7 +264,7 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
         p.teleportAsync(l).thenAccept(ok -> {
             if (!ok || !p.isOnline()) return;
             p.playSound(p.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 0.9f, 1.4f);
-            msg(p, "<white>Bienvenue au village de Noël !</white> <gray>La bataille de boules de neige est derrière toi, après la fontaine : "
+            msg(p, "<white>Bienvenue à l'arène de Noël !</white> <gray>La bataille de boules de neige est derrière toi, après la fontaine : "
                     + "<click:run_command:'/bataille'><hover:show_text:'<gray>Rejoindre la bataille'><white><u>/bataille</u></white></hover></click>"
                     + (Bukkit.getPluginCommand("calendrier") != null
                     ? "<gray>. Et ta case du jour : <click:run_command:'/calendrier'><hover:show_text:\"<gray>Calendrier de l'Avent\"><white><u>/calendrier</u></white></hover></click>" : "")
@@ -256,7 +282,7 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
             case "retirer", "enlever" -> removeOld(p, args);
             case "spawn" -> {
                 if (!isVillageWorld(p.getWorld())) {
-                    msg(p, "<gray>Va d'abord dans le monde du village (<white>/noel</white>).");
+                    msg(p, "<gray>Va d'abord dans le monde de l'arène (<white>/noel</white>).");
                     return;
                 }
                 store("spawn", p.getLocation());
@@ -265,20 +291,31 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
             }
             case "attente" -> {
                 if (!isVillageWorld(p.getWorld())) {
-                    msg(p, "<gray>Va d'abord dans le monde du village (<white>/noel</white>).");
+                    msg(p, "<gray>Va d'abord dans le monde de l'arène (<white>/noel</white>).");
                     return;
                 }
                 store("attente", p.getLocation());
                 msg(p, "<gray>Point d'attente de la bataille placé ici (les éliminés y reviennent).");
             }
             case "pnj" -> {
-                String skin = args.length > 2 ? args[2] : p.getName();
-                createNpc(p.getLocation(), skin);
-                msg(p, "<gray>PNJ de la bataille placé ici (skin de <white>" + skin + "</white>).");
+                String skin = args.length > 2 ? args[2] : null;
+                createNpc(NPC_ID, p.getLocation(), skin);
+                msg(p, "<gray>PNJ de la bataille placé ici (" + skinText(skin) + ").");
+            }
+            case "pnj-hub", "pnjhub" -> {
+                if (isVillageWorld(p.getWorld())) {
+                    msg(p, "<gray>Ce PNJ se met au hub : va au spawn du hub (<white>/hub</white>), puis retape la commande.");
+                    return;
+                }
+                String skin = args.length > 2 ? args[2] : null;
+                createNpc(HUB_NPC_ID, p.getLocation(), skin);
+                msg(p, "<green>PNJ de l'arène de Noël placé ici</green> <gray>(" + skinText(skin) + "). Un clic : le joueur part dans le monde "
+                        + worldName() + " et entre dans la file ; la partie démarre dès qu'ils sont " + Math.max(2, plugin.getConfig().getInt("noel.bataille.joueurs-min", 2)) + ".");
+                if (!installed()) p.sendMessage(MM.deserialize("  <gray>N'oublie pas d'installer l'arène : <white>/lyonhub noel installer"));
             }
             case "arene", "arène" -> {
                 if (!installed()) {
-                    msg(p, "<gray>Installe d'abord le village : <white>/lyonhub noel installer");
+                    msg(p, "<gray>Installe d'abord l'arène : <white>/lyonhub noel installer");
                     return;
                 }
                 if (battle.running()) {
@@ -290,13 +327,14 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
                 msg(p, "<gray>Arène refaite (centre : <white>" + describe(arenaCenter()) + "</white>).");
             }
             default -> {
-                msg(p, "<white><bold>Village de Noël</bold></white> <dark_gray>(monde " + worldName() + ")</dark_gray> "
+                msg(p, "<white><bold>Arène de Noël</bold></white> <dark_gray>(monde " + worldName() + ")</dark_gray> "
                         + (installed() ? (open() ? "<green>ouvert" : "<red>fermé</red> <dark_gray>(noel.actif: false)") : "<gray>pas installé"));
                 for (String line : List.of(
                         "<white>/lyonhub noel installer</white> <dark_gray>créer le monde du village et y coller happychristmas.schem et l'arène",
                         "<white>/lyonhub noel spawn</white> <dark_gray>arrivée de /noel ici",
                         "<white>/lyonhub noel attente</white> <dark_gray>point d'attente de la bataille ici",
-                        "<white>/lyonhub noel pnj [skin]</white> <dark_gray>PNJ « Bataille de neige » ici",
+                        "<white>/lyonhub noel pnj-hub [skin]</white> <dark_gray>PNJ « Arène de Noël » au hub (clic : on part jouer)",
+                        "<white>/lyonhub noel pnj [skin]</white> <dark_gray>PNJ de la bataille ici, dans le monde de l'arène",
                         "<white>/lyonhub noel arene</white> <dark_gray>refaire l'arène (après un changement de config)",
                         "<white>/lyonhub noel retirer <monde></white> <dark_gray>enlever un village collé dans un autre monde (ex. hub)",
                         "<white>/bataille lancer</white> <dark_gray>lancer une partie tout de suite (essai)")) {
@@ -310,9 +348,18 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
         return l == null ? "?" : l.getBlockX() + " " + l.getBlockY() + " " + l.getBlockZ();
     }
 
-    private void createNpc(Location at, String skin) {
-        NpcService.Npc n = npcs.createFixed(NPC_ID, skin, "bataille", at);
-        npcs.setLabel(n, List.of("<#9fd3ff><bold>Bataille de neige", "<gray>Clic pour jouer"));
+    /** PNJ de l'arène : skin de Père Noël (ou le skin d'un joueur), clic = /bataille, texte avec les chiffres en direct. */
+    private void createNpc(String id, Location at, String skin) {
+        String name = skin != null && !skin.isBlank() ? skin : plugin.getConfig().getString("noel.pnj-skin", "");
+        NpcService.Npc n = name == null || name.isBlank()
+                ? npcs.createTextured(id, "Père Noël", SANTA_VALUE, SANTA_SIGNATURE, "bataille", at)
+                : npcs.createFixed(id, name, "bataille", at);
+        npcs.setLabel(n, battle.npcLabel());
+    }
+
+    private String skinText(String skin) {
+        String name = skin != null && !skin.isBlank() ? skin : plugin.getConfig().getString("noel.pnj-skin", "");
+        return name == null || name.isBlank() ? "skin de Père Noël" : "skin de <white>" + name + "</white>";
     }
 
     private SchematicPaster.Schem loadSchem(Player p) {
@@ -332,13 +379,13 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
         String name = plugin.getConfig().getString("noel.schematic", "happychristmas");
         if (!confirm) {
             int[] o = origin();
-            msg(p, "<white><bold>Village de Noël</bold>");
+            msg(p, "<white><bold>Arène de Noël</bold>");
             p.sendMessage(MM.deserialize("  <gray>Crée le monde <white>" + worldName() + "</white> (vide, à part du hub) et y colle le village (<white>" + name
                     + ".schem</white>), avec l'arène de la bataille de boules de neige juste à côté (vue sur le village) et un PNJ pour jouer."));
             p.sendMessage(MM.deserialize("  <gray>Emplacement : coin en <white>" + o[0] + " " + o[1] + " " + o[2] + "</white> <dark_gray>(noel.monde et noel.origine dans config.yml)"));
             p.sendMessage(MM.deserialize("  <gray>Le hub n'est pas touché. Les joueurs y vont avec <white>/noel</white> et reviennent avec <white>/hub</white>."));
             p.sendMessage(MM.deserialize("  <gray>Pour lancer : <white><click:run_command:'/lyonhub noel installer confirmer'><u>/lyonhub noel installer confirmer</u></click></white>"
-                    + " <dark_gray>(ajoute un pseudo à la fin pour choisir le skin du PNJ)"));
+                    + " <dark_gray>(le PNJ a un skin de Père Noël ; ajoute un pseudo à la fin pour un autre skin)"));
             return;
         }
         if (busy || paster.busy()) {
@@ -366,7 +413,7 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
             msg(p, "<red>Le village dépasse les limites de hauteur du monde</red> <gray>: change le y de noel.origine.");
             return;
         }
-        String skin = args.length > 3 ? args[3] : p.getName();
+        String skin = args.length > 3 ? args[3] : null;
         boolean already = match(w, s, o) >= 0.85;
         if (!already && !force && builtColumns(w, s, o) > 3) {
             msg(p, "<red>Il y a déjà des constructions à cet endroit du monde " + wn + "</red> <gray>(x " + o[0] + " à " + (o[0] + s.width())
@@ -387,7 +434,7 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
             return;
         }
         busy = true;
-        msg(p, "<gray>Collage du village de Noël dans le monde <white>" + wn + "</white>… <dark_gray>(une à deux minutes, le serveur continue de tourner)");
+        msg(p, "<gray>Collage de la map de Noël dans le monde <white>" + wn + "</white>… <dark_gray>(une à deux minutes, le serveur continue de tourner)");
         Location at = new Location(w, o[0] - s.offsetX(), o[1] - s.offsetY(), o[2] - s.offsetZ());
         try {
             paster.paste(p, s, at, worlds.hasStartPlatform(w), () -> {
@@ -422,7 +469,7 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
         battle.removeArena();
         battle.rebuild();
         Location npc = rel(NPC);
-        if (npc != null) createNpc(npc, skin);
+        if (npc != null) createNpc(NPC_ID, npc, skin);
         Location sp = spawn();
         if (sp != null) w.setSpawnLocation(sp);
         w.setTime(6000);
@@ -431,10 +478,10 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
                 + ". Arène : " + describe(arenaCenter()));
         if (!p.isOnline()) return;
         if (sp != null) p.teleportAsync(sp);
-        msg(p, "<green>Village de Noël " + (already ? "déjà en place : arène et PNJ refaits" : "installé") + " dans le monde " + w.getName() + " !</green>"
+        msg(p, "<green>Arène de Noël " + (already ? "déjà en place : étages et PNJ refaits" : "installée") + " dans le monde " + w.getName() + " !</green>"
                 + " <gray>Les joueurs y vont avec <white>/noel</white> (et le menu du hub), et reviennent avec <white>/hub</white>."
                 + " La bataille : PNJ près de la fontaine ou <white>/bataille</white>.");
-        p.sendMessage(MM.deserialize("  <gray>Pour un PNJ « Village de Noël » au spawn du hub : <white>/lyonhub pnj noel <skin> noel"));
+        p.sendMessage(MM.deserialize("  <gray>Le PNJ du hub (Père Noël, clic pour jouer) : va au spawn du hub et tape <white>/lyonhub noel pnj-hub"));
         String old = state.getString("ancien.monde", "");
         if (!old.isEmpty() && Bukkit.getWorld(old) != null) {
             p.sendMessage(MM.deserialize("  <gray>L'ancien village est encore dans le monde <white>" + old + "</white> : "
