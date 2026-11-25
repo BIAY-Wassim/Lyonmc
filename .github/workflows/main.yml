@@ -1,0 +1,94 @@
+name: Build LyonAchievements
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Compiler le plugin
+        run: |
+          set -o pipefail
+          mvn -B package 2>&1 | tee build.log
+      - name: Erreurs de compilation (1)
+        if: failure()
+        run: |
+          grep -E "^\[ERROR\] .*\.java" build.log | sed -E 's#^\[ERROR\] .*/src/main/java/##' > errors.txt || true
+          sed -n '1,10p' errors.txt | while IFS= read -r l; do echo "::error::$l"; done
+          sed -n '11,20p' errors.txt | while IFS= read -r l; do echo "::warning::$l"; done
+          sed -n '21,30p' errors.txt | while IFS= read -r l; do echo "::notice::$l"; done
+      - name: Erreurs de compilation (2)
+        if: failure()
+        run: |
+          grep -E "^\[ERROR\] .*\.java" build.log | sed -E 's#^\[ERROR\] .*/src/main/java/##' > errors.txt || true
+          sed -n '31,40p' errors.txt | while IFS= read -r l; do echo "::error::$l"; done
+          sed -n '41,50p' errors.txt | while IFS= read -r l; do echo "::warning::$l"; done
+          grep -E "^\[ERROR\]" build.log | grep -vE "\.java" | head -5 | while IFS= read -r l; do echo "::notice::$l"; done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LyonAchievements
+          path: target/LyonAchievements-*.jar
+
+  hub:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: current
+      - name: Compiler HUB
+        run: |
+          set -o pipefail
+          gradle -p hub build --no-daemon --console=plain 2>&1 | tee hub-build.log
+      - name: Erreurs de compilation HUB
+        if: failure()
+        run: |
+          grep -E "\.java:[0-9]+: error:" -A2 hub-build.log | sed -E 's#^.*/src/main/java/##' | grep -vE "^--$" > errors.txt || true
+          sed -n '1,10p' errors.txt | while IFS= read -r l; do echo "::error::$l"; done
+          sed -n '11,20p' errors.txt | while IFS= read -r l; do echo "::warning::$l"; done
+          grep -A6 "What went wrong" hub-build.log | head -8 | while IFS= read -r l; do echo "::notice::$l"; done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HUB
+          path: hub/build/libs/HUB-*.jar
+
+  communaute:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: current
+      - name: Compiler COMMUNAUTE
+        run: |
+          set -o pipefail
+          mvn -B -q package -DskipTests
+          gradle -p communaute build --no-daemon --console=plain 2>&1 | tee communaute-build.log
+      - name: Erreurs de compilation COMMUNAUTE
+        if: failure()
+        run: |
+          grep -E "\.java:[0-9]+: error:" -A2 communaute-build.log | sed -E 's#^.*/src/main/java/##' | grep -vE "^--$" > errors.txt || true
+          sed -n '1,10p' errors.txt | while IFS= read -r l; do echo "::error::$l"; done
+          sed -n '11,20p' errors.txt | while IFS= read -r l; do echo "::warning::$l"; done
+          grep -A6 "What went wrong" communaute-build.log | head -8 | while IFS= read -r l; do echo "::notice::$l"; done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: COMMUNAUTE
+          path: communaute/build/libs/COMMUNAUTE-*.jar

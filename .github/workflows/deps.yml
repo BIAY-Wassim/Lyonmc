@@ -1,0 +1,53 @@
+name: Dependances pour compiler
+
+on:
+  push:
+    branches: [outils-deps]
+
+permissions:
+  contents: write
+
+jobs:
+  deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: current
+      - name: Copier les bibliotheques
+        run: |
+          mkdir -p /tmp/deps/la /tmp/deps/hub /tmp/deps/communaute
+          mvn -B -q dependency:copy-dependencies -DoutputDirectory=/tmp/deps/la
+          cat > /tmp/cp.gradle <<'G'
+          allprojects {
+            afterEvaluate {
+              if (plugins.hasPlugin('java')) {
+                tasks.register('copyCp', Copy) {
+                  from sourceSets.main.compileClasspath
+                  into "/tmp/deps/${project.name}"
+                }
+              }
+            }
+          }
+          G
+          gradle -p hub -I /tmp/cp.gradle copyCp --no-daemon --console=plain -q
+          gradle -p communaute -I /tmp/cp.gradle copyCp --no-daemon --console=plain -q
+          du -sh /tmp/deps/*; find /tmp/deps -size +90M -exec ls -la {} \;
+      - name: Publier
+        run: |
+          git config user.name "ci"
+          git config user.email "ci@users.noreply.github.com"
+          git checkout --orphan deps-jars
+          git rm -rq --cached . || true
+          rm -rf ./*
+          cp -r /tmp/deps/* .
+          find . -size +95M -not -path "./.git/*" -delete
+          git add -A
+          git commit -qm "deps"
+          git push -qf origin HEAD:deps-jars
