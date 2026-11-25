@@ -38,7 +38,7 @@ jobs:
           G
           gradle -p hub -I /tmp/cp.gradle copyCp --no-daemon --console=plain -q
           gradle -p communaute -I /tmp/cp.gradle copyCp --no-daemon --console=plain -q
-          du -sh /tmp/deps/*; find /tmp/deps -size +90M
+          du -sh /tmp/deps/*; find /tmp/deps -size +90M -exec ls -la {} ;
       - name: Publier
         run: |
           git config user.name "ci"
@@ -48,6 +48,6 @@ jobs:
           rm -rf ./*
           cp -r /tmp/deps/* .
           find . -size +95M -not -path "./.git/*" -delete
-          git add la hub communaute
+          git add -A
           git commit -qm "deps"
           git push -qf origin HEAD:deps-jars
