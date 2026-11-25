@@ -309,8 +309,9 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
                 }
                 String skin = args.length > 2 ? args[2] : null;
                 createNpc(HUB_NPC_ID, p.getLocation(), skin);
-                msg(p, "<green>PNJ de l'arène de Noël placé ici</green> <gray>(" + skinText(skin) + "). Un clic : le joueur part dans le monde "
-                        + worldName() + " et entre dans la file ; la partie démarre dès qu'ils sont " + Math.max(2, plugin.getConfig().getInt("noel.bataille.joueurs-min", 2)) + ".");
+                msg(p, "<green>PNJ de l'arène de Noël placé ici</green> <gray>(" + skinText(skin) + "). Un clic : le joueur entre dans la file et reste au hub ;"
+                        + " dès qu'ils sont " + Math.max(2, plugin.getConfig().getInt("noel.bataille.joueurs-min", 2))
+                        + ", ils sont téléportés dans l'arène et la partie démarre. À la fin, retour au hub.");
                 if (!installed()) p.sendMessage(MM.deserialize("  <gray>N'oublie pas d'installer l'arène : <white>/lyonhub noel installer"));
             }
             case "arene", "arène" -> {
