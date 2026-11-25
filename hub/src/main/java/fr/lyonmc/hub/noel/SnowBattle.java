@@ -471,6 +471,7 @@ public final class SnowBattle implements Listener, TabExecutor {
         }
         // Chutes et départs
         for (UUID u : new ArrayList<>(alive)) {
+            if (state != State.RUNNING) break; // le gagnant est connu
             Player p = Bukkit.getPlayer(u);
             if (p == null) {
                 eliminate(u, null, "s'est déconnecté");
