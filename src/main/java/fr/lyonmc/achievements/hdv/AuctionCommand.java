@@ -136,7 +136,9 @@ public final class AuctionCommand implements TabExecutor {
                 Items.dark("ta boîte de récupération.")), false));
         int box = hdv().mailbox(player.getUniqueId()).size();
         inv.setItem(50, Items.item(box > 0 ? Material.ENDER_CHEST : Material.BARREL, Component.text("Récupérer (" + box + ")", Text.WHITE),
-                List.of(Items.dark("Objets expirés ou retirés de la vente")), box > 0));
+                plugin.spawnHub().inHubWorld(player.getWorld())
+                        ? List.of(Items.dark("Objets expirés ou retirés de la vente"), Items.dark("À récupérer depuis le monde survie (/survie)"))
+                        : List.of(Items.dark("Objets expirés ou retirés de la vente")), box > 0));
         holder.action(50, pl -> {
             hdv().collect(pl);
             open(pl, current, mine);

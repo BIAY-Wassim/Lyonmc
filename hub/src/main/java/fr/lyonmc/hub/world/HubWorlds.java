@@ -70,6 +70,7 @@ public final class HubWorlds implements Listener {
             plugin.getConfig().set("worlds", list);
             plugin.saveConfig();
         }
+        markAll();
         return w;
     }
 
@@ -80,6 +81,19 @@ public final class HubWorlds implements Listener {
 
     public boolean isHub(World w) {
         return w != null && names().contains(w.getName());
+    }
+
+    /**
+     * Marque les mondes du hub (et démarque les autres) : LyonAchievements lit cette marque pour traiter
+     * tous ces mondes comme le hub (protections, pas d'HDV, missions et métiers qui ne comptent pas).
+     */
+    public void markAll() {
+        org.bukkit.NamespacedKey key = new org.bukkit.NamespacedKey(plugin, "monde-hub");
+        for (World w : Bukkit.getWorlds()) {
+            var pdc = w.getPersistentDataContainer();
+            if (isHub(w)) pdc.set(key, org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
+            else if (pdc.has(key)) pdc.remove(key);
+        }
     }
 
     private void rescue(Player p) {
