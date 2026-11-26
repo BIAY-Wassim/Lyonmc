@@ -1,0 +1,1049 @@
+[19:47:37] [ServerMain/INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.13+9-LTS; Eclipse Adoptium Temurin-21.0.13+9) on Linux 7.0.0-1016-aws (amd64)
+[19:47:37] [ServerMain/INFO]: [bootstrap] Loading Purpur 1.21.8-2497-HEAD@a49cdb9 (2025-09-19T01:51:04Z) for Minecraft 1.21.8
+[19:47:37] [ServerMain/INFO]: [PluginInitializerManager] Initializing plugins...
+[19:47:38] [Paper Plugin Remapper Thread - 1/INFO]: [ReobfServer] Remapping server...
+[19:47:43] [Paper Plugin Remapper Thread - 1/INFO]: [ReobfServer] Done remapping server in 4921ms.
+[19:47:43] [Paper Plugin Remapper Thread - 1/INFO]: [PluginRemapper] Remapping plugin 'plugins/LyonAchievements-7.3.5.jar'...
+[19:47:43] [Paper Plugin Remapper Thread - 1/INFO]: [PluginRemapper] Done remapping plugin 'plugins/LyonAchievements-7.3.5.jar' in 118ms.
+[19:47:43] [ServerMain/INFO]: [PluginInitializerManager] Initialized 5 plugins
+[19:47:43] [ServerMain/INFO]: [PluginInitializerManager] Bukkit plugins (5):
+ - COMMUNAUTE (1.4.1), HUB (1.9.6), LyonAchievements (7.3.5), ViaBackwards (5.12.3), ViaVersion (5.12.4-SNAPSHOT)
+[19:47:46] [ServerMain/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[19:47:46] [ServerMain/INFO]: Found new data pack file/bukkit, loading it automatically
+[19:47:46] [ServerMain/INFO]: Found new data pack paper, loading it automatically
+[19:47:47] [ServerMain/INFO]: No existing world data, creating new world
+[19:47:47] [ServerMain/ERROR]: No key layers in MapLike[{}]
+[19:47:47] [ServerMain/INFO]: Loaded 1407 recipes
+[19:47:47] [ServerMain/INFO]: Loaded 1520 advancements
+[19:47:47] [ServerMain/INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[19:47:48] [ServerMain/INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 295.4ms
+[19:47:48] [Server thread/INFO]: Starting minecraft server version 1.21.8
+[19:47:48] [Server thread/INFO]: Loading properties
+[19:47:48] [Server thread/INFO]: This server is running Purpur version 1.21.8-2497-HEAD@a49cdb9 (2025-09-19T01:51:04Z) (Implementing API version 1.21.8-R0.1-SNAPSHOT)
+[19:47:48] [Server thread/INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[19:47:48] [Server thread/INFO]: Using 4 threads for Netty based IO
+[19:47:48] [Server thread/INFO]: Server Ping Player Sample Count: 12
+[19:47:48] [Server thread/INFO]: [MoonriseCommon] Paper is using 1 worker threads, 1 I/O threads
+[19:47:49] [Server thread/INFO]: [ChunkTaskScheduler] Chunk system is using population gen parallelism: true
+[19:47:49] [Server thread/INFO]: Default game type: SURVIVAL
+[19:47:49] [Server thread/INFO]: Generating keypair
+[19:47:49] [Server thread/INFO]: Starting Minecraft server on *:25565
+[19:47:49] [Server thread/INFO]: Using epoll channel type
+[19:47:49] [Server thread/INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+[19:47:49] [Server thread/INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+[19:47:49] [Server thread/INFO]: [HUB] Loading server plugin HUB v1.9.6
+[19:47:49] [Server thread/INFO]: [ViaVersion] Loading server plugin ViaVersion v5.12.4-SNAPSHOT
+[19:47:49] [Server thread/INFO]: [ViaVersion] ViaVersion 5.12.4-SNAPSHOT is now loaded. Registering protocol transformers and injecting...
+[19:47:50] [Server thread/INFO]: [ViaBackwards] Loading translations...
+[19:47:50] [Server thread/INFO]: [ViaBackwards] Registering protocols...
+[19:47:51] [Server thread/INFO]: [LyonAchievements] Loading server plugin LyonAchievements v7.3.5
+[19:47:51] [Server thread/INFO]: [ViaBackwards] Loading server plugin ViaBackwards v5.12.3
+[19:47:51] [Server thread/INFO]: [COMMUNAUTE] Loading server plugin COMMUNAUTE v1.4.1
+[19:47:51] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[19:47:51] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[19:47:51] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[19:47:51] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[19:47:51] [Server thread/INFO]: Preparing level "world"
+[19:47:51] [Server thread/ERROR]: No key layers in MapLike[{}]
+[19:47:52] [Server thread/ERROR]: No key layers in MapLike[{}]
+[19:47:53] [Server thread/ERROR]: No key layers in MapLike[{}]
+[19:47:53] [Server thread/INFO]: Preparing start region for dimension minecraft:overworld
+[19:47:53] [Server thread/INFO]: Preparing spawn area: 2%
+[19:47:53] [Server thread/INFO]: Time elapsed: 309 ms
+[19:47:53] [Server thread/INFO]: Preparing start region for dimension minecraft:the_nether
+[19:47:53] [Server thread/INFO]: Preparing spawn area: 2%
+[19:47:54] [Server thread/INFO]: Preparing spawn area: 16%
+[19:47:54] [Server thread/INFO]: Preparing spawn area: 51%
+[19:47:55] [Server thread/INFO]: Time elapsed: 1500 ms
+[19:47:55] [Server thread/INFO]: Preparing start region for dimension minecraft:the_end
+[19:47:55] [Server thread/INFO]: Preparing spawn area: 2%
+[19:47:55] [Server thread/INFO]: Time elapsed: 397 ms
+[19:47:55] [Server thread/INFO]: [HUB] Enabling HUB v1.9.6
+[19:47:55] [Server thread/INFO]: [HUB] HUB activé : 0 PNJ.
+[19:47:55] [Server thread/INFO]: [ViaVersion] Enabling ViaVersion v5.12.4-SNAPSHOT
+[19:47:55] [Server thread/INFO]: [ViaVersion] ViaVersion detected server version: 1.21.7-1.21.8 (772)
+[19:47:55] [Server thread/WARN]: [ViaVersion] Please update your Java runtime to at least Java 25 (your version is 21).
+[19:47:55] [Server thread/WARN]: [ViaVersion] At some point in the future, ViaVersion will no longer be compatible with this version of Java.
+[19:47:55] [Server thread/INFO]: [ViaVersion] The Vanilla protocol of Minecraft 1.20.5-1.21.4 is easily exploitable. If you don't need to support these versions, consider adding them to block-versions in the ViaVersion config: "1.20.5-1.20.6", "1.21-1.21.1", "1.21.2-1.21.3", "1.21.4"
+[19:47:55] [Server thread/INFO]: [LyonAchievements] Enabling LyonAchievements v7.3.5
+[19:47:55] [Server thread/INFO]: [LyonAchievements] Nouveaux réglages ajoutés à config.yml : resource-world.
+[19:47:55] [Server thread/INFO]: [LyonAchievements] Boss mondial : nouveaux réglages ajoutés à evenements.yml (vie, phases, gardiens, XP).
+[19:47:55] [Server thread/INFO]: [LyonAchievements] Boss mondial : réglages ajoutés à evenements.yml (difficulté selon les joueurs, stuff protégé dans l'arène).
+[19:47:56] [Server thread/INFO]: [LyonAchievements] 22 succès LyonMC ajoutés.
+[19:47:56] [Server thread/INFO]: [LyonAchievements] 47 missions chargées.
+[19:48:02] [Server thread/INFO]: Preparing start region for dimension minecraft:ressources
+[19:48:02] [Server thread/INFO]: Preparing spawn area: 100%
+[19:48:02] [Server thread/INFO]: Time elapsed: 1 ms
+[19:48:02] [Server thread/INFO]: [LyonAchievements] LyonAchievements activé : 146 succès, 26 paliers, 44 titres.
+[19:48:02] [Server thread/INFO]: [ViaBackwards] Enabling ViaBackwards v5.12.3
+[19:48:02] [Server thread/INFO]: [COMMUNAUTE] Enabling COMMUNAUTE v1.4.1
+[19:48:02] [Server thread/INFO]: [COMMUNAUTE] NuVotifier n'est pas installé : les votes ne seront pas reçus automatiquement.
+[19:48:02] [Server thread/INFO]: [COMMUNAUTE] Votes vérifiés directement auprès de : serveurs-minecraft.org, site-ip-test
+[19:48:02] [Server thread/INFO]: [COMMUNAUTE] Votes attendus par NuVotifier pour : site-test
+[19:48:02] [Server thread/INFO]: [COMMUNAUTE] Site : connexion et suggestions prêtes sur http://127.0.0.1:8135/api/ (Apache y relaie lyonmc.fr/api/).
+[19:48:02] [Server thread/INFO]: [COMMUNAUTE] COMMUNAUTE activé : 0 joueurs connus.
+[19:48:02] [Server thread/INFO]: [spark] Starting background profiler...
+[19:48:03] [Server thread/INFO]: Done preparing level "world" (11.755s)
+[19:48:03] [Server thread/INFO]: Running delayed init tasks
+[19:48:03] [Server thread/INFO]: Done (26.298s)! For help, type "help"
+[19:48:03] [Server thread/INFO]: *************************************************************************************
+[19:48:03] [Server thread/INFO]: This is the first time you're starting this server.
+[19:48:03] [Server thread/INFO]: It's recommended you read our 'Getting Started' documentation for guidance.
+[19:48:03] [Server thread/INFO]: View this and more helpful information here: https://docs.papermc.io/paper/next-steps
+[19:48:03] [Server thread/INFO]: *************************************************************************************
+[19:48:03] [Craft Scheduler Thread - 2 - ViaVersion/INFO]: [ViaVersion] Finished mapping loading, shutting down loader executor.
+[19:48:03] [Server thread/INFO]: [LyonAchievements] Import terminé : 0 fichiers de succès analysés.
+[19:48:03] [Server thread/INFO]: [ViaVersion] You are running a development version of the plugin, please report any bugs to GitHub.
+[19:48:06] [User Authenticator #0/INFO]: UUID of player Testeur is d23bae5a-87b5-33af-b008-ff3dacc1166f
+[19:48:06] [User Authenticator #0/INFO]: UUID of player Acheteur is b9d3004b-5a28-3a2f-b5fa-06f61fe6a2dd
+[19:48:07] [Server thread/INFO]: [+] Testeur
+[19:48:07] [Server thread/INFO]: Testeur[/127.0.0.1:55106] logged in with entity id 67 at ([world]0.5, -60.0, 9.5)
+[19:48:07] [Server thread/INFO]: ✦ Bienvenue à Testeur sur lyonmc.fr !
+[19:48:07] [Server thread/INFO]: [+] Acheteur
+[19:48:07] [Server thread/INFO]: Acheteur[/127.0.0.1:55114] logged in with entity id 68 at ([world]3.5, -60.0, -3.5)
+[19:48:07] [Server thread/INFO]: ✦ Bienvenue à Acheteur sur lyonmc.fr !
+[19:48:07] [Server thread/INFO]: ✦ Nouvel objectif de la semaine : Miner 20 000 blocs à la mine (/objectif)
+[19:48:09] [Server thread/INFO]: ★ Testeur a obtenu Getting an Upgrade 1/146
+[19:48:09] [Server thread/INFO]: ★ Acheteur a obtenu Getting an Upgrade 1/146
+[19:48:13] [ForkJoinPool.commonPool-worker-1/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:48:14] [ForkJoinPool.commonPool-worker-1/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:48:14] [Server thread/INFO]: 
+[19:48:15] [ForkJoinPool.commonPool-worker-1/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Acheteur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:48:16] [ForkJoinPool.commonPool-worker-1/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Acheteur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:48:18] [Server thread/INFO]: 
+[19:48:18] [Server thread/INFO]: ✦ VOTE PARTY ! Le serveur a atteint son objectif de votes : cadeau pour tous les joueurs connectés !
+[19:48:18] [Server thread/INFO]: ✦ HEURE BONUS ! Pièces x2 et points de saison x2 jusqu'à 21h18.
+[19:48:18] [Server thread/INFO]: ★ · Vote simulé pour Acheteur.
+[19:48:19] [Server thread/INFO]: 
+[19:48:19] [Server thread/INFO]: ★ · Vote simulé pour Acheteur.
+[19:48:20] [Server thread/INFO]: Gamerule doMobSpawning is now set to: false
+[19:48:21] [Server thread/INFO]: Killed 73 entities
+[19:48:22] [Server thread/INFO]: Gamerule keepInventory is now set to: true
+[19:48:23] [Server thread/INFO]: Made Testeur a server operator
+[19:48:24] [Server thread/INFO]: Made Acheteur a server operator
+[19:48:25] [Server thread/INFO]: ★ Testeur a obtenu Diamonds! 3/146
+[19:48:25] [Server thread/INFO]: Gave 5 [Diamond] to Testeur
+[19:48:26] [Server thread/INFO]: ★ · Nouveau solde de Testeur : 50 560 ⛁
+[19:48:27] [Server thread/INFO]: ★ · Nouveau solde de Acheteur : 3 830 ⛁
+[19:48:28] [Server thread/INFO]: ★ Testeur a obtenu Fortune 5/146
+[19:48:28] [Server thread/INFO]: ★ Testeur a obtenu Stone Age 5/146
+[19:48:28] [Server thread/INFO]: Granted the advancement [Stone Age] to Testeur
+[19:48:29] [Server thread/INFO]: ★ Testeur a obtenu Monster Hunter 6/146
+[19:48:29] [Server thread/INFO]: Granted the advancement [Monster Hunter] to Testeur
+[19:48:30] [Server thread/INFO]: ★ Acheteur a obtenu Premier salaire 3/146
+[19:48:30] [Server thread/INFO]: ✦ Acheteur a gagné un concours !
+[19:48:30] [Server thread/INFO]: ★ · Lot concours donné à Acheteur.
+[19:48:31] [Server thread/INFO]: ★ · Lot inconnu : inconnu. Lots de recompenses.yml : soutien, concours
+[19:48:32] [Server thread/INFO]: Testeur issued server command: /suggestion
+[19:48:32] [Server thread/INFO]: Acheteur issued server command: /parrain Testeur
+[19:48:32] [Server thread/INFO]: [LyonAchievements] Chasse au trésor n°1 : coffre en -52 -60 28 (world).
+[19:48:32] [Server thread/INFO]: ★ · ✦ Un trésor de Noël est caché dans le monde ! Réussis les quêtes pour savoir où : /tresor
+[19:48:32] [Server thread/INFO]:  
+[19:48:32] [Server thread/INFO]:   ❄ L'événement de Noël commence sur LyonMC ! ❄
+[19:48:32] [Server thread/INFO]:    ❄ Calendrier de l'Avent : ta case n°5 t'attend /calendrier
+[19:48:32] [Server thread/INFO]:    ✦ Chasse au trésor : un coffre est caché, les quêtes disent où /tresor
+[19:48:32] [Server thread/INFO]:    ☃ Arène de Noël : bataille de boules de neige /noel
+[19:48:32] [Server thread/INFO]:    ☠ Boss de Noël : le 26 décembre à 21 h /boss
+[19:48:32] [Server thread/INFO]:    Tout est aussi dans /menu
+[19:48:32] [Server thread/INFO]:  
+[19:48:32] [Server thread/INFO]: [LyonAchievements] Noël : annonce du début de l'événement envoyée.
+[19:48:35] [COMMUNAUTE-site/INFO]: [COMMUNAUTE] Site : Testeur s'est connecté au site.
+[19:48:35] [Async Chat Thread - #0/INFO]: [Not Secure] ✧ Novice Acheteur › bonjour tout le monde
+[19:48:35] [COMMUNAUTE-site/INFO]: [COMMUNAUTE] Suggestion n°1 de Testeur : Un /market avec des parcelles à louer
+[19:48:35] [COMMUNAUTE-site/INFO]: [COMMUNAUTE] Suggestion n°1 : statut acceptee, réponse de Testeur (par Testeur)
+[19:48:35] [Server thread/INFO]: Testeur issued server command: /ami ajouter Acheteur
+[19:48:37] [Async Chat Thread - #0/INFO]: [Not Secure] ♛ Novice Testeur › salut tout le monde
+[19:48:40] [Async Chat Thread - #1/INFO]: [Not Secure] ♛ Novice Testeur › Acheteur regarde mon [Stone Sword] !
+[19:48:42] [Server thread/INFO]: Testeur issued server command: /menu
+[19:48:43] [Server thread/INFO]: Acheteur issued server command: /ami accepter
+[19:48:45] [Server thread/INFO]: Acheteur issued server command: /msg Testeur coucou
+[19:48:45] [Server thread/INFO]: [COMMUNAUTE] [MP] Acheteur -> Testeur : coucou
+[19:48:47] [Server thread/INFO]: Acheteur issued server command: /ami
+[19:48:50] [Server thread/INFO]: Testeur issued server command: /menu
+[19:48:52] [Server thread/INFO]: Made Acheteur no longer a server operator
+[19:48:54] [Server thread/INFO]: [Not Secure] [Server] test-filtre
+[19:48:55] [Server thread/INFO]: Acheteur issued server command: /suggestion
+[19:48:56] [Async Chat Thread - #1/INFO]: [Not Secure] ✧ Novice Acheteur › salut tout le monde comment ca va
+[19:48:56] [Server thread/INFO]: Testeur issued server command: /calendrier
+[19:48:57] [Async Chat Thread - #1/INFO]: [Not Secure] ✧ Novice Acheteur › spam numero 0
+[19:48:57] [Async Chat Thread - #1/INFO]: [Not Secure] ✧ Novice Acheteur › spam numero 1
+[19:48:58] [COMMUNAUTE-site/INFO]: [COMMUNAUTE] Site : Acheteur s'est connecté au site.
+[19:48:58] [COMMUNAUTE-site/INFO]: [COMMUNAUTE] Suggestion n°2 de Acheteur : Des courses d'élytres le vendredi
+[19:48:58] [COMMUNAUTE-site/INFO]: [COMMUNAUTE] Suggestion n°2 supprimée par Acheteur.
+[19:48:59] [Server thread/INFO]: ★ Testeur a obtenu Premier salaire 7/146
+[19:48:59] [Server thread/INFO]: [LyonAchievements] Calendrier : Testeur ouvre la case 1 (1/24).
+[19:49:01] [Server thread/INFO]: [LyonAchievements] Calendrier : Testeur ouvre la case 5 (2/24).
+[19:49:07] [Server thread/INFO]: Testeur issued server command: /calendrier
+[19:49:07] [Server thread/INFO]: ✦ Testeur a fait venir Acheteur sur LyonMC. Merci ! (/parrain)
+[19:49:08] [Server thread/INFO]: [COMMUNAUTE] [Sanction] Mute Acheteur (2 min) : test du mute (par CONSOLE)
+[19:49:09] [Server thread/INFO]: [Not Secure] [Server] test-muet
+[19:49:11] [Server thread/INFO]: Acheteur issued server command: /msg Testeur message pendant le mute
+[19:49:13] [Server thread/INFO]: Testeur issued server command: /tresor admin nouveau
+[19:49:13] [Server thread/INFO]: [LyonAchievements] Chasse au trésor n°2 : coffre en 13 -60 49 (world).
+[19:49:13] [Server thread/INFO]: ★ · ✦ Un trésor de Noël est caché dans le monde ! Réussis les quêtes pour savoir où : /tresor
+[19:49:15] [Server thread/INFO]: ★ · Acheteur peut de nouveau parler.
+[19:49:16] [Server thread/INFO]: [COMMUNAUTE] [Sanction] Avertissement Acheteur : test d'avertissement (par CONSOLE)
+[19:49:17] [Server thread/INFO]:   ⚑ Sanctions de Acheteur (2)
+[19:49:17] [Server thread/INFO]:   26/11/2026 20:49 | Mute 2 min | test du mute | par CONSOLE
+[19:49:17] [Server thread/INFO]:   26/11/2026 20:49 | Avertissement | test d'avertissement | par CONSOLE
+[19:49:18] [Server thread/INFO]: Made Acheteur a server operator
+[19:49:21] [Server thread/INFO]: Testeur issued server command: /tresor admin ou
+[19:49:23] [Server thread/INFO]: Testeur issued server command: /tresor
+[19:49:25] [Server thread/INFO]: Testeur issued server command: /tp Testeur 13.5 -60 51.5
+[19:49:25] [Server thread/INFO]: [Testeur: Teleported Testeur to 13.500000, -60.000000, 51.500000]
+[19:49:28] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:49:29] [Server thread/INFO]: ★ · ✦ Testeur a trouvé le trésor de Noël n°2 en premier ! Les autres peuvent encore trouver le leur : /tresor
+[19:49:29] [Server thread/INFO]: [LyonAchievements] Chasse au trésor n°2 : Testeur trouve le coffre (1e).
+[19:49:34] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:49:35] [Server thread/INFO]: Testeur issued server command: /money
+[19:49:37] [Server thread/INFO]: Testeur issued server command: /spawn
+[19:49:37] [Server thread/WARN]: Testeur moved too quickly! -13.0,0.0625,-51.0
+[19:49:37] [Server thread/WARN]: Testeur moved too quickly! -13.0,0.0625,-51.0
+[19:49:37] [Server thread/WARN]: Testeur moved too quickly! -13.0,0.0625,-51.0
+[19:49:37] [Server thread/WARN]: Testeur moved too quickly! -13.0,0.0625,-51.0
+[19:49:37] [Server thread/WARN]: Testeur moved too quickly! -13.0,0.0625,-51.0
+[19:49:40] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:49:41] [Server thread/INFO]: Testeur issued server command: /premierspas
+[19:49:43] [Server thread/INFO]: Testeur issued server command: /vote
+[19:49:46] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:49:46] [Server thread/INFO]: Testeur issued server command: /vote verifier
+[19:49:47] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:49:48] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:49:52] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:49:57] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:49:58] [Server thread/INFO]: Testeur issued server command: /vote verifier
+[19:49:59] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:50:00] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:50:03] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:50:03] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:50:04] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:50:09] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:50:10] [Server thread/INFO]: Testeur issued server command: /objectif
+[19:50:12] [Server thread/INFO]: Testeur issued server command: /bienvenue
+[19:50:12] [Server thread/INFO]: ✦ Testeur souhaite la bienvenue à Acheteur !
+[19:50:15] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:50:15] [Server thread/INFO]: Testeur issued server command: /parrain
+[19:50:17] [Server thread/INFO]: Testeur issued server command: /aide
+[19:50:20] [Server thread/INFO]: Acheteur was slain by Slime
+[19:50:21] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:50:23] [Server thread/INFO]: Testeur issued server command: /help
+[19:50:26] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:50:26] [Server thread/INFO]: Testeur issued server command: /regles
+[19:50:28] [Server thread/INFO]: Testeur issued server command: /aide faq
+[19:50:30] [Server thread/INFO]: Testeur issued server command: /metiers
+[19:50:32] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:50:33] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:50:34] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:50:36] [Server thread/INFO]: Testeur issued server command: /metiers top
+[19:50:38] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:50:39] [Server thread/INFO]: Testeur was slain by Slime
+[19:50:40] [Server thread/INFO]: Testeur issued server command: /msg Acheteur salut toi
+[19:50:40] [Server thread/INFO]: [COMMUNAUTE] [MP] Testeur -> Acheteur : salut toi
+[19:50:42] [Server thread/INFO]: Testeur issued server command: /r merci !
+[19:50:42] [Server thread/INFO]: [COMMUNAUTE] [MP] Testeur -> Acheteur : merci !
+[19:50:44] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:50:45] [Server thread/INFO]: Testeur issued server command: /report Acheteur test de signalement
+[19:50:45] [Server thread/INFO]: [COMMUNAUTE] [Signalement #1] Testeur -> Acheteur : test de signalement
+[19:50:47] [Server thread/INFO]: Testeur issued server command: /signalements
+[19:50:50] [Server thread/INFO]: Testeur issued server command: /astuces
+[19:50:50] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:50:52] [Server thread/INFO]: Testeur issued server command: /astuces
+[19:50:55] [Server thread/INFO]: Testeur issued server command: /ignorer
+[19:50:55] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:50:57] [Server thread/INFO]: Testeur issued server command: /lmc donner Testeur soutien
+[19:50:57] [Server thread/INFO]: ♥ Testeur soutient le serveur, merci à lui !
+[19:51:00] [Server thread/INFO]: Testeur issued server command: /lmc actu Test du site | Ceci est une actualité de test.
+[19:51:00] [Server thread/INFO]: ✦ Nouvelle actualité : Test du site (lyonmc.fr/actualites)
+[19:51:01] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:51:03] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:51:03] [Server thread/INFO]: Testeur issued server command: /ami
+[19:51:04] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:51:06] [Server thread/INFO]: Testeur issued server command: /menu
+[19:51:07] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:51:11] [Server thread/INFO]: Testeur issued server command: /menu
+[19:51:11] [Server thread/INFO]: Acheteur was slain by Slime
+[19:51:11] [Server thread/INFO]: Testeur was slain by Slime
+[19:51:13] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:51:15] [Server thread/INFO]: Testeur issued server command: /succes
+[19:51:17] [Server thread/INFO]: Testeur issued server command: /succes menu
+[19:51:19] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:51:23] [Server thread/INFO]: Testeur issued server command: /classement
+[19:51:24] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:51:26] [Server thread/INFO]: Testeur issued server command: /titres
+[19:51:30] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:51:32] [Server thread/INFO]: Testeur issued server command: /cosmetiques
+[19:51:33] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:51:34] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:51:35] [Server thread/INFO]: Testeur issued server command: /boutique
+[19:51:36] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:51:42] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:51:43] [Server thread/INFO]: Acheteur was slain by Slime
+[19:51:44] [Server thread/INFO]: Testeur issued server command: /cosmetiques
+[19:51:48] [Server thread/INFO]: Acheteur issued server command: /hdv
+[19:51:49] [Server thread/INFO]: Testeur issued server command: /parcours
+[19:51:52] [Server thread/INFO]: Testeur was slain by Slime
+[19:51:53] [Server thread/INFO]: Testeur issued server command: /saison
+[19:51:54] [Server thread/INFO]: Acheteur issued server command: /equipe rejoindre Testeurs
+[19:51:56] [Server thread/INFO]: Testeur issued server command: /sethome base
+[19:51:57] [Server thread/INFO]: Acheteur issued server command: /equipe rejoindre Testeurs
+[19:51:59] [Server thread/INFO]: Testeur issued server command: /homes
+[19:52:00] [Server thread/INFO]: Acheteur issued server command: /equipe rejoindre Testeurs
+[19:52:02] [Server thread/INFO]: Testeur issued server command: /home base
+[19:52:03] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:52:03] [Server thread/INFO]: Acheteur issued server command: /equipe rejoindre Testeurs
+[19:52:04] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:52:06] [Server thread/INFO]: Acheteur issued server command: /equipe rejoindre Testeurs
+[19:52:07] [Server thread/INFO]: Testeur issued server command: /setspawn
+[19:52:09] [Server thread/INFO]: Acheteur issued server command: /equipe rejoindre Testeurs
+[19:52:09] [Server thread/INFO]: Testeur issued server command: /spawn
+[19:52:12] [Server thread/INFO]: Acheteur issued server command: /tpa Testeur
+[19:52:15] [Server thread/INFO]: Testeur issued server command: /hdv vendre 100 2
+[19:52:15] [Server thread/INFO]: [HDV] Testeur vend 1× Stone Sword pour 100 ⛁ (/hdv)
+[19:52:17] [Server thread/INFO]: Testeur issued server command: /hdv
+[19:52:21] [Server thread/INFO]: Testeur issued server command: /equipe creer Testeurs TST
+[19:52:21] [Server thread/INFO]: ★ Testeur a obtenu Esprit d'équipe 9/146
+[19:52:21] [Server thread/INFO]: ✦ Testeur a fondé l'équipe [TST] Testeurs
+[19:52:23] [Server thread/INFO]: Testeur issued server command: /equipe inviter Acheteur
+[19:52:24] [Server thread/INFO]: Acheteur issued server command: /pay Testeur 500
+[19:52:27] [Server thread/INFO]: Acheteur issued server command: /money
+[19:52:29] [Server thread/INFO]: Acheteur issued server command: /equipe info
+[19:52:33] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:52:34] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:52:38] [Server thread/INFO]: Testeur issued server command: /tpaccept
+[19:52:44] [Server thread/INFO]: Testeur issued server command: /lmc holo creer podium
+[19:52:47] [Server thread/INFO]: Testeur issued server command: /lmc holo creer saison classement-saison
+[19:52:49] [Server thread/INFO]: Testeur issued server command: /lmc holo creer serveur
+[19:52:51] [Server thread/INFO]: Testeur issued server command: /lmc holo creer bienvenue
+[19:52:52] [Server thread/INFO]: Testeur issued server command: /lmc holo creer fortune
+[19:52:54] [Server thread/INFO]: Testeur issued server command: /lmc holo creer missions
+[19:52:55] [Server thread/INFO]: Testeur issued server command: /lmc holo creer grades
+[19:52:57] [Server thread/INFO]: Testeur issued server command: /lmc holo liste
+[19:52:59] [Server thread/INFO]: Testeur issued server command: /hub
+[19:53:03] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:53:04] [Server thread/INFO]: Testeur issued server command: /lobby
+[19:53:04] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:53:09] [Server thread/INFO]: Testeur issued server command: /titres
+[19:53:12] [Server thread/INFO]: Testeur issued server command: /gamemode creative
+[19:53:12] [Server thread/INFO]: [Testeur: Set own game mode to Creative Mode]
+[19:53:15] [Server thread/INFO]: Testeur issued server command: /boss arene
+[19:53:17] [Server thread/INFO]: Testeur issued server command: /boss lancer noel
+[19:53:17] [Server thread/INFO]: [LyonAchievements] Boss : 1 joueur(s) près de l'arène, 2 connecté(s) -> 1,00 combattant(s), 6000 PV, attaque x1,00
+[19:53:18] [Server thread/INFO]: [Boss] Le Père Fouettard est apparu ! Rejoins le combat : /boss
+[19:53:21] [Server thread/INFO]: Testeur issued server command: /gamerule keepInventory false
+[19:53:21] [Server thread/INFO]: [Testeur: Gamerule keepInventory is now set to: false]
+[19:53:22] [Server thread/INFO]: Testeur issued server command: /gamemode survival
+[19:53:22] [Server thread/INFO]: [Testeur: Set own game mode to Survival Mode]
+[19:53:23] [Server thread/INFO]: Testeur issued server command: /give Testeur emerald 7
+[19:53:23] [Server thread/INFO]: [Testeur: Gave 7 [Emerald] to Testeur]
+[19:53:27] [Server thread/INFO]: [LyonAchievements] Boss : 2 joueur(s) dans l'arène, 2 connecté(s) -> 2,00 combattant(s), vie max visée 8000, attaque x1,06
+[19:53:29] [Server thread/INFO]: Testeur issued server command: /kill Testeur
+[19:53:30] [Server thread/INFO]: [LyonAchievements] Boss : Testeur est mort dans l'arène (mort n°1) : stuff gardé, -100 pièces.
+[19:53:30] [Server thread/INFO]: Testeur was killed
+[19:53:30] [Server thread/INFO]: [Testeur: Killed Testeur]
+[19:53:33] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:53:34] [Server thread/INFO]: Testeur issued server command: /kill Testeur
+[19:53:34] [Server thread/INFO]: [LyonAchievements] Boss : Testeur est mort dans l'arène (mort n°2) : stuff gardé, -100 pièces, lenteur 10 s.
+[19:53:34] [Server thread/INFO]: Testeur was killed
+[19:53:34] [Server thread/INFO]: [Testeur: Killed Testeur]
+[19:53:34] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:53:38] [Server thread/INFO]: Testeur issued server command: /money
+[19:53:40] [Server thread/INFO]: Testeur issued server command: /gamerule keepInventory true
+[19:53:40] [Server thread/INFO]: [Testeur: Gamerule keepInventory is now set to: true]
+[19:53:41] [Server thread/INFO]: Testeur issued server command: /gamemode creative
+[19:53:41] [Server thread/INFO]: [Testeur: Set own game mode to Creative Mode]
+[19:53:42] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:53:42] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:53:42] [Server thread/INFO]: [LyonAchievements] Boss : 1 joueur(s) dans l'arène, 2 connecté(s) -> 1,00 combattant(s), vie max visée 6000, attaque x1,00
+[19:53:44] [Server thread/INFO]: Testeur issued server command: /item replace entity Testeur weapon.mainhand with minecraft:netherite_sword[enchantments={sharpness:255}]
+[19:53:44] [Server thread/INFO]: [Testeur: Replaced a slot on Testeur with [Netherite Sword]]
+[19:53:45] [Server thread/INFO]: Testeur issued server command: /effect give Testeur strength 600 40 true
+[19:53:45] [Server thread/INFO]: [Testeur: Applied effect Strength to Testeur]
+[19:53:46] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:53:46] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:53:50] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:53:50] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:53:52] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:53:52] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:53:54] [Server thread/INFO]: [Boss] Le Père Fouettard passe en phase 2 et s'entoure de ses gardiens !
+[19:53:55] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:53:55] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:53:57] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:53:57] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:00] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:00] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:03] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:03] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:03] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:54:04] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:54:05] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:05] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:07] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:07] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:09] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:09] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:12] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:12] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:14] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:14] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:16] [Server thread/INFO]: Named entity WitherSkeleton['Gardien du Colosse'/407, uuid='c19c9d0c-df32-4d1c-a276-b0ec4528c404', l='ServerLevel[world]', x=-9.17, y=-60.00, z=-36.14, cpos=[-1, -3], tl=437, v=true] died: Gardien du Colosse was slain by Testeur
+[19:54:16] [Server thread/INFO]: Named entity WitherSkeleton['Gardien du Colosse'/406, uuid='93904c49-2587-4202-acea-0be9fbcfcdd0', l='ServerLevel[world]', x=-10.07, y=-60.00, z=-35.91, cpos=[-1, -3], tl=437, v=true] died: Gardien du Colosse was slain by Testeur
+[19:54:17] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:17] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:21] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:21] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:25] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:25] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:25] [Server thread/INFO]: [Boss] Le Père Fouettard passe en phase 3 et s'entoure de ses gardiens !
+[19:54:27] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:27] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:29] [Server thread/INFO]: Named entity WitherSkeleton['Gardien du Colosse'/464, uuid='f5b4468a-d805-412c-93a9-388a7bd1d3c5', l='ServerLevel[world]', x=-9.05, y=-60.00, z=-35.78, cpos=[-1, -3], tl=82, v=true] died: Gardien du Colosse was slain by Testeur
+[19:54:29] [Server thread/INFO]: Named entity WitherSkeleton['Gardien du Colosse'/465, uuid='180f7cd1-4726-44aa-be8f-320eb02c3e60', l='ServerLevel[world]', x=-10.03, y=-60.00, z=-36.11, cpos=[-1, -3], tl=82, v=true] died: Gardien du Colosse was slain by Testeur
+[19:54:30] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:30] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:33] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:33] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:33] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:54:34] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:54:35] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:35] [Server thread/INFO]: [Testeur: Teleported Testeur to Le Père Fouettard]
+[19:54:38] [Server thread/INFO]: [LyonAchievements] Boss de Noël vaincu : cadeaux lâchés.
+[19:54:38] [Server thread/INFO]: 
+[19:54:38] [Server thread/INFO]: [Boss] Le Père Fouettard a été vaincu !
+[19:54:38] [Server thread/INFO]:   ♛ 1 Testeur 100 % des dégâts
+[19:54:38] [Server thread/INFO]: ★ Testeur a obtenu Chasseur de Colosse 10/146
+[19:54:38] [Server thread/INFO]: ✦ Testeur a relevé le défi Coup de grâce 11/146
+[19:54:38] [Server thread/INFO]:   Coup de grâce : Testeur
+[19:54:38] [Server thread/INFO]: Named entity WitherSkeleton['Le Père Fouettard'/389, uuid='9cb49cfa-b2b0-4ace-8b11-4cb9a459023b', l='ServerLevel[world]', x=-8.22, y=-60.00, z=-36.42, cpos=[-1, -3], tl=1600, v=true] died: Le Père Fouettard was slain by Testeur
+[19:54:38] [Server thread/INFO]: ★ Acheteur a obtenu Diamonds! 5/146
+[19:54:39] [Server thread/INFO]: Testeur issued server command: /tp Testeur @e[type=wither_skeleton,sort=nearest,limit=1]
+[19:54:42] [Server thread/INFO]: Testeur issued server command: /gamemode survival
+[19:54:42] [Server thread/INFO]: [Testeur: Set own game mode to Survival Mode]
+[19:54:45] [Server thread/INFO]: Testeur issued server command: /give Testeur dragon_egg
+[19:54:45] [Server thread/INFO]: ★ Testeur a obtenu The Next Generation 12/146
+[19:54:45] [Server thread/INFO]: [Testeur: Gave 1 [Dragon Egg] to Testeur]
+[19:54:48] [Server thread/INFO]: [LyonAchievements] Œuf de dragon de Testeur rendu : portail pas chargé, il sera posé plus tard.
+[19:54:52] [Server thread/INFO]: Testeur issued server command: /summon wolf ~2 ~ ~ {Tags:["testloup"],NoAI:1b}
+[19:54:52] [Server thread/INFO]: [Testeur: Summoned new Wolf]
+[19:54:53] [Server thread/INFO]: Testeur issued server command: /data modify entity @e[type=wolf,tag=testloup,limit=1] Owner set from entity Testeur UUID
+[19:54:53] [Server thread/INFO]: [Testeur: Modified entity data of Wolf]
+[19:54:55] [Server thread/INFO]: Testeur issued server command: /item replace entity @e[type=wolf,tag=testloup,limit=1] armor.body with minecraft:wolf_armor
+[19:54:55] [Server thread/INFO]: [Testeur: Replaced a slot on Wolf with [Wolf Armor]]
+[19:54:56] [Server thread/INFO]: Testeur issued server command: /give Testeur shears
+[19:54:56] [Server thread/INFO]: [Testeur: Gave 1 [Shears] to Testeur]
+[19:54:58] [Server thread/INFO]: ★ Testeur a obtenu Shear Brilliance 13/146
+[19:54:58] [Server thread/INFO]: [LyonAchievements] Succès « Shear Brilliance » donné à Testeur (armure de loup retirée avec des cisailles).
+[19:55:01] [Server thread/INFO]: Testeur issued server command: /money
+[19:55:03] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:55:03] [Server thread/INFO]: Testeur issued server command: /parcours
+[19:55:04] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:55:07] [Server thread/INFO]: Testeur issued server command: /rtp
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:07] [Server thread/WARN]: Testeur moved too quickly! 4300.659399189553,0.0,646.1385415355551
+[19:55:19] [Server thread/INFO]: Testeur issued server command: /ressources
+[19:55:33] [Server thread/INFO]: Testeur issued server command: /give Testeur iron_pickaxe
+[19:55:33] [Server thread/INFO]: ★ Testeur a obtenu Isn't It Iron Pick 14/146
+[19:55:33] [Server thread/INFO]: [Testeur: Gave 1 [Iron Pickaxe] to Testeur]
+[19:55:33] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:55:34] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:55:35] [Server thread/INFO]: Testeur issued server command: /lmc metier Testeur mineur 1
+[19:55:38] [Server thread/INFO]: Testeur issued server command: /setblock ~1 ~ ~ minecraft:diamond_ore
+[19:55:38] [Server thread/INFO]: [Testeur: Changed the block at -1764, 82, 243]
+[19:55:44] [Server thread/INFO]: Testeur issued server command: /setblock ~1 ~ ~ minecraft:diamond_ore
+[19:55:44] [Server thread/INFO]: [Testeur: Changed the block at -1764, 82, 243]
+[19:55:51] [Server thread/INFO]: Testeur issued server command: /setblock ~1 ~ ~ minecraft:diamond_ore
+[19:55:51] [Server thread/INFO]: [Testeur: Changed the block at -1764, 82, 243]
+[19:55:58] [Server thread/INFO]: Testeur issued server command: /setblock ~1 ~ ~ minecraft:diamond_ore
+[19:55:58] [Server thread/INFO]: [Testeur: Changed the block at -1764, 82, 243]
+[19:56:03] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:56:04] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:56:05] [Server thread/INFO]: Testeur issued server command: /money
+[19:56:07] [Server thread/INFO]: Testeur issued server command: /back
+[19:56:13] [Server thread/INFO]: Testeur issued server command: /lmc saison fin
+[19:56:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Sur le podium 15/146
+[19:56:13] [Server thread/INFO]: ✦ Acheteur a relevé le défi Sur le podium 6/146
+[19:56:13] [Server thread/INFO]: 
+[19:56:13] [Server thread/INFO]: ✦ Fin de la Saison 1 · Novembre ✦
+[19:56:13] [Server thread/INFO]:   ♛ 1 Testeur 1 565 pts
+[19:56:13] [Server thread/INFO]:   ✧ 2 Acheteur 265 pts
+[19:56:13] [Server thread/INFO]: La Saison 2 · Novembre commence. Bonne chance à tous !
+[19:56:13] [Server thread/INFO]: ✦ Testeur est maintenant Aventurier !
+[19:56:17] [Server thread/INFO]: Testeur issued server command: /saison
+[19:56:20] [Server thread/INFO]: Testeur issued server command: /lyonhub monde
+[19:56:20] [Server thread/INFO]: Preparing start region for dimension minecraft:hub
+[19:56:20] [Server thread/INFO]: Preparing spawn area: 0%
+[19:56:21] [Server thread/INFO]: Preparing spawn area: 0%
+[19:56:21] [Server thread/INFO]: Preparing spawn area: 0%
+[19:56:22] [Server thread/INFO]: Preparing spawn area: 0%
+[19:56:22] [Server thread/INFO]: Preparing spawn area: 18%
+[19:56:23] [Server thread/INFO]: Preparing spawn area: 18%
+[19:56:23] [Server thread/INFO]: Preparing spawn area: 51%
+[19:56:24] [Server thread/INFO]: Time elapsed: 3339 ms
+[19:56:24] [Server thread/WARN]: Can't keep up! Is the server overloaded? Running 3343ms or 66 ticks behind
+[19:56:28] [Server thread/INFO]: Testeur issued server command: /setspawn
+[19:56:31] [Server thread/INFO]: Testeur issued server command: /lyonhub coller
+[19:56:33] [Server thread/INFO]: Testeur issued server command: /lyonhub coller test-hub
+[19:56:36] [Server thread/INFO]: Testeur issued server command: /lyonhub coller test-hub confirmer
+[19:56:37] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:56:37] [Server thread/INFO]: [HUB] Schematic test-hub collé : 447894 blocs.
+[19:56:38] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:57:06] [Server thread/INFO]: Testeur issued server command: /lmc holo creer serveur hub-serveur
+[19:57:06] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:57:08] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:57:08] [Server thread/INFO]: Testeur issued server command: /tp Testeur 0.5 65 12 180 0
+[19:57:08] [Server thread/INFO]: [Testeur: Teleported Testeur to 0.500000, 65.000000, 12.500000]
+[19:57:10] [Server thread/INFO]: Testeur issued server command: /lmc holo creer ecran
+[19:57:14] [Server thread/INFO]: Testeur issued server command: /tp Testeur 0.5 65 -3 0 0
+[19:57:14] [Server thread/INFO]: [Testeur: Teleported Testeur to 0.500000, 65.000000, -2.500000]
+[19:57:16] [Server thread/INFO]: Testeur issued server command: /lyonhub podium succes 1
+[19:57:19] [Server thread/INFO]: Testeur issued server command: /lyonhub podium succes 2
+[19:57:21] [Server thread/INFO]: Testeur issued server command: /tp Testeur 3.5 65 -3 0 0
+[19:57:21] [Server thread/INFO]: [Testeur: Teleported Testeur to 3.500000, 65.000000, -2.500000]
+[19:57:23] [Server thread/INFO]: Testeur issued server command: /lyonhub pnj jouer Acheteur menu
+[19:57:26] [Server thread/INFO]: Testeur issued server command: /lyonhub texte jouer <green>Jouer|<gray>clic droit
+[19:57:28] [Server thread/INFO]: Testeur issued server command: /lyonhub liste
+[19:57:31] [Server thread/INFO]: Testeur issued server command: /tp Testeur 1.5 65 2 180 0
+[19:57:31] [Server thread/INFO]: [Testeur: Teleported Testeur to 1.500000, 65.000000, 2.500000]
+[19:57:36] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:57:38] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:57:40] [Server thread/INFO]: Testeur issued server command: /tp Testeur 12.5 65 0.5
+[19:57:40] [Server thread/INFO]: [Testeur: Teleported Testeur to 12.500000, 65.000000, 0.500000]
+[19:57:42] [Server thread/INFO]: Testeur issued server command: /lyonhub parkour depart
+[19:57:44] [Server thread/INFO]: Testeur issued server command: /tp Testeur 14.5 65 0.5
+[19:57:44] [Server thread/INFO]: [Testeur: Teleported Testeur to 14.500000, 65.000000, 0.500000]
+[19:57:46] [Server thread/INFO]: Testeur issued server command: /lyonhub parkour etape
+[19:57:48] [Server thread/INFO]: Testeur issued server command: /tp Testeur 16.5 65 0.5
+[19:57:48] [Server thread/INFO]: [Testeur: Teleported Testeur to 16.500000, 65.000000, 0.500000]
+[19:57:50] [Server thread/INFO]: Testeur issued server command: /lyonhub parkour arrivee
+[19:57:52] [Server thread/INFO]: Testeur issued server command: /tp Testeur 18.5 65 3.5
+[19:57:52] [Server thread/INFO]: [Testeur: Teleported Testeur to 18.500000, 65.000000, 3.500000]
+[19:57:54] [Server thread/INFO]: Testeur issued server command: /lyonhub parkour classement
+[19:57:56] [Server thread/INFO]: Testeur issued server command: /tp Testeur 9.5 65 0.5 -90 0
+[19:57:56] [Server thread/INFO]: [Testeur: Teleported Testeur to 9.500000, 65.000000, 0.500000]
+[19:58:00] [Server thread/INFO]: ✦ Testeur bat le record du parkour du hub en 0,95 s !
+[19:58:00] [Server thread/INFO]: ★ · Nouveau solde de Testeur : 86 910 ⛁
+[19:58:00] [Server thread/INFO]: ★ · Titre acrobate donné à Testeur.
+[19:58:04] [Server thread/INFO]: Testeur issued server command: /parkour top
+[19:58:06] [Server thread/INFO]: Testeur issued server command: /give Testeur diamond 3
+[19:58:06] [Server thread/INFO]: [Testeur: Gave 3 [Diamond] to Testeur]
+[19:58:06] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:58:08] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:58:09] [Server thread/INFO]: Testeur issued server command: /hdv vendre 100
+[19:58:11] [Server thread/INFO]: Testeur issued server command: /missions
+[19:58:17] [Server thread/INFO]: Testeur issued server command: /lyonhub installer
+[19:58:20] [Server thread/INFO]: Testeur issued server command: /lyonhub installer confirmer
+[19:58:25] [Server thread/INFO]: Testeur issued server command: /lyonhub installer recoller
+[19:58:31] [Server thread/INFO]: [HUB] Schematic hub-medieval collé : 1296536 blocs.
+[19:58:36] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:58:38] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:59:06] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:59:08] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[19:59:36] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[19:59:38] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:00:06] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[20:00:08] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:00:25] [Server thread/INFO]: Testeur issued server command: /tp Testeur 30 70 30
+[20:00:25] [Server thread/INFO]: [Testeur: Teleported Testeur to 30.500000, 70.000000, 30.500000]
+[20:00:27] [Server thread/INFO]: Testeur issued server command: /lyonhub installer confirmer
+[20:00:36] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[20:00:38] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:00:42] [Server thread/INFO]: Testeur issued server command: /lyonhub liste
+[20:00:45] [Server thread/INFO]: Testeur issued server command: /lmc holo liste
+[20:00:47] [Server thread/INFO]: Testeur issued server command: /parkour
+[20:00:51] [Server thread/INFO]: Testeur issued server command: /noel
+[20:00:53] [Server thread/INFO]: Testeur issued server command: /lyonhub noel installer
+[20:00:54] [Server thread/INFO]: Testeur issued server command: /lyonhub noel installer confirmer Acheteur
+[20:00:54] [Server thread/INFO]: Preparing start region for dimension minecraft:noel
+[20:00:54] [Server thread/INFO]: Preparing spawn area: 0%
+[20:00:55] [Server thread/INFO]: Preparing spawn area: 0%
+[20:00:55] [Server thread/INFO]: Preparing spawn area: 0%
+[20:00:56] [Server thread/INFO]: Preparing spawn area: 18%
+[20:00:56] [Server thread/INFO]: Preparing spawn area: 51%
+[20:00:57] [Server thread/INFO]: Time elapsed: 2437 ms
+[20:00:59] [Server thread/WARN]: Can't keep up! Is the server overloaded? Running 5010ms or 100 ticks behind
+[20:01:00] [Server thread/INFO]: [HUB] Schematic happychristmas collé : 93890 blocs, 2 têtes décorées.
+[20:01:00] [Server thread/INFO]: [HUB] Bataille de boules de neige : ancienne arène retirée (noel;66;62;0;14;3;7;2), nouvelle : noel;92;78;0;20;5;7;2
+[20:01:00] [Server thread/INFO]: [HUB] Village de Noël installé dans le monde noel. Arène : 92 78 0
+[20:01:12] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[20:01:13] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:01:24] [Server thread/INFO]: Testeur issued server command: /noel
+[20:01:28] [Server thread/INFO]: Testeur issued server command: /lyonhub noel
+[20:01:30] [Server thread/INFO]: Testeur issued server command: /bataille
+[20:01:33] [Server thread/INFO]: Testeur issued server command: /bataille ajouter Acheteur
+[20:01:39] [Server thread/INFO]: Testeur issued server command: /bataille lancer
+[20:01:41] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[20:01:43] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:01:43] [Server thread/INFO]: [HUB] Bataille de boules de neige : partie lancée avec 2 joueur(s) (Testeur, Acheteur).
+[20:01:43] [Server thread/WARN]: Testeur moved too quickly! 98.0,14.0,-10.0
+[20:01:43] [Server thread/WARN]: Testeur moved too quickly! 98.0,14.0,-10.0
+[20:01:43] [Server thread/WARN]: Testeur moved too quickly! 98.0,14.0,-10.0
+[20:01:43] [Server thread/WARN]: Testeur moved too quickly! 98.0,14.0,-10.0
+[20:01:43] [Server thread/WARN]: Testeur moved too quickly! 98.0,14.0,-10.0
+[20:01:43] [Server thread/WARN]: Testeur moved too quickly! 98.0,14.0,-10.0
+[20:01:43] [Server thread/WARN]: Testeur moved too quickly! 98.0,14.0,-10.0
+[20:01:43] [Server thread/WARN]: Testeur moved too quickly! 98.0,14.0,-10.0
+[20:01:43] [Server thread/WARN]: Testeur moved too quickly! 98.0,14.0,-10.0
+[20:01:52] [Server thread/INFO]: ❄ · Acheteur gagne la bataille de boules de neige de l'arène de Noël ! (1 adversaire, 0:08)
+[20:01:52] [Server thread/INFO]: ★ · Nouveau solde de Acheteur : 21 170 ⛁
+[20:01:52] [Server thread/INFO]: [HUB] Bataille de boules de neige : Acheteur gagne (2 joueurs, 8 s).
+[20:01:52] [Server thread/WARN]: Testeur moved too quickly! -6.0,48.80652611000901,-15.0
+[20:01:52] [Server thread/WARN]: Testeur moved too quickly! -6.0,48.80652611000901,-15.0
+[20:01:52] [Server thread/WARN]: Testeur moved too quickly! -6.0,48.80652611000901,-15.0
+[20:01:52] [Server thread/WARN]: Testeur moved too quickly! -6.0,48.80652611000901,-15.0
+[20:01:52] [Server thread/WARN]: Testeur moved too quickly! -6.0,48.80652611000901,-15.0
+[20:02:11] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[20:02:13] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:02:28] [Server thread/INFO]: Testeur issued server command: /bataille top
+[20:02:30] [Server thread/INFO]: Testeur issued server command: /hub
+[20:02:35] [Server thread/INFO]: Testeur issued server command: /tp Testeur 6.5 65 6.5 180 0
+[20:02:35] [Server thread/INFO]: [Testeur: Teleported Testeur to 6.500000, 65.000000, 6.500000]
+[20:02:37] [Server thread/INFO]: Testeur issued server command: /lyonhub noel pnj-hub
+[20:02:39] [Server thread/INFO]: Testeur issued server command: /tp Testeur 6.5 65 3.5 0 0
+[20:02:39] [Server thread/INFO]: [Testeur: Teleported Testeur to 6.500000, 65.000000, 3.500000]
+[20:02:41] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[20:02:43] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:02:49] [Server thread/INFO]: Testeur issued server command: /bataille quitter
+[20:02:50] [Server thread/INFO]: Testeur issued server command: /hub
+[20:02:56] [Server thread/INFO]: Testeur issued server command: /tp Testeur 0.5 65 0.5 180 0
+[20:02:56] [Server thread/INFO]: [Testeur: Teleported Testeur to 0.500000, 65.000000, 0.500000]
+[20:02:58] [Server thread/INFO]: Testeur issued server command: /advancement grant Testeur only minecraft:adventure/sleep_in_bed
+[20:02:58] [Server thread/INFO]: [Testeur: Granted the advancement [Sweet Dreams] to Testeur]
+[20:03:09] [Server thread/INFO]: Testeur issued server command: /ressources
+[20:03:11] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[20:03:13] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:03:23] [Server thread/INFO]: Testeur issued server command: /survie
+[20:03:29] [Server thread/INFO]: Testeur issued server command: /advancement grant Testeur only minecraft:adventure/sleep_in_bed
+[20:03:29] [Server thread/INFO]: ★ Testeur a obtenu Sweet Dreams 16/146
+[20:03:29] [Server thread/INFO]: [Testeur: Granted the advancement [Sweet Dreams] to Testeur]
+[20:03:41] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[20:03:43] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:04:08] [Server thread/INFO]: Granted 16 advancements to Acheteur
+[20:04:12] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[20:04:13] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Who is Cutting Onions? 17/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu You've Got a Friend in Me 18/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi With Our Powers Combined! 19/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Oh Shiny 20/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Country Lode, Take Me Home 21/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Good as New 22/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Suit Up 23/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Smithing with Style 24/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Very Very Frightening 25/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Hot Stuff 26/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Stay Hydrated! 27/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Minecraft: Trial(s) Edition 28/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Whatever Floats Your Goat! 29/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Free the End 30/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Surge Protector 31/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi A Furious Cocktail 32/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Best Friends Forever 33/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Careful Restoration 34/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Glow and Behold! 35/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Bring Home the Beacon 36/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Not Today, Thank You 37/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a atteint 25 % des succès !
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu When the Squad Hops into Town 38/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi The Whole Pack 39/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Local Brewery 40/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi It Spreads 41/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Fishy Business 42/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Hot Tourist Destinations 43/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Caves & Cliffs 44/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Over-Overkill 45/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu This Boat Has Legs 46/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Sniper Duel 47/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Great View From Up Here 49/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi How Did We Get Here? 50/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Bullseye 51/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Spooky Scary Skeleton 52/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Two by Two 53/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Two Birds, One Arrow 54/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu We Need to Go Deeper 55/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Who's the Pillager Now? 56/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Light as a Rabbit 57/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Tactical Fishing 58/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Respecting the Remnants 59/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Zombie Doctor 60/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Little Sniffs 61/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu The City at the End of the Game 62/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Ice Bucket Challenge 63/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Remote Getaway 64/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Into Fire 65/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu War Pigs 66/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Take Aim 67/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Total Beelocation 68/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Lighten Up 69/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Arbalistic 70/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Under Lock and Key 71/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu The End... Again... 72/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Acquire Hardware 73/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a atteint 50 % des succès !
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Not Quite "Nine" Lives 74/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Revaulting 75/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Cover Me with Diamonds 76/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Sky's the Limit 77/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Bukkit Bukkit 78/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Wax Off 79/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Hired Help 80/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Sneak 100 81/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Return to Sender 82/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu You Need a Mint 83/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Monsters Hunted 84/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Heart Transplanter 85/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Enchanter 86/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Smells Interesting 87/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Voluntary Exile 88/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Eye Spy 89/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Is It a Bird? 91/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Serious Dedication 92/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Postmortal 93/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Isn't It Scute? 94/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Planting the Past 95/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Adventuring Time 96/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu A Seedy Place 97/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Those Were the Days 98/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu The Cutest Predator 99/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Birthday Song 100/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Is It a Plane? 101/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Feels Like Home 102/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Star Trader 103/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Wax On 104/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Sound of Music 105/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Hero of the Village 106/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Hidden in the Depths 107/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Beaconator 108/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Withering Heights 109/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi A Balanced Diet 110/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a atteint 75 % des succès !
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Subspace Bubble 111/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu The Power of Books 112/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Bee Our Guest 114/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu What a Deal! 115/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Is It a Balloon? 116/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Crafting a New Look 117/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Uneasy Alliance 118/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu The Healing Power of Friendship! 119/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu A Terrible Fortress 120/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu A Throwaway Joke 121/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Crafters Crafting Crafters 122/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Sticky Situation 124/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Ol' Betsy 125/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Cover Me in Debris 126/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu The End? 127/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu The Parrots and the Bats 128/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Blowback 129/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi A Complete Catalogue 130/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Who Needs Rockets? 131/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Au travail 132/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a atteint 90 % des succès !
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Routine 133/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Régulier 134/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Machine 135/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Semaine chargée 136/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Infatigable 137/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Fidèle 138/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Commerçant 139/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Avec style 140/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Collectionneur 141/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Marathonien 142/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Exterminateur 143/146
+[20:04:13] [Server thread/INFO]: ★ Testeur a obtenu Mineur acharné 144/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Survivant 145/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a relevé le défi Pilier du serveur 146/146
+[20:04:13] [Server thread/INFO]: ✦ Testeur a obtenu l'intégralité des succès du serveur ! ✦
+[20:04:13] [Server thread/INFO]: Granted 1542 advancements to Testeur
+[20:04:13] [Server thread/INFO]: ✦ Testeur a débloqué le palier Vétéran !
+[20:04:13] [Server thread/INFO]: ✦ Testeur a débloqué le palier Maître !
+[20:04:13] [Server thread/INFO]: ✦ Testeur a débloqué le palier Grand Maître !
+[20:04:13] [Server thread/INFO]: ✦ Testeur a débloqué le palier Invincible !
+[20:04:13] [Server thread/INFO]: ✦ Testeur a débloqué le palier Légende !
+[20:04:13] [Server thread/INFO]: ✦ Testeur est maintenant Légende !
+[20:04:33] [Server thread/INFO]: [Not Secure] [Server] test-chat-grade
+[20:04:34] [Server thread/INFO]: Testeur issued server command: /titres
+[20:04:34] [Async Chat Thread - #2/INFO]: [Not Secure] ✧ Novice [Finaliste] Acheteur › mon grade est visible ?
+[20:04:36] [Server thread/INFO]: Acheteur issued server command: /titres
+[20:04:41] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] serveurs-minecraft.org pour Testeur : code 200 → NOT_VOTED ({
+    "ip": "127.0.0.1",
+    "duration": 60,
+    "votes": "0"
+})
+[20:04:42] [Server thread/INFO]: Acheteur lost connection: Disconnected
+[20:04:42] [Async Chat Thread - #2/INFO]: [Not Secure] ♛ Aventurier [TST] [Noctambule] Testeur › je suis légende ?
+[20:04:42] [Server thread/INFO]: [-] Acheteur
+[20:04:43] [ForkJoinPool.commonPool-worker-2/INFO]: [COMMUNAUTE] [Votes] site-ip-test pour Testeur : code 200 → VOTED ({"ip": "test", "duration": 600, "votes": "1", "lastVoteDate": "2026-10-26 19:00:00"})
+[20:04:46] [Server thread/INFO]: Testeur lost connection: Disconnected
+[20:04:46] [Server thread/INFO]: [-] Testeur
+[20:05:03] [Server thread/INFO]: 
+[20:05:03] [Server thread/INFO]: Les plus riches   page 1/1
+[20:05:03] [Server thread/INFO]:   1   Testeur   197 570 ⛁
+[20:05:03] [Server thread/INFO]:   2   Acheteur   21 170 ⛁
+[20:05:07] [Server thread/INFO]: [LyonAchievements] 47 missions chargées.
+[20:05:07] [Server thread/INFO]: ★ · Configuration rechargée (config.yml, missions.yml, recompenses.yml, evenements.yml).
+[20:05:19] [Server thread/INFO]: Stopping the server
+[20:05:19] [Server thread/INFO]: Stopping server
+[20:05:19] [Server thread/INFO]: [COMMUNAUTE] Disabling COMMUNAUTE v1.4.1
+[20:05:19] [Server thread/INFO]: [ViaBackwards] Disabling ViaBackwards v5.12.3
+[20:05:19] [Server thread/INFO]: [LyonAchievements] Disabling LyonAchievements v7.3.5
+[20:05:19] [Server thread/INFO]: [ViaVersion] Disabling ViaVersion v5.12.4-SNAPSHOT
+[20:05:19] [Server thread/INFO]: [ViaVersion] ViaVersion has been disabled; uninjected the platform and shut down the scheduler.
+[20:05:19] [Server thread/INFO]: [HUB] Disabling HUB v1.9.6
+[20:05:19] [Server thread/INFO]: Saving players
+[20:05:19] [Server thread/INFO]: Saving worlds
+[20:05:19] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[20:05:19] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[20:05:19] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[20:05:19] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saved 564 block chunks, 14 entity chunks, 0 poi chunks in world 'world' in 0.17s
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world'
+[20:05:20] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world_nether]'/minecraft:the_nether
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_nether'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saved 792 block chunks, 1 entity chunks, 0 poi chunks in world 'world_nether' in 0.18s
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_nether'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_nether'
+[20:05:20] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world_the_end]'/minecraft:the_end
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_the_end'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saved 792 block chunks, 10 entity chunks, 0 poi chunks in world 'world_the_end' in 0.12s
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_the_end'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_the_end'
+[20:05:20] [Server thread/INFO]: Saving chunks for level 'ServerLevel[ressources]'/minecraft:ressources
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'ressources'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'ressources'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'ressources'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'ressources' in 0.00s
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'ressources'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'ressources'
+[20:05:20] [Server thread/INFO]: Saving chunks for level 'ServerLevel[hub]'/minecraft:hub
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'hub'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'hub'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'hub'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saved 485 block chunks, 0 entity chunks, 0 poi chunks in world 'hub' in 0.14s
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'hub'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'hub'
+[20:05:20] [Server thread/INFO]: Saving chunks for level 'ServerLevel[noel]'/minecraft:noel
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'noel'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'noel'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'noel'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Saved 841 block chunks, 283 entity chunks, 0 poi chunks in world 'noel' in 0.19s
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'noel'
+[20:05:20] [Server thread/INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'noel'
+[20:05:20] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[20:05:20] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[20:05:20] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[20:05:20] [Server thread/INFO]: ThreadedAnvilChunkStorage (ressources): All chunks are saved
+[20:05:20] [Server thread/INFO]: ThreadedAnvilChunkStorage (hub): All chunks are saved
+[20:05:20] [Server thread/INFO]: ThreadedAnvilChunkStorage (noel): All chunks are saved
+[20:05:20] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[20:05:20] [Server thread/INFO]: Waiting for all RegionFile I/O tasks to complete...
+[20:05:20] [Server thread/INFO]: All RegionFile I/O tasks to complete
+[20:05:20] [Server thread/INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[20:05:20] [Server thread/INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...

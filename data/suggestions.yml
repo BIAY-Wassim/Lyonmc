@@ -1,0 +1,19 @@
+# Suggestions des joueurs (page Suggestions du site). Statuts : nouvelle, acceptee, en-cours, faite, refusee.
+
+prochain-id: 3
+suggestions:
+  '1':
+    titre: Un /market avec des parcelles à louer
+    texte: |-
+      Idée de Rinkael :
+      chaque joueur loue une parcelle au spawn.
+    auteur: d23bae5a-87b5-33af-b008-ff3dacc1166f
+    pseudo: Testeur
+    date: 1795722515634
+    statut: acceptee
+    reponse: Bonne idée, on la prépare !
+    reponse-par: Testeur
+    date-statut: 1795722515828
+    votes:
+    - d23bae5a-87b5-33af-b008-ff3dacc1166f
+    - b9d3004b-5a28-3a2f-b5fa-06f61fe6a2dd

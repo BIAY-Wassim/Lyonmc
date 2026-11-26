@@ -1,0 +1,29 @@
+{
+  "maj": "2026-11-26T20:01:56.168148151Z",
+  "ouverte": true,
+  "enCours": false,
+  "joueursMin": 2,
+  "etages": 5,
+  "parties": 1,
+  "top": [
+    {
+      "pseudo": "Acheteur",
+      "victoires": 1,
+      "parties": 1
+    },
+    {
+      "pseudo": "Testeur",
+      "victoires": 0,
+      "parties": 1
+    }
+  ],
+  "derniere": {
+    "gagnant": "Acheteur",
+    "joueurs": [
+      "Testeur",
+      "Acheteur"
+    ],
+    "date": "2026-11-26T20:01:52.126472433Z",
+    "secondes": 8
+  }
+}
