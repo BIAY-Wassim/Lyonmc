@@ -111,6 +111,10 @@ noel:
   # Skin des PNJ de l'arène (/lyonhub noel pnj-hub au hub, et celui posé près de la fontaine) :
   # vide = Père Noël, sinon le pseudo d'un joueur dont on prend le skin
   pnj-skin: ""
+  # Objet « Arène de Noël » dans l'inventaire du hub (clic droit : entrer dans la file / la quitter)
+  objet-hub:
+    actif: true
+    case: 1
   # Bataille de boules de neige : des étages de neige en relief empilés ; on casse la neige sous les
   # pieds des autres à coups de boules de neige. Tomber sous le dernier étage = éliminé, le dernier debout gagne.
   bataille:
@@ -118,8 +122,8 @@ noel:
     # Centre de l'étage du haut (x y z). Vide = à côté du village, face au château
     centre: ""
     # Taille de l'arène : rayon, nombre d'étages, blocs entre deux étages, relief (0 = plat)
-    rayon: 14
-    etages: 3
+    rayon: 20
+    etages: 5
     ecart: 7
     relief: 2
     # Plaques de glace glissantes sur les étages du bas

@@ -14,9 +14,7 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -181,19 +179,6 @@ public final class AdventCalendar implements Listener {
             Bukkit.broadcast(plugin.prefixed("<white>" + player.getName() + "</white> <gray>a ouvert les <white>24 cases</white> du calendrier de l'Avent !"));
         }
         open(player);
-    }
-
-    /** À la connexion : rappel de la case du jour. */
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        Player p = event.getPlayer();
-        int today = currentDay();
-        if (today < 1 || today > 24 || !canOpen(p.getUniqueId(), today)) return;
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (!p.isOnline() || !canOpen(p.getUniqueId(), today)) return;
-            plugin.msg(p, "<#ff6b6b>❄</#ff6b6b> <gray>Ta case du jour t'attend dans le calendrier de l'Avent : "
-                    + "<click:run_command:'/calendrier'><hover:show_text:'<gray>Ouvrir le calendrier'><white><u>/calendrier</u></white></hover></click>");
-        }, 100L);
     }
 
     // ───────────────────────────── Site ─────────────────────────────

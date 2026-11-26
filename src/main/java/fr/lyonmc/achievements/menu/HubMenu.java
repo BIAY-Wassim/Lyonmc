@@ -351,7 +351,7 @@ public final class HubMenu {
             boolean caseDuJour = day >= 1 && day <= 24 && noel.calendar().canOpen(player.getUniqueId(), day);
             List<Component> l = new ArrayList<>();
             l.add(Items.line("Calendrier de l'Avent, chasse au trésor,"));
-            l.add(Items.line("arène de Noël et boss du 24"));
+            l.add(Items.line("arène de Noël et boss de Noël"));
             l.add(Items.EMPTY);
             long left = noel.daysToChristmas();
             l.add(Items.kv("Noël", left == 0 ? "c'est aujourd'hui !" : "dans " + noel.daysToChristmasText()));
@@ -375,7 +375,7 @@ public final class HubMenu {
                 Items.dark(" • le calendrier de l'Avent (un cadeau par jour)"),
                 Items.dark(" • la chasse au trésor (tous les 5 jours)"),
                 Items.dark(" • l'arène de Noël (bataille de boules de neige)"),
-                Items.dark(" • le boss de Noël, le 24 au soir")), false));
+                Items.dark(" • le boss de Noël, le " + noel.bossDayText())), false));
         holder.action(slot, pl -> plugin.msg(pl, "<gray>Patience : l'événement de Noël commence le <white>1er décembre</white> !"));
     }
 
