@@ -55,7 +55,7 @@ public final class MotdListener implements Listener {
         int width = plugin.getConfig().getInt("motd.width", 264);
         // Noël : MOTD et icône de noel.yml pendant la période
         fr.lyonmc.achievements.noel.NoelService noel = plugin instanceof fr.lyonmc.achievements.LyonAchievements la ? la.noel() : null;
-        boolean xmas = noel != null && noel.active();
+        boolean xmas = noel != null && noel.visualActive();
         if (xmas) r = TagResolver.resolver(r, net.kyori.adventure.text.minimessage.tag.resolver.Placeholder.unparsed("jours_noel", noel.daysToChristmasText()));
         icon = xmas ? noel.icon() : null;
         Component l1 = text.parse(xmas ? noel.motdLine1() : plugin.getConfig().getString("motd.line1", ""), r);

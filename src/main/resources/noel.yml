@@ -2,10 +2,15 @@
 # Tout s'allume et s'éteint tout seul : MOTD, icône du serveur, calendrier de l'Avent,
 # chasse au trésor, boss de Noël et page Noël du site. Après un changement : /lmc reload.
 
+# Version du fichier (mises à jour automatiques)
+version: 2
+
 periode:
   # Du 1er décembre au 6 janvier (mois-jour, dates incluses)
   debut: "12-01"
   fin: "01-06"
+  # Le décor de Noël (MOTD, icône du serveur) commence plus tôt, avant les activités
+  visuel-debut: "11-20"
   # Pour tester avant décembre : une fausse date du jour, ex. "2026-12-05" (laisser vide en temps normal)
   date-test: ""
 
@@ -16,6 +21,11 @@ motd:
     - "<#ff6b6b>❄</#ff6b6b> <white>Calendrier de l'Avent</white> <gray>: un cadeau par jour</gray> <#7bd88f>/calendrier</#7bd88f>"
     - "<#9fd3ff>☃</#9fd3ff> <gray>Arène de Noël, bataille de boules de neige :</gray> <white>/noel</white>"
     - "<#ffd86b>✦</#ffd86b> <gray>Chasse au trésor de Noël :</gray> <white>/tresor</white>"
+    - "<#ff6b6b>❄</#ff6b6b> <gray>Plus que</gray> <white><jours_noel></white> <gray>avant Noël !</gray>"
+  # Avant le 1er décembre (décor seulement) : l'événement arrive
+  line2-avant:
+    - "<#ff6b6b>❄</#ff6b6b> <gray>L'événement de Noël arrive le</gray> <white>1er décembre</white> <gray>!</gray>"
+    - "<#9fd3ff>☃</#9fd3ff> <gray>Arène de Noël, bataille de boules de neige :</gray> <white>/noel</white>"
     - "<#ff6b6b>❄</#ff6b6b> <gray>Plus que</gray> <white><jours_noel></white> <gray>avant Noël !</gray>"
 
 # Icône du serveur : un bonnet de Noël est ajouté sur server-icon.png pendant la période.
@@ -97,7 +107,7 @@ tresor:
 # Le boss mondial en version Noël (nom, tenue et renforts de Noël), à la date et l'heure indiquées.
 boss:
   enabled: true
-  date: "12-24"
+  date: "12-26"
   heure: "21:00"
   nom: "<gradient:#ff6b6b:#ffffff>Le Père Fouettard</gradient>"
   # Pour chaque joueur qui a combattu (en plus des récompenses habituelles)

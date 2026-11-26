@@ -84,6 +84,7 @@ public final class Configs {
         jobs = loadOrCreate("metiers.yml");
         news = loadOrCreate("actualites.yml");
         noel = loadOrCreate("noel.yml");
+        upgradeNoel();
         mergeChildren(jobs, "metiers");
         state = stateFile.exists() ? YamlConfiguration.loadConfiguration(stateFile) : new YamlConfiguration();
     }
@@ -145,6 +146,28 @@ public final class Configs {
             plugin.getLogger().info("Boss mondial : réglages ajoutés à evenements.yml (difficulté selon les joueurs, stuff protégé dans l'arène).");
         } catch (IOException e) {
             plugin.getLogger().log(Level.WARNING, "Impossible de mettre à jour evenements.yml", e);
+        }
+    }
+
+    /** noel.yml v2 : boss le 26 décembre, décor de Noël (MOTD, icône) dès le 20 novembre. */
+    private void upgradeNoel() {
+        if (noel.isSet("version")) return;
+        org.bukkit.configuration.Configuration def = noel.getDefaults();
+        if ("12-24".equals(noel.getString("boss.date"))) noel.set("boss.date", "12-26");
+        if (!noel.isSet("periode.visuel-debut")) {
+            noel.set("periode.visuel-debut", "11-20");
+            noel.setComments("periode.visuel-debut", java.util.List.of("Le décor de Noël (MOTD, icône du serveur) commence plus tôt, avant les activités"));
+        }
+        if (!noel.isSet("motd.line2-avant") && def != null) {
+            noel.set("motd.line2-avant", def.getStringList("motd.line2-avant"));
+            noel.setComments("motd.line2-avant", java.util.List.of("Avant le 1er décembre (décor seulement) : l'événement arrive"));
+        }
+        noel.set("version", 2);
+        try {
+            noel.save(new File(plugin.getDataFolder(), "noel.yml"));
+            plugin.getLogger().info("noel.yml mis à jour : boss de Noël le 26 décembre, MOTD et icône de Noël dès le 20 novembre.");
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Impossible de mettre à jour noel.yml", e);
         }
     }
 

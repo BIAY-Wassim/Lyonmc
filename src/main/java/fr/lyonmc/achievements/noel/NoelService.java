@@ -39,6 +39,7 @@ public final class NoelService {
     private boolean dirty;
     private final AdventCalendar calendar;
     private final TreasureHunt treasure;
+    private final NoelWelcome welcome;
     /** Icône de Noël (bonnet sur l'icône du serveur), préparée une fois. */
     private CachedServerIcon icon;
     private boolean iconTried;
@@ -49,6 +50,11 @@ public final class NoelService {
         this.data = dataFile.exists() ? YamlConfiguration.loadConfiguration(dataFile) : new YamlConfiguration();
         this.calendar = new AdventCalendar(plugin, this);
         this.treasure = new TreasureHunt(plugin, this);
+        this.welcome = new NoelWelcome(plugin, this);
+    }
+
+    public NoelWelcome welcome() {
+        return welcome;
     }
 
     public AdventCalendar calendar() {
@@ -122,6 +128,18 @@ public final class NoelService {
         return !day.isAfter(periodEnd(s));
     }
 
+    /** Décor de Noël (MOTD, icône) : pendant la période, et dès « visuel-debut » avant elle. */
+    public boolean visualActive() {
+        if (!plugin.module("noel")) return false;
+        LocalDate t = today();
+        if (active(t)) return true;
+        LocalDate start = monthDay("periode.debut", "12-01").atYear(t.getYear());
+        if (!start.isAfter(t)) start = start.plusYears(1);
+        LocalDate from = monthDay("periode.visuel-debut", "11-20").atYear(start.getYear());
+        if (from.isAfter(start)) from = from.minusYears(1);
+        return !t.isBefore(from) && t.isBefore(start);
+    }
+
     /** Jours avant le début de la prochaine période (0 pendant la période). */
     public long daysUntilStart() {
         LocalDate t = today();
@@ -139,6 +157,18 @@ public final class NoelService {
         return ChronoUnit.DAYS.between(t, xmas);
     }
 
+    /** « 26 décembre à 21 h » : date du boss de Noël (noel.yml). */
+    public String bossDayText() {
+        String date = cfg().getString("boss.date", "12-26"), heure = cfg().getString("boss.heure", "21:00");
+        String[] months = {"janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"};
+        try {
+            MonthDay md = MonthDay.parse("--" + date.trim());
+            return md.getDayOfMonth() + (md.getDayOfMonth() == 1 ? "er " : " ") + months[md.getMonthValue() - 1] + " à " + heure.replace(":00", " h").replace(":", " h ");
+        } catch (RuntimeException e) {
+            return date + " à " + heure;
+        }
+    }
+
     public String daysToChristmasText() {
         long d = daysToChristmas();
         return d == 0 ? "0 jour" : d + " jour" + (d > 1 ? "s" : "");
@@ -151,6 +181,10 @@ public final class NoelService {
     }
 
     public List<String> motdLine2() {
+        if (!active()) {
+            List<String> before = cfg().getStringList("motd.line2-avant");
+            if (!before.isEmpty()) return before;
+        }
         return cfg().getStringList("motd.line2");
     }
 

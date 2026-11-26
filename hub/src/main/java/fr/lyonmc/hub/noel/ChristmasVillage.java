@@ -43,7 +43,10 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
     private static final double[] SPAWN = {84.5, 77, 120.5, 90};
     private static final double[] LOBBY = {105.5, 76, 124.5, -90};
     private static final double[] NPC = {107.5, 75, 121.5, 90};
-    private static final int[] ARENA = {150, 74, 120};
+    /** Centre de l'étage du haut : 20 blocs plus loin de la map qu'avant, et plus haut (1.9.5). */
+    private static final int[] ARENA = {176, 90, 120};
+    /** Arène des versions 1.9.0 à 1.9.4 (retirée toute seule). */
+    private static final int[] OLD_ARENA = {150, 74, 120};
     /** Coin du village par défaut : l'arrivée tombe au centre du monde (0, 65, 0). */
     private static final String ORIGIN = "-84 -12 -120";
     /** Emplacement de la version 1.9.0 (dans le monde du hub, à côté du hub médiéval). */
@@ -90,6 +93,13 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
     /** 1.9.0 -> 1.9.1 : le village passe dans son propre monde (centré sur 0, 0). */
     private void migrateConfig() {
         var cfg = plugin.getConfig();
+        // 1.9.5 : arène plus grande, plus d'étages
+        if (cfg.isSet("noel.bataille") && cfg.getInt("noel.bataille.rayon") == 14 && cfg.getInt("noel.bataille.etages") == 3) {
+            cfg.set("noel.bataille.rayon", 20);
+            cfg.set("noel.bataille.etages", 5);
+            plugin.saveConfig();
+            plugin.getLogger().info("Bataille de boules de neige : arène plus grande (rayon 20, 5 étages).");
+        }
         if (!cfg.isSet("noel") || cfg.isSet("noel.monde")) return;
         cfg.set("noel.monde", "noel");
         cfg.setComments("noel.monde", List.of("Monde à part pour le village et la bataille (monde vide créé par /lyonhub noel installer)"));
@@ -209,6 +219,21 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
         }
         int[] o = origin();
         return new Location(w, o[0] + ARENA[0], o[1] + ARENA[1], o[2] + ARENA[2]);
+    }
+
+    /** L'arène construite en dernier (« monde;x;y;z;rayon;étages;écart;relief »), pour la retirer si elle change. */
+    String builtArena() {
+        String s = state.getString("arene-construite", "");
+        if (!s.isEmpty()) return s;
+        if (!installed()) return null;
+        // Installée avant 1.9.5 : l'ancienne arène, à l'ancienne place, avec les anciens réglages
+        int[] o = origin();
+        return worldName() + ";" + (o[0] + OLD_ARENA[0]) + ";" + (o[1] + OLD_ARENA[1]) + ";" + (o[2] + OLD_ARENA[2]) + ";14;3;7;2";
+    }
+
+    void builtArena(String s) {
+        state.set("arene-construite", s);
+        saveState();
     }
 
     /** Au démarrage : l'arène est prête et le site a ses chiffres ; le texte des PNJ suit la bataille en direct. */
@@ -521,10 +546,8 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
             msg(p, "<gray>Pas de village de Noël trouvé dans le monde <white>" + wn + "</white> (coin " + o[0] + " " + o[1] + " " + o[2] + ").");
             return;
         }
-        // L'arène qui était à côté (réglages actuels de la config)
-        var c = plugin.getConfig();
-        new SnowArena(w, o[0] + ARENA[0], o[1] + ARENA[1], o[2] + ARENA[2], c.getInt("noel.bataille.rayon", 14), c.getInt("noel.bataille.etages", 3),
-                c.getInt("noel.bataille.ecart", 7), c.getInt("noel.bataille.relief", 2), true).clear();
+        // L'arène qui était à côté (réglages de la version 1.9.0)
+        new SnowArena(w, o[0] + OLD_ARENA[0], o[1] + OLD_ARENA[1], o[2] + OLD_ARENA[2], 14, 3, 7, 2, true).clear();
         busy = true;
         msg(p, "<gray>Retrait de l'ancien village dans le monde <white>" + wn + "</white>…");
         paster.unpaste(s, w, o[0], o[1], o[2], removed -> {
@@ -556,7 +579,7 @@ public final class ChristmasVillage implements CommandExecutor, Listener {
     /** Colonnes déjà construites là où le village (et l'arène) doivent aller (la plateforme de départ ne compte pas). */
     private int builtColumns(World w, SchematicPaster.Schem s, int[] o) {
         int built = 0;
-        int x1 = Math.max(o[0] + s.width(), o[0] + ARENA[0] + 20); // l'arène est à l'est du village
+        int x1 = Math.max(o[0] + s.width(), o[0] + ARENA[0] + 24); // l'arène est à l'est du village
         for (int x = o[0]; x < x1; x += 4) {
             for (int z = o[2]; z < o[2] + s.length(); z += 4) {
                 if (Math.abs(x) <= 4 && Math.abs(z) <= 4 && w.getBlockAt(x, 64, z).getType() == Material.SMOOTH_STONE) continue;

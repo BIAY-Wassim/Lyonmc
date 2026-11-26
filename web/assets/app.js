@@ -440,7 +440,7 @@
     else line = "Joyeuses fêtes ! L'arène de Noël reste ouverte jusqu'au 6 janvier.";
     return `<div class="wrap"><a class="card xmas-band" href="/noel" data-link>
       ${ico("spruce_sapling")}
-      <div><strong>${left > 0 ? `Noël dans ${left} jour${left > 1 ? "s" : ""}` : "Joyeux Noël !"}</strong><span>${line} Arène de Noël avec sa bataille de boules de neige (/noel), chasse au trésor et boss du 24.</span></div>
+      <div><strong>${left > 0 ? `Noël dans ${left} jour${left > 1 ? "s" : ""}` : "Joyeux Noël !"}</strong><span>${line} Arène de Noël avec sa bataille de boules de neige (/noel), chasse au trésor et boss de Noël.</span></div>
       <span class="go">Le programme</span></a></div>`;
   }
 
@@ -487,8 +487,8 @@
     const b = noel?.boss || {};
     const top = bat?.top || [];
     const last = bat?.derniere;
-    const [, bm, bd] = String(b.date ? `x-${b.date}` : "x-12-24").split("-").map(Number);
-    const bossDay = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(Date.UTC(paris().y, (bm || 12) - 1, bd || 24)));
+    const [, bm, bd] = String(b.date ? `x-${b.date}` : "x-12-26").split("-").map(Number);
+    const bossDay = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(Date.UTC(paris().y, (bm || 12) - 1, bd || 26)));
     const today24 = noel?.calendrier?.[23];
     const sub = day === 0 ? "Le calendrier de l'Avent ouvre le 1er décembre."
       : day <= 24 ? `Aujourd'hui, c'est la case n°${day} du calendrier.` : "Le calendrier est fini : joyeuses fêtes !";
@@ -507,7 +507,7 @@
     app.innerHTML = `
       <div class="page-head noel-head"><div class="wrap">
         <h1>Noël sur LyonMC</h1>
-        <p>Jusqu'au 6 janvier : une case du calendrier de l'Avent chaque jour, une arène de Noël avec sa bataille de boules de neige, une chasse au trésor tous les 5 jours et un boss le 24 au soir.</p>
+        <p>Jusqu'au 6 janvier : une case du calendrier de l'Avent chaque jour, une arène de Noël avec sa bataille de boules de neige, une chasse au trésor tous les 5 jours et un boss de Noël le 26 au soir.</p>
         <p class="countdown"><b>${left > 0 ? `J-${left}` : "Joyeux Noël"}</b><span>${sub}</span></p>
       </div></div>
 

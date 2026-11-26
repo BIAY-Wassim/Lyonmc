@@ -94,6 +94,8 @@ public final class SnowBattle implements Listener, TabExecutor {
     private final Set<UUID> ownTeleport = new HashSet<>();
     /** Où chaque joueur attendait (au hub) : il y revient à la fin de la partie. */
     private final Map<UUID, Location> returnTo = new java.util.HashMap<>();
+    /** Éliminés qui regardent la fin en spectateur. */
+    private final Set<UUID> spectators = new HashSet<>();
     private BukkitTask task;
     private int countdown;
     private boolean forced;
@@ -159,9 +161,33 @@ public final class SnowBattle implements Listener, TabExecutor {
     public boolean rebuild() {
         SnowArena a = arena();
         if (a == null) return false;
+        String now = describe(a);
+        String before = village.builtArena();
+        if (before != null && !before.equals(now)) {
+            SnowArena old = parse(before);
+            if (old != null) old.clear();
+            plugin.getLogger().info("Bataille de boules de neige : ancienne arène retirée (" + before + "), nouvelle : " + now);
+        }
         a.build(random.nextLong());
+        village.builtArena(now);
         arenaReady = true;
         return true;
+    }
+
+    private static String describe(SnowArena a) {
+        return a.world.getName() + ";" + a.cx + ";" + a.cy + ";" + a.cz + ";" + a.radius + ";" + a.floors + ";" + a.gap + ";" + a.relief;
+    }
+
+    private static SnowArena parse(String s) {
+        try {
+            String[] p = s.split(";");
+            World w = Bukkit.getWorld(p[0]);
+            if (w == null) return null;
+            return new SnowArena(w, Integer.parseInt(p[1]), Integer.parseInt(p[2]), Integer.parseInt(p[3]), Integer.parseInt(p[4]),
+                    Integer.parseInt(p[5]), Integer.parseInt(p[6]), Integer.parseInt(p[7]), false);
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     /** Retire l'arène (avant de la déplacer). */
@@ -258,7 +284,10 @@ public final class SnowBattle implements Listener, TabExecutor {
     /** Actions des objets de la partie (lit rouge : quitter). */
     public void action(Player p, String what) {
         if (what.equals("quitter")) leave(p);
-        else if (what.equals("jouer")) join(p);
+        else if (what.equals("jouer")) {
+            if (queue.contains(p.getUniqueId())) leave(p);
+            else join(p);
+        }
     }
 
     // ───────────────────────────── File d'attente ─────────────────────────────
@@ -547,11 +576,12 @@ public final class SnowBattle implements Listener, TabExecutor {
         String name = names.getOrDefault(u, p == null ? "?" : p.getName());
         int place = alive.size() + 1;
         if (p != null && p.isOnline()) {
-            backToVillage(p, teleport);
+            if (teleport && arena != null && p.getWorld().equals(arena.world)) spectate(p);
+            else backToVillage(p, false);
             p.showTitle(Title.title(MM.deserialize("<#ff9f9f><bold>Éliminé"), MM.deserialize("<gray>" + place + (place == 1 ? "er" : "e") + " sur " + names.size()),
                     Title.Times.times(java.time.Duration.ofMillis(100), java.time.Duration.ofMillis(1800), java.time.Duration.ofMillis(300))));
             p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_HURT_FREEZE, 0.8f, 1f);
-            if (teleport && !alive.isEmpty()) msg(p, "<gray>Tu regardes la fin depuis le bord de l'arène : retour au hub à la fin de la partie (ou tout de suite avec <white>/hub</white>).");
+            if (teleport && !alive.isEmpty()) msg(p, "<gray>Tu regardes la fin en spectateur : retour au hub à la fin de la partie (ou tout de suite avec <white>/hub</white>).");
         }
         for (UUID o : names.keySet()) {
             Player op = Bukkit.getPlayer(o);
@@ -560,6 +590,23 @@ public final class SnowBattle implements Listener, TabExecutor {
         if (state != State.RUNNING) return;
         if (names.size() >= 2 && alive.size() <= 1) end(alive.isEmpty() ? u : alive.get(0), false);
         else if (alive.isEmpty()) end(null, false);
+    }
+
+    /** Éliminé : en spectateur, au-dessus de l'arène, tourné vers le centre. */
+    private void spectate(Player p) {
+        players.removeHubItems(p);
+        players.giveHubItems(p);
+        spectators.add(p.getUniqueId());
+        players.setMode(p, GameMode.SPECTATOR);
+        SnowArena a = arena;
+        Location view = new Location(a.world, a.cx + 0.5, a.cy + a.relief + 9, a.cz - a.radius - 5 + 0.5, 0, 32);
+        ownTeleport.add(p.getUniqueId());
+        p.teleportAsync(view).whenComplete((ok, err) -> Bukkit.getScheduler().runTask(plugin, () -> ownTeleport.remove(p.getUniqueId())));
+    }
+
+    /** Fin du mode spectateur (retour en aventure). */
+    private void unspectate(Player p) {
+        if (spectators.remove(p.getUniqueId()) && p.getGameMode() == GameMode.SPECTATOR) players.setMode(p, GameMode.ADVENTURE);
     }
 
     /** Fin de partie pour un joueur : objets du hub rendus, retour au point d'attente (s'il est encore au hub). */
@@ -643,7 +690,8 @@ public final class SnowBattle implements Listener, TabExecutor {
             for (UUID u : played) {
                 Player p = Bukkit.getPlayer(u);
                 Location back = returnTo.remove(u);
-                if (p == null || !village.isVillageWorld(p.getWorld()) || queue.contains(u)) continue;
+                if (p != null) unspectate(p);
+                if (p == null || !village.isVillageWorld(p.getWorld())) continue;
                 if (back == null || back.getWorld() == null) {
                     World hub = worlds.names().isEmpty() ? null : Bukkit.getWorld(worlds.names().get(0));
                     back = hub == null ? null : hub.getSpawnLocation().add(0.5, 0, 0.5);
@@ -702,6 +750,14 @@ public final class SnowBattle implements Listener, TabExecutor {
                 backToVillage(p, true);
             }
         }
+        for (UUID u : new ArrayList<>(spectators)) {
+            Player p = Bukkit.getPlayer(u);
+            if (p != null) {
+                unspectate(p);
+                backToVillage(p, true);
+            }
+        }
+        spectators.clear();
         alive.clear();
         queue.clear();
         state = State.IDLE;
@@ -718,6 +774,10 @@ public final class SnowBattle implements Listener, TabExecutor {
         for (UUID u : alive) {
             Player p = Bukkit.getPlayer(u);
             if (p != null) players.removeHubItems(p);
+        }
+        for (UUID u : new ArrayList<>(spectators)) {
+            Player p = Bukkit.getPlayer(u);
+            if (p != null) unspectate(p);
         }
         alive.clear();
         queue.clear();
@@ -762,6 +822,12 @@ public final class SnowBattle implements Listener, TabExecutor {
         if (e.getEntity() instanceof Player p && alive.contains(p.getUniqueId())) e.setCancelled(true);
     }
 
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onSpectate(PlayerTeleportEvent e) {
+        if (e.getCause() != PlayerTeleportEvent.TeleportCause.SPECTATE || !spectators.contains(e.getPlayer().getUniqueId())) return;
+        if (arena == null || e.getTo() == null || !arena.world.equals(e.getTo().getWorld())) e.setCancelled(true);
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTeleport(PlayerTeleportEvent e) {
         Player p = e.getPlayer();
@@ -777,6 +843,8 @@ public final class SnowBattle implements Listener, TabExecutor {
         Player p = e.getPlayer();
         // Du hub au village (ou l'inverse) on reste dans la file ; en partant en survie, on la quitte
         if (!worlds.isHub(p.getWorld())) queue.remove(p.getUniqueId());
+        // Un spectateur qui part (ex. /hub) redevient joueur normal
+        if (spectators.contains(p.getUniqueId()) && (arena == null || !p.getWorld().equals(arena.world))) unspectate(p);
         // Arriver dans le monde de l'arène au départ de la partie, ce n'est pas la quitter
         if (alive.contains(p.getUniqueId()) && (arena == null || !p.getWorld().equals(arena.world))) {
             boolean inHub = worlds.isHub(p.getWorld());
@@ -790,6 +858,7 @@ public final class SnowBattle implements Listener, TabExecutor {
         queue.remove(p.getUniqueId());
         ownTeleport.remove(p.getUniqueId());
         returnTo.remove(p.getUniqueId());
+        unspectate(p);
         if (alive.contains(p.getUniqueId())) {
             players.removeHubItems(p);
             eliminate(p.getUniqueId(), null, "s'est déconnecté");

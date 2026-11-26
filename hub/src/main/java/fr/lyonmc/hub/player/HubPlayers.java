@@ -344,7 +344,7 @@ public final class HubPlayers implements Listener {
         giveHubItems(p);
     }
 
-    private void setMode(Player p, GameMode mode) {
+    public void setMode(Player p, GameMode mode) {
         switching.add(p.getUniqueId());
         try {
             p.setGameMode(mode);
@@ -413,6 +413,13 @@ public final class HubPlayers implements Listener {
             }
             int slot = c.getInt("case", 0);
             if (slot >= 0 && slot < 36) placeHubItem(p, slot, it);
+        }
+        // Arène de Noël : rejoindre la bataille de boules de neige d'un clic
+        if (noel != null && noel.open() && plugin.getConfig().getBoolean("noel.objet-hub.actif", true)) {
+            int slot = plugin.getConfig().getInt("noel.objet-hub.case", 1);
+            if (slot >= 0 && slot < 36) placeHubItem(p, slot, hubItem(Material.SNOWBALL, "<#9fd3ff><bold>Arène de Noël</bold> <gray>(clic droit)",
+                    List.of("<gray>Bataille de boules de neige :", "<gray>entre dans la file (re-clic : la quitter),",
+                            "<gray>téléportation dès qu'il y a assez de joueurs"), "bataille:jouer"));
         }
         p.getInventory().setHeldItemSlot(Math.max(0, Math.min(8, plugin.getConfig().getInt("case-en-main", 4))));
     }

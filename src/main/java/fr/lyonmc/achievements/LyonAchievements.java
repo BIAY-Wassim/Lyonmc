@@ -191,7 +191,7 @@ public final class LyonAchievements extends JavaPlugin {
         listen(placed, new AdvancementListener(this, registry, stats, boards, text), chat, new MenuListener(this), heads, motd,
                 missionListener, custom, teamCommand, teleporter, teleportCommands, spawnHub, resourceBonus, boss, web,
                 new fr.lyonmc.achievements.jobs.JobListener(this), dragonEgg, new fr.lyonmc.achievements.listener.VanillaFixes(this),
-                noel.calendar(), noel.treasure());
+                noel.calendar(), noel.treasure(), noel.welcome());
 
         SuccesCommand succes = new SuccesCommand(this, registry, stats, boards, achievementsMenu, text);
         command(succes, "succes", "classement", "carte");
@@ -290,6 +290,7 @@ public final class LyonAchievements extends JavaPlugin {
             custom.tick();
             // Noël : chasse au trésor (nouveau coffre, fin), données du calendrier
             noel.treasure().tick();
+            noel.welcome().tick();
             noel.saveIfDirty();
         }, 600L, 1200L));
         // Toutes les 5 minutes : paliers liés au temps de jeu
