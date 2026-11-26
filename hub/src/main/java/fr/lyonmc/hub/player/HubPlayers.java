@@ -176,6 +176,42 @@ public final class HubPlayers implements Listener {
         }
     }
 
+    /**
+     * Chaque seconde : un vrai objet arrivé dans l'inventaire du hub (récompense, achat, cadeau du calendrier...)
+     * est rangé tout de suite avec l'inventaire de survie. Il est rendu en repartant en survie, jamais en double.
+     */
+    public void sweepAll() {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!inHub(p) || building(p) || p.getGameMode() == GameMode.CREATIVE) continue;
+            File f = file(p.getUniqueId());
+            if (!f.exists()) continue;
+            PlayerInventory inv = p.getInventory();
+            ItemStack[] contents = inv.getContents();
+            List<String> moved = new ArrayList<>();
+            List<Integer> slots = new ArrayList<>();
+            for (int i = 0; i < contents.length; i++) {
+                ItemStack it = contents[i];
+                if (it == null || it.getType().isAir() || isHubItem(it)) continue;
+                moved.add(Base64.getEncoder().encodeToString(it.serializeAsBytes()));
+                slots.add(i);
+            }
+            if (moved.isEmpty()) continue;
+            YamlConfiguration y = YamlConfiguration.loadConfiguration(f);
+            List<String> rec = new ArrayList<>(y.getStringList("recus"));
+            rec.addAll(moved);
+            y.set("recus", rec);
+            try {
+                y.save(f);
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.WARNING, "Impossible de ranger les objets reçus au hub de " + p.getName(), e);
+                continue; // on ne retire rien tant que ce n'est pas enregistré
+            }
+            for (int i : slots) inv.setItem(i, null);
+            p.sendMessage(MM.deserialize("<#e8c872>✦</#e8c872> <gray>" + (moved.size() == 1 ? "Un objet reçu au hub est rangé" : moved.size() + " objets reçus au hub sont rangés")
+                    + " avec ton inventaire de survie : tu les retrouves en repartant en survie <dark_gray>(/survie)</dark_gray>."));
+        }
+    }
+
     /** Pose un objet du hub dans une case, en déplaçant ce qui s'y trouvait (un objet reçu n'est jamais écrasé). */
     public void placeHubItem(Player p, int slot, ItemStack it) {
         PlayerInventory inv = p.getInventory();

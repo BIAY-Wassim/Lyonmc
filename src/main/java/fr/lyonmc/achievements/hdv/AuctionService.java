@@ -249,6 +249,12 @@ public final class AuctionService {
     }
 
     public void collect(Player player) {
+        if (plugin.spawnHub().inHubWorld(player.getWorld())) {
+            int n = mailbox(player.getUniqueId()).size();
+            plugin.msg(player, n == 0 ? "<gray>Rien à récupérer."
+                    : "<gray>Tes <white>" + n + "</white> objet(s) t'attendent : récupère-les depuis le monde survie <dark_gray>(/survie puis /hdv)</dark_gray>.");
+            return;
+        }
         List<ItemStack> items = mailbox.remove(player.getUniqueId());
         if (items == null || items.isEmpty()) {
             plugin.msg(player, "<gray>Rien à récupérer.");
@@ -272,11 +278,22 @@ public final class AuctionService {
      */
     public int giveOrStore(Player p, Collection<ItemStack> items) {
         List<ItemStack> left = new ArrayList<>();
+        boolean hub = plugin.spawnHub().inHubWorld(p.getWorld());
         for (ItemStack item : items) {
             if (item == null || item.getType().isAir()) continue;
-            left.addAll(p.getInventory().addItem(item.clone()).values());
+            // Au hub, rien n'arrive dans l'inventaire du hub : tout attend dans la boîte de récupération
+            if (hub) left.add(item.clone());
+            else left.addAll(p.getInventory().addItem(item.clone()).values());
         }
         if (left.isEmpty()) return 0;
+        if (hub) {
+            mailbox.computeIfAbsent(p.getUniqueId(), k -> new ArrayList<>()).addAll(left);
+            dirty = true;
+            save();
+            plugin.msg(p, "<gray>Au hub, ton inventaire de survie est rangé : <white>" + left.size() + " objet(s)</white> t'attendent dans "
+                    + "<white>/hdv</white> > Récupérer, depuis le monde survie <dark_gray>(/survie)</dark_gray>.");
+            return left.size();
+        }
         mailbox.computeIfAbsent(p.getUniqueId(), k -> new ArrayList<>()).addAll(left);
         dirty = true;
         save();

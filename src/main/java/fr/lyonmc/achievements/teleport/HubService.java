@@ -87,13 +87,23 @@ public final class HubService implements Listener {
     }
 
     /** Monde entièrement réservé au hub (là où l'inventaire de survie est rangé par le plugin HUB). */
+    /** Marque posée par le plugin HUB sur tous ses mondes (hub, arène de Noël...). */
+    private static final org.bukkit.NamespacedKey HUB_WORLD = org.bukkit.NamespacedKey.fromString("hub:monde-hub");
+
+    private static boolean markedByHub(org.bukkit.World w) {
+        return w != null && HUB_WORLD != null && w.getPersistentDataContainer().has(HUB_WORLD);
+    }
+
     public boolean inHubWorld(org.bukkit.World w) {
-        return w != null && enabled() && plugin.getConfig().getStringList("hub.worlds").contains(w.getName());
+        return w != null && (markedByHub(w) || enabled() && plugin.getConfig().getStringList("hub.worlds").contains(w.getName()));
     }
 
     /** Le point est-il dans la zone protégée du hub ? (cylindre autour du spawn) */
     public boolean inHub(Location l) {
-        if (l == null || l.getWorld() == null || !enabled()) return false;
+        if (l == null || l.getWorld() == null) return false;
+        // Monde du plugin HUB (hub, arène de Noël) : toujours le hub
+        if (markedByHub(l.getWorld())) return true;
+        if (!enabled()) return false;
         // Monde entièrement réservé au hub (ex. : le monde « hub » créé par LyonHub)
         if (plugin.getConfig().getStringList("hub.worlds").contains(l.getWorld().getName())) return true;
         Location spawn = spawn();

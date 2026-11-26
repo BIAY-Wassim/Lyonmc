@@ -40,6 +40,7 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
         paster = new fr.lyonmc.hub.world.SchematicPaster(this);
         paster.folder();
         worlds.loadExisting();
+        worlds.markAll();
         skins = new SkinService(this);
         npcs = new NpcService(this, skins);
         npcs.cleanup();
@@ -72,6 +73,8 @@ public final class LyonHub extends JavaPlugin implements TabExecutor {
         if (parkour != null) parkour.setExecutor(players.parkour());
         // Chrono du parkour (toutes les 2 ticks) et classement affiché (toutes les 10 s)
         Bukkit.getScheduler().runTaskTimer(this, () -> players.parkour().tick(), 2L, 2L);
+        // Aucun vrai objet ne reste dans l'inventaire du hub : il part dans l'inventaire de survie
+        Bukkit.getScheduler().runTaskTimer(this, players::sweepAll, 40L, 20L);
         Bukkit.getScheduler().runTaskTimer(this, () -> players.parkour().updateBoard(), 100L, 200L);
         // Joueurs déjà au hub (après un /reload)
         for (org.bukkit.entity.Player online : Bukkit.getOnlinePlayers()) if (players.inHub(online)) players.enter(online, null);
